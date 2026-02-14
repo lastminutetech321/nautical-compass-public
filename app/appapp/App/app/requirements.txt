@@ -1,5 +1,5 @@
-app/requirements.txtfastapi
+fastapi
 uvicorn
 pydantic
 python-dotenv
- 
+gunicorn
