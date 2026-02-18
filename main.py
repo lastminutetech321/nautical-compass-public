@@ -58,7 +58,28 @@ def submit_intake(form: IntakeForm):
     conn.commit()
     conn.close()
 
-    return {"status": "Intake stored successfully"}
+    # ---------- EMAIL NOTIFICATION ----------
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = "New Intake Submission"
+        msg["From"] = os.getenv("EMAIL_USER")
+        msg["To"] = os.getenv("EMAIL_USER")
+
+        msg.set_content(f"""
+Name: {form.name}
+Email: {form.email}
+Service: {form.service_requested}
+Notes: {form.notes}
+""")
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
+            smtp.send_message(msg)
+
+    except Exception as e:
+        print("Email failed:", e)
+
+    return {"status": "Intake stored and email attempted"}
     
 
 @app.get("/admin/intake")
@@ -81,26 +102,6 @@ def view_intake():
 
     return {"entries": formatted}
 
-        try:
-        msg = EmailMessage()
-        msg["Subject"] = "New Intake Submission"
-        msg["From"] = os.getenv("EMAIL_USER")
-        msg["To"] = os.getenv("EMAIL_USER")
-
-        msg.set_content(f"""
-        Name: {form.name}
-        Email: {form.email}
-        Service: {form.service_requested}
-        Notes: {form.notes}
-        """)
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
-            smtp.send_message(msg)
-
-    except Exception as e:
-        print("Email failed:", e)
-    return {"entries": rows}
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
