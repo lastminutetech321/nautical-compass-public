@@ -1,3 +1,6 @@
+import smtplib
+from email.message import EmailMessage
+import os                                      
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from fastapi import FastAPI
@@ -56,6 +59,7 @@ def submit_intake(form: IntakeForm):
     conn.close()
 
     return {"status": "Intake stored successfully"}
+    
 
 @app.get("/admin/intake")
 def view_intake():
@@ -65,6 +69,25 @@ def view_intake():
     rows = cursor.fetchall()
     conn.close()
 
+        try:
+        msg = EmailMessage()
+        msg["Subject"] = "New Intake Submission"
+        msg["From"] = os.getenv("EMAIL_USER")
+        msg["To"] = os.getenv("EMAIL_USER")
+
+        msg.set_content(f"""
+        Name: {form.name}
+        Email: {form.email}
+        Service: {form.service_requested}
+        Notes: {form.notes}
+        """)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
+            smtp.send_message(msg)
+
+    except Exception as e:
+        print("Email failed:", e)
     return {"entries": rows}
 
 @app.get("/favicon.ico", include_in_schema=False)
