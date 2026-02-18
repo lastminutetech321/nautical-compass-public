@@ -1,6 +1,4 @@
-from email.message import EmailMessage
-import os
 fastapi
-uvicorn[standard]
-jinja2
-python-multipart
+uvicorn
+python-multipart 
+git status
