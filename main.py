@@ -65,9 +65,21 @@ def submit_intake(form: IntakeForm):
 def view_intake():
     conn = sqlite3.connect("intake.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM intake")
+    cursor.execute("SELECT id, name, email, service_requested, notes FROM intake")
     rows = cursor.fetchall()
     conn.close()
+
+    formatted = []
+    for row in rows:
+        formatted.append({
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "service_requested": row[3],
+            "notes": row[4]
+        })
+
+    return {"entries": formatted}
 
         try:
         msg = EmailMessage()
