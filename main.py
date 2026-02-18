@@ -1,10 +1,12 @@
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import sqlite3
 
 app = FastAPI()
-
+templates = Jinja2Templates(directory="templates")
 # ---------- DATABASE SETUP ----------
 
 def init_db():
@@ -68,3 +70,7 @@ def view_intake():
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     return FileResponse("favicon.png")
+
+@app.get("/intake-form")
+def intake_form(request: Request):
+    return templates.TemplateResponse("intake_form.html", {"request": request})
