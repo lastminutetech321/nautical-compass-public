@@ -4,3 +4,4 @@ import os
 fastapi
 uvicorn[standard]
 jinja2
+python-multipart
