@@ -27,7 +27,12 @@
       border-radius:14px;
       padding:22px;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
+    } 
+   input:-webkit-autofill,
+   input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #0e1728 inset !important;
+  -webkit-text-fill-color: #e8eefc !important;
+}
     h1{
       margin:0 0 14px 0;
       font-size:22px;
@@ -51,17 +56,24 @@
     }
     textarea{ min-height:110px; resize:vertical; }
     button{
-      margin-top:14px;
-      width:100%;
-      padding:12px;
-      border:0;
-      border-radius:10px;
-      background:#ff8a00;
-      color:#111;
-      font-weight:700;
-      cursor:pointer;
-    }
-    button:active{ transform: translateY(1px); }
+  margin-top:16px;
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ff9a1f,#ff7b00);
+  color:#111;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(255,140,0,.35);
+}
+button:active{
+  transform:translateY(0px);
+}
     #responseMessage{
       margin-top:12px;
       font-size:14px;
@@ -90,8 +102,15 @@
         <input type="email" name="email" required />
 
         <label>Service Requested</label>
-        <input type="text" name="service_requested" required />
-
+       
+        <select name="service_requested" required>
+  <option value="">Select a service</option>
+  <option value="Case Analysis">Case Analysis</option>
+  <option value="Standing & Capacity Review">Standing & Capacity Review</option>
+  <option value="Arbitration Drafting">Arbitration Drafting</option>
+  <option value="Driver Depreciation Claim">Driver Depreciation Claim</option>
+  <option value="Custom Matter">Custom Matter</option>
+</select>
         <label>Notes</label>
         <textarea name="notes" placeholder="Add details here..."></textarea>
 
