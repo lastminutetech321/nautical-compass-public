@@ -9,12 +9,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-# Static files
 app = FastAPI(title="Nautical Compass intake")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Templates
+# IMPORTANT:
+# If your file is at templates/templates/intake_form.html then use this:
 templates = Jinja2Templates(directory="templates/templates")
+# If you move the file to templates/intake_form.html then change to:
+# templates = Jinja2Templates(directory="templates")
 
 DB_PATH = "intake.db"
 
@@ -52,6 +54,10 @@ def root():
 def favicon():
     return FileResponse("static/favicon.ico", media_type="image/x-icon")
 
+@app.get("/intake-form")
+def intake_form(request: Request):
+    return templates.TemplateResponse("intake_form.html", {"request": request})
+
 @app.get("/intake")
 def intake_info():
     return {"message": "Submit intake via POST request to /intake"}
@@ -67,18 +73,16 @@ def submit_intake(form: IntakeForm):
     conn.commit()
     conn.close()
 
-    # ---------- EMAIL NOTIFICATION ----------
+    # Email (only if env vars exist)
     try:
         email_user = os.getenv("EMAIL_USER")
         email_pass = os.getenv("EMAIL_PASS")
 
-        # Only attempt email if both env vars exist
         if email_user and email_pass:
             msg = EmailMessage()
             msg["Subject"] = "New Intake Submission"
             msg["From"] = email_user
             msg["To"] = email_user
-
             msg.set_content(
                 f"Name: {form.name}\n"
                 f"Email: {form.email}\n"
@@ -93,7 +97,7 @@ def submit_intake(form: IntakeForm):
     except Exception as e:
         print("Email failed:", e)
 
-    return {"status": "Intake stored and email attempted"}
+    return {"status": "Intake stored"}
 
 @app.get("/admin/intake")
 def view_intake():
@@ -110,11 +114,7 @@ def view_intake():
             "name": row[1],
             "email": row[2],
             "service_requested": row[3],
-            "notes": row[4]
+            "notes": row[4],
         })
 
     return {"entries": formatted}
-
-@app.get("/intake-form")
-def intake_form(request: Request):
-    return templates.TemplateResponse("intake_form.html", {"request": request})
