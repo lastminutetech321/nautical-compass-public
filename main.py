@@ -4,23 +4,31 @@ import smtplib
 from email.message import EmailMessage
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-app = FastAPI(title="Nautical Compass intake")
+# ---------------------------------------------------
+# APP INIT
+# ---------------------------------------------------
 
-# --- Paths (LOCKED) ---
+app = FastAPI(title="Nautical Compass Intake")
+
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-TEMPLATE_FILE = BASE_DIR / "templates" / "templates" / "intake_form.html"  # <-- LOCKED
+TEMPLATE_DIR = BASE_DIR / "templates"
 DB_PATH = BASE_DIR / "intake.db"
 
-# --- Static ---
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# ---------- DATABASE SETUP ----------
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
+
+# ---------------------------------------------------
+# DATABASE SETUP
+# ---------------------------------------------------
+
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -38,14 +46,20 @@ def init_db():
 
 init_db()
 
-# ---------- DATA MODEL ----------
+# ---------------------------------------------------
+# DATA MODEL
+# ---------------------------------------------------
+
 class IntakeForm(BaseModel):
     name: str
     email: str
     service_requested: str
     notes: str | None = None
 
-# ---------- ROUTES ----------
+# ---------------------------------------------------
+# ROUTES
+# ---------------------------------------------------
+
 @app.get("/")
 def root():
     return {"message": "Nautical Compass is live"}
@@ -54,14 +68,9 @@ def root():
 def favicon():
     return FileResponse(str(STATIC_DIR / "favicon.ico"), media_type="image/x-icon")
 
-@app.get("/intake-form", response_class=HTMLResponse)
-def intake_form():
-    if not TEMPLATE_FILE.exists():
-        return HTMLResponse(
-            f"Template not found: {TEMPLATE_FILE}",
-            status_code=500
-        )
-    return HTMLResponse(TEMPLATE_FILE.read_text(encoding="utf-8"))
+@app.get("/intake-form")
+def intake_form(request: Request):
+    return templates.TemplateResponse("intake_form.html", {"request": request})
 
 @app.post("/intake")
 def submit_intake(form: IntakeForm):
@@ -74,7 +83,6 @@ def submit_intake(form: IntakeForm):
     conn.commit()
     conn.close()
 
-    # Optional email (only if env vars exist)
     try:
         email_user = os.getenv("EMAIL_USER")
         email_pass = os.getenv("EMAIL_PASS")
@@ -94,6 +102,7 @@ def submit_intake(form: IntakeForm):
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
                 smtp.login(email_user, email_pass)
                 smtp.send_message(msg)
+
     except Exception as e:
         print("Email failed:", e)
 
@@ -103,11 +112,23 @@ def submit_intake(form: IntakeForm):
 def view_intake():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, service_requested, notes FROM intake ORDER BY id DESC")
+    cursor.execute("""
+        SELECT id, name, email, service_requested, notes
+        FROM intake
+        ORDER BY id DESC
+    """)
     rows = cursor.fetchall()
     conn.close()
 
-    return {"entries": [
-        {"id": r[0], "name": r[1], "email": r[2], "service_requested": r[3], "notes": r[4]}
-        for r in rows
-    ]} 
+    return {
+        "entries": [
+            {
+                "id": r[0],
+                "name": r[1],
+                "email": r[2],
+                "service_requested": r[3],
+                "notes": r[4],
+            }
+            for r in rows
+        ]
+    } 
