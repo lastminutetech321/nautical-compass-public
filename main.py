@@ -3,6 +3,8 @@ import sqlite3
 import smtplib
 from email.message import EmailMessage
 
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -54,9 +56,17 @@ def root():
 def favicon():
     return FileResponse("static/favicon.ico", media_type="image/x-icon")
 
-@app.get("/intake-form")
-def intake_form(request: Request):
-    return templates.TemplateResponse("intake_form.html", {"request": request})
+@app.get("/intake-form", response_class=HTMLResponse)
+def intake_form():
+    try:
+        html = Path("templates/templates/intake_form.html").read_text(encoding="utf-8")
+        return HTMLResponse(html)
+    except FileNotFoundError:
+        return HTMLResponse(
+            "Template not found at templates/templates/intake_form.html. "
+            "Check the filename and folder path.",
+            status_code=500
+        )
 
 @app.get("/intake")
 def intake_info():
