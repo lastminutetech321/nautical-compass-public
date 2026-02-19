@@ -15,7 +15,7 @@ app = FastAPI(title="Nautical Compass intake")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Templates
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates/templates")
 
 DB_PATH = "intake.db"
 
