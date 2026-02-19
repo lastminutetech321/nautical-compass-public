@@ -1,50 +1,133 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
-    <title>Nautical Compass Intake</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nautical Compass Intake</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:#0b1320;
+      color:#e8eefc;
+    }
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .card{
+      width:100%;
+      max-width:520px;
+      background:#121c2f;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    h1{
+      margin:0 0 14px 0;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-size:14px;
+      opacity:.9;
+    }
+    input, textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0e1728;
+      color:#e8eefc;
+      outline:none;
+      box-sizing:border-box;
+    }
+    textarea{ min-height:110px; resize:vertical; }
+    button{
+      margin-top:14px;
+      width:100%;
+      padding:12px;
+      border:0;
+      border-radius:10px;
+      background:#ff8a00;
+      color:#111;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:active{ transform: translateY(1px); }
+    #responseMessage{
+      margin-top:12px;
+      font-size:14px;
+      opacity:.95;
+      white-space:pre-wrap;
+    }
+    .sub{
+      font-size:13px;
+      opacity:.75;
+      margin-bottom:10px;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Nautical Compass Intake Form</h1>
+  <div class="wrap">
+    <div class="card">
+      <h1>Nautical Compass Intake Form</h1>
+      <div class="sub">Submit a request and it will store to the database (and email if configured).</div>
 
-    <form id="intakeForm">
-        <label>Name:</label><br>
-        <input type="text" name="name" required><br><br>
+      <form id="intakeForm">
+        <label>Name</label>
+        <input type="text" name="name" required />
 
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
+        <label>Email</label>
+        <input type="email" name="email" required />
 
-        <label>Service Requested:</label><br>
-        <input type="text" name="service_requested" required><br><br>
+        <label>Service Requested</label>
+        <input type="text" name="service_requested" required />
 
-        <label>Notes:</label><br>
-        <textarea name="notes"></textarea><br><br>
+        <label>Notes</label>
+        <textarea name="notes" placeholder="Add details here..."></textarea>
 
         <button type="submit">Submit</button>
-    </form>
+      </form>
 
-    <p id="responseMessage"></p>
+      <div id="responseMessage"></div>
+    </div>
+  </div>
 
-    <script>
-        const form = document.getElementById("intakeForm");
+  <script>
+    const form = document.getElementById("intakeForm");
 
-        form.addEventListener("submit", async function(event) {
-            event.preventDefault();
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
 
-            const response = await fetch("/intake", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
+      const response = await fetch("/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
 
-            const result = await response.json();
-            document.getElementById("responseMessage").innerText = result.status;
-        });
-    </script>
+      let text = "";
+      try {
+        const result = await response.json();
+        text = result.status || JSON.stringify(result);
+      } catch(e) {
+        text = "Submitted, but server returned non-JSON response.";
+      }
 
+      document.getElementById("responseMessage").innerText =
+        response.ok ? "✅ " + text : "❌ " + text;
+    });
+  </script>
 </body>
-</html>
+</html> 
