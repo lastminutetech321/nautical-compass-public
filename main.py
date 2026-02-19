@@ -9,9 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-app = FastAPI(title="Nautical Compass intake")
-
 # Static files
+app = FastAPI(title="Nautical Compass intake")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Templates
