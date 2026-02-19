@@ -117,4 +117,4 @@ def view_intake():
             "notes": row[4],
         })
 
-    return {"entries": formatted}
+    return {"entries": formatted} 
