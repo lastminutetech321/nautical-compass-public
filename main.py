@@ -7,8 +7,10 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import sqlite3
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-app = FastAPI()
+app = FastAPI() app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # ---------- DATABASE SETUP ----------
 
@@ -42,7 +44,11 @@ class IntakeForm(BaseModel):
 @app.get("/")
 def root():
     return {"message": "Nautical Compass is live"}
-
+    
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse("static/favicon.ico", media_type="image/x-icon")
+    
 @app.get("/intake")
 def intake_info():
     return {"message": "Submit intake via POST request to /intake"}
