@@ -16,7 +16,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # IMPORTANT:
 # If your file is at templates/templates/intake_form.html then use this:
-templates = Jinja2Templates(directory="templates/templates")
+templates = Jinja2Templates(directory="templates")
 # If you move the file to templates/intake_form.html then change to:
 # templates = Jinja2Templates(directory="templates")
 
