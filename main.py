@@ -2,15 +2,20 @@ import os
 import sqlite3
 import smtplib
 from email.message import EmailMessage
-from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-app = FastAPI(title="Nautical Compass intake")
+app = FastAPI(title="Nautical Compass")
+
+# Serve /static/*
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ✅ Because your file is: templates/intake_form.html
+templates = Jinja2Templates(directory="templates")
 
 DB_PATH = "intake.db"
 
@@ -49,27 +54,9 @@ def favicon():
     return FileResponse("static/favicon.ico", media_type="image/x-icon")
 
 @app.get("/intake-form", response_class=HTMLResponse)
-def intake_form():
-    base = Path(__file__).resolve().parent
-
-    candidates = [
-        base / "templates" / "intake_form.html",
-        base / "templates" / "templates" / "intake_form.html",
-    ]
-
-    print("=== intake_form debug ===")
-    print("BASE:", base)
-    for c in candidates:
-        print("CHECK:", c, "exists=", c.exists())
-
-    for c in candidates:
-        if c.exists():
-            return HTMLResponse(c.read_text(encoding="utf-8"))
-
-    return HTMLResponse(
-        "Template not found. Checked: " + " | ".join(str(c) for c in candidates),
-        status_code=500
-    )
+def intake_form(request: Request):
+    # ✅ This renders templates/intake_form.html
+    return templates.TemplateResponse("intake_form.html", {"request": request})
 
 @app.get("/intake")
 def intake_info():
