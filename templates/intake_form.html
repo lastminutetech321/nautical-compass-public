@@ -204,7 +204,12 @@
     const form = document.getElementById("intakeForm");
     const submitBtn = document.getElementById("submitBtn");
     const responseBox = document.getElementById("responseBox");
-    const responseMessage = document.getElementById("responseMessage");
+    const responseMessage = setStatus(
+    response.ok,
+    response.ok
+        ? "✔ Intake stored successfully"
+        : "⚠ Submission failed — check console"
+);
 
     function setStatus(ok, text){
       responseBox.querySelector(".dot").className = "dot " + (ok ? "ok" : "bad");
