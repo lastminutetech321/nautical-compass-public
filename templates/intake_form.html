@@ -1,151 +1,255 @@
- <!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nautical Compass Intake</title>
 
   <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0e1728;
+      --panel2:#0c1424;
+      --text:#e8eefc;
+      --muted:#a6b3d1;
+      --border:rgba(255,255,255,.10);
+      --shadow:rgba(0,0,0,.35);
+      --accent1:#ff9a1f;
+      --accent2:#ff7b00;
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --focus:rgba(255,154,31,.25);
+    }
+
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: Arial, Helvetica, sans-serif;
-      background:#0b1320;
-      color:#e8eefc;
-    }
-    .wrap{
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:24px;
+      padding:28px 16px;
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(255,154,31,.12), transparent 60%),
+        radial-gradient(800px 500px at 85% 30%, rgba(34,197,94,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg), #060a12);
+      color:var(--text);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     }
+
+    .wrap{width:100%; max-width:520px;}
     .card{
-      width:100%;
-      max-width:520px;
-      background:#121c2f;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      padding:22px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    } 
-   input:-webkit-autofill,
-   input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0e1728 inset !important;
-  -webkit-text-fill-color: #e8eefc !important;
-}
-    h1{
-      margin:0 0 14px 0;
-      font-size:22px;
-      letter-spacing:.2px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:22px 22px 18px;
+      box-shadow:0 18px 50px var(--shadow);
+      backdrop-filter: blur(8px);
     }
-    label{
-      display:block;
-      margin:12px 0 6px;
-      font-size:14px;
-      opacity:.9;
-    }
-    input, textarea, select{
-      width:100%;
-      padding:12px 12px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background:#0e1728;
-      color:#e8eefc;
-      outline:none;
-      box-sizing:border-box;
-    }
-    textarea{ min-height:110px; resize:vertical; }
-    button{
-  margin-top:16px;
-  width:100%;
-  padding:13px;
-  border:0;
-  border-radius:10px;
-  background:linear-gradient(135deg,#ff9a1f,#ff7b00);
-  color:#111;
-  font-weight:700;
-  cursor:pointer;
-  transition:all .2s ease;
-}
-button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 20px rgba(255,140,0,.35);
-}
-button:active{
-  transform:translateY(0px);
-}
-    #responseMessage{
-      margin-top:12px;
-      font-size:14px;
-      opacity:.95;
-      white-space:pre-wrap;
-    }
-    .sub{
-      font-size:13px;
-      opacity:.75;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
       margin-bottom:10px;
     }
+
+    .logo{
+      width:44px;height:44px;border-radius:12px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,154,31,.35), transparent 55%),
+                  linear-gradient(135deg, rgba(255,154,31,.18), rgba(34,197,94,.12));
+      border:1px solid rgba(255,255,255,.12);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;
+    }
+
+    h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .sub{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+
+    .grid{margin-top:16px;display:grid;gap:12px}
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+      letter-spacing:.2px;
+    }
+
+    input, select, textarea{
+      width:100%;
+      background: var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 12px;
+      color:var(--text);
+      outline:none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    textarea{min-height:96px; resize:vertical}
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(255,154,31,.55);
+      box-shadow:0 0 0 4px var(--focus);
+    }
+
+    /* Kill the bright autofill highlight (Safari/Chrome) */
+    input:-webkit-autofill,
+    input:-webkit-autofill:focus{
+      -webkit-box-shadow:0 0 0 1000px var(--panel) inset !important;
+      -webkit-text-fill-color: var(--text) !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+
+    .row{display:grid; gap:12px}
+    @media (min-width:520px){
+      .row{grid-template-columns:1fr 1fr}
+    }
+
+    button{
+      margin-top:12px;
+      width:100%;
+      padding:13px 14px;
+      border:0;
+      border-radius:12px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color:#121212;
+      font-weight:800;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      box-shadow: 0 10px 26px rgba(255,123,0,.20);
+    }
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(0px)}
+    button[disabled]{opacity:.6; cursor:not-allowed}
+
+    .status{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.20);
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      min-height:42px;
+    }
+    .status .dot{margin-top:2px}
+    .ok{color:var(--ok)}
+    .bad{color:var(--bad)}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px;color:var(--muted);margin-top:10px}
+    .tiny a{color:rgba(255,154,31,.95);text-decoration:none}
+    .tiny a:hover{text-decoration:underline}
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Nautical Compass Intake Form</h1>
-      <div class="sub">Submit a request and it will store to the database (and email if configured).</div>
+      <div class="brand">
+        <div class="logo">NC</div>
+        <div>
+          <h1>Nautical Compass Intake</h1>
+          <div class="sub">Submit a request. It stores to the database (and emails if configured).</div>
+        </div>
+      </div>
 
-      <form id="intakeForm">
-        <label>Name</label>
-        <input type="text" name="name" required />
+      <form id="intakeForm" class="grid">
+        <div class="row">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+        </div>
 
-        <label>Email</label>
-        <input type="email" name="email" required />
+        <div>
+          <label for="service_requested">Service Requested</label>
+          <select id="service_requested" name="service_requested" required>
+            <option value="">Select a service</option>
+            <option value="Case Analysis">Case Analysis</option>
+            <option value="Standing & Capacity Review">Standing & Capacity Review</option>
+            <option value="Arbitration Drafting">Arbitration Drafting</option>
+            <option value="Driver Depreciation Claim">Driver Depreciation Claim</option>
+            <option value="Custom Matter">Custom Matter</option>
+          </select>
+        </div>
 
-        <label>Service Requested</label>
-       
-        <select name="service_requested" required>
-  <option value="">Select a service</option>
-  <option value="Case Analysis">Case Analysis</option>
-  <option value="Standing & Capacity Review">Standing & Capacity Review</option>
-  <option value="Arbitration Drafting">Arbitration Drafting</option>
-  <option value="Driver Depreciation Claim">Driver Depreciation Claim</option>
-  <option value="Custom Matter">Custom Matter</option>
-</select>
-        <label>Notes</label>
-        <textarea name="notes" placeholder="Add details here..."></textarea>
+        <div>
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Add any key facts, dates, or what you want done."></textarea>
+        </div>
 
-        <button type="submit">Submit</button>
+        <button id="submitBtn" type="submit">Submit</button>
+
+        <div id="responseBox" class="status">
+          <div class="dot muted">●</div>
+          <div id="responseMessage" class="muted">Ready.</div>
+        </div>
+
+        <div class="tiny">
+          Admin view: <a href="/admin/intake">/admin/intake</a>
+        </div>
       </form>
-
-      <div id="responseMessage"></div>
     </div>
   </div>
 
   <script>
     const form = document.getElementById("intakeForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const responseBox = document.getElementById("responseBox");
+    const responseMessage = document.getElementById("responseMessage");
 
-    form.addEventListener("submit", async function(event) {
+    function setStatus(ok, text){
+      responseBox.querySelector(".dot").className = "dot " + (ok ? "ok" : "bad");
+      responseBox.querySelector(".dot").textContent = ok ? "●" : "●";
+      responseMessage.className = ok ? "ok" : "bad";
+      responseMessage.textContent = text;
+    }
+
+    function setNeutral(text){
+      responseBox.querySelector(".dot").className = "dot muted";
+      responseMessage.className = "muted";
+      responseMessage.textContent = text;
+    }
+
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      setNeutral("Submitting…");
+      submitBtn.disabled = true;
 
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
 
-      const response = await fetch("/intake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-
-      let text = "";
       try {
-        const result = await response.json();
-        text = result.status || JSON.stringify(result);
-      } catch(e) {
-        text = "Submitted, but server returned non-JSON response.";
-      }
+        const response = await fetch("/intake", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-      document.getElementById("responseMessage").innerText =
-        response.ok ? "✅ " + text : "❌ " + text;
+        // Defensive: server might return non-JSON if something breaks.
+        let result;
+        try { result = await response.json(); } catch(e) { result = null; }
+
+        if (response.ok) {
+          setStatus(true, (result && result.status) ? result.status : "Submitted.");
+          form.reset();
+        } else {
+          const msg = (result && (result.detail || result.status)) ? (result.detail || result.status) : "Server error.";
+          setStatus(false, msg);
+        }
+      } catch (err) {
+        setStatus(false, "Network error. Try again.");
+      } finally {
+        submitBtn.disabled = false;
+      }
     });
   </script>
 </body>
