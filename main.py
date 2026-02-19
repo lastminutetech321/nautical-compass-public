@@ -1,4 +1,4 @@
- import os
+import os
 import sqlite3
 import smtplib
 from email.message import EmailMessage
@@ -50,17 +50,24 @@ def favicon():
 
 @app.get("/intake-form", response_class=HTMLResponse)
 def intake_form():
-    possible_paths = [
-        Path("templates/intake_form.html"),
-        Path("templates/templates/intake_form.html"),
+    base = Path(__file__).resolve().parent
+
+    candidates = [
+        base / "templates" / "intake_form.html",
+        base / "templates" / "templates" / "intake_form.html",
     ]
 
-    for p in possible_paths:
-        if p.exists():
-            return HTMLResponse(p.read_text(encoding="utf-8"))
+    print("=== intake_form debug ===")
+    print("BASE:", base)
+    for c in candidates:
+        print("CHECK:", c, "exists=", c.exists())
+
+    for c in candidates:
+        if c.exists():
+            return HTMLResponse(c.read_text(encoding="utf-8"))
 
     return HTMLResponse(
-        "Template not found. Expected templates/intake_form.html OR templates/templates/intake_form.html",
+        "Template not found. Checked: " + " | ".join(str(c) for c in candidates),
         status_code=500
     )
 
