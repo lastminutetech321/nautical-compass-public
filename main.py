@@ -1,10 +1,8 @@
-import os
+ import os
 import sqlite3
 import smtplib
 from email.message import EmailMessage
 
-from fastapi.responses import HTMLResponse
-from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,11 +12,9 @@ from pydantic import BaseModel
 app = FastAPI(title="Nautical Compass intake")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# IMPORTANT:
-# If your file is at templates/templates/intake_form.html then use this:
+# Auto-handle either templates/ OR templates/templates/
 templates = Jinja2Templates(directory="templates")
-# If you move the file to templates/intake_form.html then change to:
-# templates = Jinja2Templates(directory="templates")
+templates_alt = Jinja2Templates(directory="templates/templates")
 
 DB_PATH = "intake.db"
 
@@ -56,17 +52,14 @@ def root():
 def favicon():
     return FileResponse("static/favicon.ico", media_type="image/x-icon")
 
-@app.get("/intake-form", response_class=HTMLResponse)
-def intake_form():
+@app.get("/intake-form")
+def intake_form(request: Request):
+    # Try templates/intake_form.html first
     try:
-        html = Path("templates/templates/intake_form.html").read_text(encoding="utf-8")
-        return HTMLResponse(html)
-    except FileNotFoundError:
-        return HTMLResponse(
-            "Template not found at templates/templates/intake_form.html. "
-            "Check the filename and folder path.",
-            status_code=500
-        )
+        return templates.TemplateResponse("intake_form.html", {"request": request})
+    except Exception:
+        # Fallback: templates/templates/intake_form.html
+        return templates_alt.TemplateResponse("intake_form.html", {"request": request})
 
 @app.get("/intake")
 def intake_info():
@@ -127,4 +120,4 @@ def view_intake():
             "notes": row[4],
         })
 
-    return {"entries": formatted} 
+    return {"entries": formatted}
