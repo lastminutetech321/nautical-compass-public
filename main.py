@@ -51,7 +51,7 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "").strip()
 STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID", "").strip()
 SUCCESS_URL = os.getenv("SUCCESS_URL", "").strip()
 CANCEL_URL = os.getenv("CANCEL_URL", "").strip()
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip() 
 
 # IMPORTANT: stop newline/header errors forever
 STRIPE_SECRET_KEY = STRIPE_SECRET_KEY.replace("\n", "").replace("\r", "")
