@@ -26,6 +26,21 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # App
 # --------------------
 app = FastAPI(title="Nautical Compass Intake")
+@app.get("/debug/env-check")
+def env_check():
+    keys = ["STRIPE_SECRET_KEY", "STRIPE_PRICE_ID", "STRIPE_WEBHOOK_SECRET", "SUCCESS_URL", "CANCEL_URL"]
+    report = {}
+    for k in keys:
+        v = os.getenv(k) or ""
+        bad = [(i, ch, ord(ch)) for i, ch in enumerate(v) if ord(ch) > 127]
+        report[k] = {
+            "len": len(v),
+            "has_non_ascii": len(bad) > 0,
+            "non_ascii_samples": bad[:5],  # shows position + codepoint, not the whole value
+            "starts_with": v[:10],
+            "ends_with": v[-6:],
+        }
+    return report
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
