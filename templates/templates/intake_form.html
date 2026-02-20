@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Nautical Compass Intake</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:40px auto;padding:0 16px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:18px}
+    label{display:block;margin-top:12px}
+    input,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc}
+    button{margin-top:16px;padding:10px 14px;border:0;border-radius:10px;cursor:pointer}
+    #msg{margin-top:14px;font-weight:bold}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Nautical Compass Intake</h1>
+    <form id="f">
+      <label>Name</label>
+      <input name="name" required />
+
+      <label>Email</label>
+      <input name="email" type="email" required />
+
+      <label>Service Requested</label>
+      <input name="service_requested" required />
+
+      <label>Notes</label>
+      <textarea name="notes" rows="4"></textarea>
+
+      <button type="submit">Submit</button>
+      <div id="msg"></div>
+    </form>
+
+    <hr />
+    <p>
+      <a href="/checkout">Subscribe ($25/mo)</a>
+    </p>
+  </div>
+
+  <script>
+    const f = document.getElementById("f");
+    const msg = document.getElementById("msg");
+
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "Submitting...";
+
+      const data = Object.fromEntries(new FormData(f).entries());
+
+      const r = await fetch("/intake", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+
+      if (r.ok){
+        msg.textContent = "✔ Intake stored successfully";
+      } else {
+        msg.textContent = "⚠ Submission failed";
+      }
+    });
+  </script>
+</body>
+</html> 
