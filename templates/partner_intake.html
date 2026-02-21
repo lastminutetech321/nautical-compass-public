@@ -1,76 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Partner Intake • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Manufacturer / Sponsor Intake</h1>
+  <p class="h-sub">For vendors, integrators, and sponsor-grade partners.</p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Partner Intake</h2>
-  <p class="muted">
-    For manufacturers, sponsors, regional sales reps, and strategic partners.
-    We’re building rails — you plug into the system where you fit.
-  </p>
+  {% if submitted %}
+  <div class="alert ok">
+    <strong>Submitted.</strong> Partner intake received.
+  </div>
+  {% endif %}
 
-  <form class="form" method="post" action="/partner">
-    <div>
-      <label class="label">Name</label>
-      <input name="name" required />
-    </div>
+  <form method="post" action="/partner">
+    <div class="label">Name</div>
+    <input name="name" required />
 
-    <div>
-      <label class="label">Email</label>
-      <input name="email" type="email" required />
-    </div>
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
 
-    <div>
-      <label class="label">Company</label>
-      <input name="company" required />
-    </div>
+    <div class="label">Company</div>
+    <input name="company" required />
 
-    <div>
-      <label class="label">Role</label>
-      <select name="role" required>
-        <option value="">Select…</option>
-        <option>Regional Sales</option>
-        <option>Manufacturer</option>
-        <option>Distributor</option>
-        <option>Sponsor</option>
-        <option>Integrator</option>
-        <option>Other</option>
-      </select>
-    </div>
+    <div class="label">Role</div>
+    <input name="role" required placeholder="Manufacturer / Rep / Integrator / Sponsor…" />
 
-    <div>
-      <label class="label">Product Type</label>
-      <select name="product_type" required>
-        <option value="">Select…</option>
-        <option>LED Wall / Panels</option>
-        <option>Video / Projection</option>
-        <option>Audio</option>
-        <option>Lighting</option>
-        <option>Rigging / Staging</option>
-        <option>Power / Data Infrastructure</option>
-        <option>Other</option>
-      </select>
-    </div>
+    <div class="label">Product Type</div>
+    <input name="product_type" required placeholder="LED / Audio / Lighting / Rigging / Services…" />
 
-    <div>
-      <label class="label">Website (optional)</label>
-      <input name="website" />
-    </div>
+    <div class="label">Website (optional)</div>
+    <input name="website" />
 
-    <div>
-      <label class="label">Regions (optional)</label>
-      <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
-    </div>
+    <div class="label">Regions (optional)</div>
+    <input name="regions" placeholder="DMV, Mid-Atlantic, Nationwide…" />
 
-    <div>
-      <label class="label">Message (optional)</label>
-      <textarea name="message" placeholder="What do you offer? What capacity? Any exclusivity?"></textarea>
-    </div>
+    <div class="label">Message (optional)</div>
+    <textarea name="message" placeholder="Capabilities, MOQ, lead time, territory, support…"></textarea>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-      <button class="btn btn-primary" type="submit">Submit Partner Info</button>
-      <a class="btn" href="/services">Services</a>
-      <a class="btn" href="/checkout">Subscribe</a>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/">Back Home</a>
     </div>
   </form>
 </div>
