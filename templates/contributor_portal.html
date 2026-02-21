@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Contributor Portal • Nautical Compass{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Contributor Portal</h2>
+  <p class="muted">Approved contributor access.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Profile</h3>
+      <p><strong>Name:</strong> {{ c.name }}</p>
+      <p><strong>Email:</strong> {{ c.email }}</p>
+      <p><strong>Company:</strong> {{ c.company or "—" }}</p>
+      <p><strong>Role:</strong> {{ c.role }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Capability Snapshot</h3>
+      <p><strong>Regions:</strong> {{ c.regions or "—" }}</p>
+      <p><strong>Assets:</strong> {{ c.assets or "—" }}</p>
+      <p><strong>Capacity:</strong> {{ c.capacity or "—" }}</p>
+      <p><strong>Alignment:</strong> {{ c.alignment or "—" }}</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Next Steps</h3>
+    <ol>
+      <li>We’ll confirm fit + scope (hardware, venues, logistics, sponsorship, regional expansion).</li>
+      <li>If it’s a match, you’ll receive a structured partnership pathway and requirements list.</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}
