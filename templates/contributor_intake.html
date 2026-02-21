@@ -1,60 +1,87 @@
+<!-- templates/contributor_intake.html  (FULL COMPLETED) -->
 {% extends "base.html" %}
 {% block title %}Contributor Intake • Nautical Compass{% endblock %}
+
 {% block content %}
 <div class="card">
   <h2>Contributor Intake</h2>
-  <p class="muted">For manufacturers, sponsors, operators, and builders who can fill rails (hardware, venues, logistics, capital, partners).</p>
+  <p class="muted">
+    This is for operators, builders, manufacturers, and partners who want to plug into the rails.
+    Fill this out and we’ll map you to roles, regions, and capacity clusters.
+  </p>
 
   <form class="form" method="post" action="/contributor">
-    <div class="grid2">
-      <div>
-        <label>Name</label>
-        <input name="name" required />
-      </div>
-      <div>
-        <label>Email</label>
-        <input name="email" type="email" required />
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div>
-        <label>Company</label>
-        <input name="company" placeholder="Optional" />
-      </div>
-      <div>
-        <label>Role</label>
-        <input name="role" required placeholder="Regional Sales, LED Manufacturer, Distributor, Rigging, Warehouse..." />
-      </div>
+    <div>
+      <label class="label">Name</label>
+      <input name="name" required />
     </div>
 
     <div>
-      <label>Assets</label>
-      <input name="assets" placeholder="LED walls, processors, inventory, warehouse, trucks, staging, rigging..." />
-    </div>
-
-    <div class="grid2">
-      <div>
-        <label>Regions</label>
-        <input name="regions" placeholder="DMV, NYC, ATL, UAE, National..." />
-      </div>
-      <div>
-        <label>Capacity</label>
-        <input name="capacity" placeholder="Crew size, inventory level, logistics, financing..." />
-      </div>
+      <label class="label">Email</label>
+      <input name="email" type="email" required />
     </div>
 
     <div>
-      <label>Alignment</label>
-      <textarea name="alignment" placeholder="How you align with: event center / stadium / real estate / regional expansion"></textarea>
+      <label class="label">Company (optional)</label>
+      <input name="company" placeholder="Company / brand / entity" />
     </div>
 
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/services">Back</a>
+    <div>
+      <label class="label">Primary Role</label>
+      <select name="role" required>
+        <option value="">Select…</option>
+        <option>Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
+        <option>Regional Sales / Rep</option>
+        <option>Integrator / Installer</option>
+        <option>Venue / Event Center / Stadium Ops</option>
+        <option>Real Estate / Development</option>
+        <option>Legal / Compliance / Admin Ops</option>
+        <option>Engineering / Software / Systems</option>
+        <option>Capital / Sponsor / Investor</option>
+        <option>Other</option>
+      </select>
     </div>
 
-    <p class="micro">Next step: Admin review → NDA acceptance → private contributor portal.</p>
+    <div>
+      <label class="label">Assets (optional)</label>
+      <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, IP, relationships…"></textarea>
+    </div>
+
+    <div>
+      <label class="label">Regions (optional)</label>
+      <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
+    </div>
+
+    <div>
+      <label class="label">Capacity (optional)</label>
+      <textarea name="capacity" placeholder="How much can you handle per month? Volume, lead times, limits, crew size, install capacity…"></textarea>
+    </div>
+
+    <div>
+      <label class="label">Alignment (optional)</label>
+      <textarea name="alignment" placeholder="What outcomes are you aligned with? Fair pay, premium service, rapid-response, build-outs, long-term infrastructure…"></textarea>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+      <button class="btn btn-primary" type="submit">Submit Contributor Profile</button>
+      <a class="btn" href="/services">Services</a>
+      <a class="btn" href="/checkout">Subscribe</a>
+    </div>
   </form>
+
+  <details class="dropdown" style="margin-top:16px;">
+    <summary>
+      What happens next after I submit?
+      <span class="badge">Expand</span>
+    </summary>
+    <div class="dropdown-body">
+      <ol class="muted" style="line-height:1.8; margin:0; padding-left:18px;">
+        <li>Your profile is stored in the contributor ledger.</li>
+        <li>We map you by role + region + capacity clusters (C).</li>
+        <li>We can route partner introductions through the rails (manufacturers → venues → projects).</li>
+        <li>High-fit contributors get prioritized follow-up and placement.</li>
+      </ol>
+    </div>
+  </details>
 </div>
 {% endblock %}
