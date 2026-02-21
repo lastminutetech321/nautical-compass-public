@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Submitted • Nautical Compass{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Intake submitted</h2>
+  <p class="muted">We received it. Your next step depends on the service selected and urgency.</p>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/dashboard?token={{ token }}">Back to Dashboard</a>
+    <a class="btn" href="/services">Services</a>
+  </div>
+</div>
+{% endblock %}
