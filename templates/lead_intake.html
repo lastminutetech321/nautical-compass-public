@@ -1,60 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Lead Intake • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">General Inquiry</h1>
+  <p class="h-sub">Public lead intake. Clean details = faster routing.</p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Public Lead Intake</h2>
-  <p class="muted">
-    This is open to everyone. If you want full access rails, subscribe after submitting (or first).
-  </p>
+  {% if submitted %}
+  <div class="alert ok">
+    <strong>Submitted.</strong> Your inquiry has been received.
+  </div>
+  {% endif %}
 
-  <form class="form" method="post" action="/lead">
-    <div>
-      <label class="label">Name</label>
-      <input name="name" required />
-    </div>
+  <form method="post" action="/lead">
+    <div class="label">Name</div>
+    <input name="name" required />
 
-    <div>
-      <label class="label">Email</label>
-      <input name="email" type="email" required />
-    </div>
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
 
-    <div>
-      <label class="label">Phone (optional)</label>
-      <input name="phone" />
-    </div>
+    <div class="label">Interest</div>
+    <input name="interest" required placeholder="What are you trying to solve?" />
 
-    <div>
-      <label class="label">Company (optional)</label>
-      <input name="company" />
-    </div>
+    <div class="label">Phone (optional)</div>
+    <input name="phone" />
 
-    <div>
-      <label class="label">Interest</label>
-      <select name="interest" required>
-        <option value="">Select…</option>
-        <option>Legal help / dispute</option>
-        <option>Business contracts</option>
-        <option>Arbitration package</option>
-        <option>Record requests / compliance</option>
-        <option>Other</option>
-      </select>
-    </div>
+    <div class="label">Company (optional)</div>
+    <input name="company" />
 
-    <div>
-      <label class="label">Message (optional)</label>
-      <textarea name="message" placeholder="What’s going on? Time sensitivity? Desired outcome?"></textarea>
-    </div>
+    <div class="label">Message (optional)</div>
+    <textarea name="message" placeholder="Key facts, timeline, goal…"></textarea>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-      <button class="btn btn-primary" type="submit">Submit Lead</button>
-      <a class="btn" href="/checkout">Subscribe</a>
-      <a class="btn" href="/services">Services</a>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/">Back Home</a>
     </div>
   </form>
-
-  <div class="alert" style="margin-top:14px;">
-    <strong>Note:</strong> This lead form does not grant member-only access. Subscription does.
-  </div>
 </div>
 {% endblock %}
