@@ -1,11 +1,22 @@
 import os
-from fastapi import FastAPI, Request, HTTPException, Form
+import sqlite3
+import smtplib
+import hashlib
+import secrets
+from datetime import datetime, timedelta
+from email.message import EmailMessage
+from pathlib import Path
+from typing import Optional, Tuple
+
+import stripe
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 # --------------------
-# Paths (LOCKED)
+# Paths
 # --------------------
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "nc.db"
@@ -17,17 +28,20 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # --------------------
 app = FastAPI(title="Nautical Compass Intake")
 
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+# Static + Templates (won't crash if folder exists but empty)
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # --------------------
 # Stripe Config
 # --------------------
-STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip().replace("\n", "").replace("\r", "")
-STRIPE_PRICE_ID = (os.getenv("STRIPE_PRICE_ID") or "").strip()
-SUCCESS_URL = (os.getenv("SUCCESS_URL") or "").strip()
-CANCEL_URL = (os.getenv("CANCEL_URL") or "").strip()
-STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
+STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY", "") or "").strip().replace("\n", "").replace("\r", "")
+STRIPE_PRICE_ID = (os.getenv("STRIPE_PRICE_ID", "") or "").strip()
+SUCCESS_URL = (os.getenv("SUCCESS_URL", "") or "").strip()
+CANCEL_URL = (os.getenv("CANCEL_URL", "") or "").strip()
+STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET", "") or "").strip()
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -39,12 +53,42 @@ EMAIL_USER = (os.getenv("EMAIL_USER") or "").strip()
 EMAIL_PASS = (os.getenv("EMAIL_PASS") or "").strip()
 
 # --------------------
-# DB Setup
+# Models
+# --------------------
+class IntakeForm(BaseModel):
+    name: str
+    email: str
+    service_requested: str
+    notes: Optional[str] = None
+
+class LeadForm(BaseModel):
+    name: str
+    email: str
+    interest: str
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    message: Optional[str] = None
+
+class PartnerForm(BaseModel):
+    name: str
+    email: str
+    company: str
+    role: str
+    product_type: str
+    website: Optional[str] = None
+    regions: Optional[str] = None
+    message: Optional[str] = None
+
+# --------------------
+# DB
 # --------------------
 def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+def now_iso() -> str:
+    return datetime.utcnow().isoformat()
 
 def init_db():
     conn = db()
@@ -119,9 +163,6 @@ init_db()
 # --------------------
 # Helpers
 # --------------------
-def now_iso():
-    return datetime.utcnow().isoformat()
-
 def sha256(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
@@ -140,7 +181,7 @@ def issue_magic_link(email: str, hours: int = 24) -> str:
     conn.close()
     return token
 
-def validate_magic_link(token: str) -> str | None:
+def validate_magic_link(token: str) -> Optional[str]:
     token_hash = sha256(token)
     conn = db()
     cur = conn.cursor()
@@ -168,35 +209,8 @@ def is_active_subscriber(email: str) -> bool:
     conn.close()
     return bool(row) and row["status"] == "active"
 
-def upsert_subscriber_active(email: str, customer_id: str | None, subscription_id: str | None):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
-        VALUES (?, ?, ?, 'active', ?, ?)
-        ON CONFLICT(email) DO UPDATE SET
-          stripe_customer_id=excluded.stripe_customer_id,
-          stripe_subscription_id=excluded.stripe_subscription_id,
-          status='active',
-          updated_at=excluded.updated_at
-    """, (email, str(customer_id or ""), str(subscription_id or ""), now_iso(), now_iso()))
-    conn.commit()
-    conn.close()
-
-def cancel_subscriber_by_subscription(subscription_id: str | None):
-    if not subscription_id:
-        return
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE subscribers
-        SET status='canceled', updated_at=?
-        WHERE stripe_subscription_id=?
-    """, (now_iso(), str(subscription_id)))
-    conn.commit()
-    conn.close()
-
 def send_email(to_email: str, subject: str, body: str):
+    # Optional; never crash the app if email isn't configured
     if not (EMAIL_USER and EMAIL_PASS):
         return
     try:
@@ -212,7 +226,7 @@ def send_email(to_email: str, subject: str, body: str):
     except Exception as e:
         print("Email failed:", e)
 
-def require_env():
+def require_env_for_checkout() -> Optional[JSONResponse]:
     missing = []
     if not STRIPE_SECRET_KEY:
         missing.append("STRIPE_SECRET_KEY")
@@ -222,12 +236,11 @@ def require_env():
         missing.append("SUCCESS_URL")
     if not CANCEL_URL:
         missing.append("CANCEL_URL")
-
     if missing:
         return JSONResponse({"error": "Missing environment variables", "missing": missing}, status_code=500)
     return None
 
-def require_subscriber_token(token: str | None):
+def require_subscriber_token(token: Optional[str]) -> Tuple[Optional[str], Optional[HTMLResponse]]:
     if not token:
         return None, HTMLResponse("Missing token.", status_code=401)
 
@@ -240,105 +253,73 @@ def require_subscriber_token(token: str | None):
 
     return email, None
 
+def template_or_fallback(request: Request, name: str, ctx: dict) -> HTMLResponse:
+    # If a template name is wrong/missing, show a clean message instead of crashing the app
+    try:
+        return templates.TemplateResponse(name, ctx)
+    except Exception as e:
+        print(f"Template render failed: {name} -> {e}")
+        return HTMLResponse(
+            f"<h1>Nautical Compass</h1><p>Template error: {name}</p><p>{str(e)}</p>",
+            status_code=200
+        )
+
 # --------------------
 # Public Pages
 # --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return template_or_fallback(request, "index.html", {"request": request})
 
 @app.get("/services", response_class=HTMLResponse)
 def services(request: Request):
-    return templates.TemplateResponse("services.html", {"request": request})
+    return template_or_fallback(request, "services.html", {"request": request})
 
 @app.get("/lead", response_class=HTMLResponse)
 def lead_page(request: Request):
-    return templates.TemplateResponse("lead_intake.html", {"request": request})
+    return template_or_fallback(request, "lead_intake.html", {"request": request})
 
 @app.post("/lead")
-def submit_lead(
-    request: Request,
-    name: str = Form(...),
-    email: str = Form(...),
-    interest: str = Form(...),
-    phone: str | None = Form(None),
-    company: str | None = Form(None),
-    message: str | None = Form(None),
-):
+def submit_lead(form: LeadForm):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO leads (name, email, phone, company, interest, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, phone, company, interest, message, now_iso()))
+    """, (form.name, form.email, form.phone, form.company, form.interest, form.message, now_iso()))
     conn.commit()
     conn.close()
-
-    # Optional internal notify
-    if EMAIL_USER and EMAIL_PASS:
-        send_email(
-            EMAIL_USER,
-            "New Public Lead",
-            f"Name: {name}\nEmail: {email}\nPhone: {phone}\nCompany: {company}\nInterest: {interest}\nMessage: {message}"
-        )
-
-    return RedirectResponse(url="/services", status_code=303)
+    return {"status": "Lead received"}
 
 @app.get("/partner", response_class=HTMLResponse)
 def partner_page(request: Request):
-    return templates.TemplateResponse("partner_intake.html", {"request": request})
+    return template_or_fallback(request, "partner_intake.html", {"request": request})
 
 @app.post("/partner")
-def submit_partner(
-    request: Request,
-    name: str = Form(...),
-    email: str = Form(...),
-    company: str = Form(...),
-    role: str = Form(...),
-    product_type: str = Form(...),
-    website: str | None = Form(None),
-    regions: str | None = Form(None),
-    message: str | None = Form(None),
-):
+def submit_partner(form: PartnerForm):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
+    """, (form.name, form.email, form.company, form.role, form.product_type, form.website, form.regions, form.message, now_iso()))
     conn.commit()
     conn.close()
-
-    # Optional internal notify
-    if EMAIL_USER and EMAIL_PASS:
-        send_email(
-            EMAIL_USER,
-            "New Partner / Manufacturer Submission",
-            f"Name: {name}\nEmail: {email}\nCompany: {company}\nRole: {role}\nProduct: {product_type}\nWebsite: {website}\nRegions: {regions}\nMessage: {message}"
-        )
-
-    return RedirectResponse(url="/services", status_code=303)
+    return {"status": "Partner submission received"}
 
 # --------------------
-# Subscriber Intake (Gated)
+# Subscriber Intake (token protected)
 # --------------------
 @app.get("/intake-form", response_class=HTMLResponse)
-def intake_form(request: Request, token: str | None = None):
+def intake_form(request: Request, token: Optional[str] = None):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token})
+    return template_or_fallback(request, "intake_form.html", {"request": request, "email": email, "token": token})
 
 @app.post("/intake")
-def submit_intake(
-    request: Request,
-    token: str | None = None,
-    name: str = Form(...),
-    email: str = Form(...),
-    service_requested: str = Form(...),
-    notes: str | None = Form(None),
-):
-    subscriber_email, err = require_subscriber_token(token)
+def submit_intake(form: IntakeForm, token: Optional[str] = None):
+    email, err = require_subscriber_token(token)
     if err:
         return err
 
@@ -347,7 +328,7 @@ def submit_intake(
     cur.execute("""
         INSERT INTO intake (name, email, service_requested, notes, created_at)
         VALUES (?, ?, ?, ?, ?)
-    """, (name, email, service_requested, notes, now_iso()))
+    """, (form.name, form.email, form.service_requested, form.notes, now_iso()))
     conn.commit()
     conn.close()
 
@@ -356,11 +337,10 @@ def submit_intake(
         send_email(
             EMAIL_USER,
             "New Subscriber Intake Submission",
-            f"Subscriber: {subscriber_email}\n\nName: {name}\nEmail: {email}\nService: {service_requested}\nNotes: {notes}"
+            f"Subscriber: {email}\n\nName: {form.name}\nEmail: {form.email}\nService: {form.service_requested}\nNotes: {form.notes}"
         )
 
-    # Send them back to dashboard with token
-    return RedirectResponse(url=f"/dashboard?token={token}", status_code=303)
+    return {"status": "Intake stored successfully"}
 
 @app.get("/admin/intake")
 def view_intake():
@@ -376,7 +356,7 @@ def view_intake():
 # --------------------
 @app.get("/checkout")
 def checkout():
-    err = require_env()
+    err = require_env_for_checkout()
     if err:
         return err
 
@@ -392,44 +372,87 @@ def checkout():
         return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.get("/success", response_class=HTMLResponse)
-def success(request: Request, session_id: str | None = None):
+def success(request: Request, session_id: Optional[str] = None):
     """
-    Success page ALSO generates a token when possible so you are not dependent on email setup.
+    Always renders cleanly.
+    If Stripe is configured + paid session_id is provided, it will:
+      - mark subscriber active
+      - generate token
+      - show token link on page (and email it if configured)
     """
     token = None
     email = None
+    dashboard_link = None
 
+    # Render even if Stripe not configured
     if session_id and STRIPE_SECRET_KEY:
         try:
-            s = stripe.checkout.Session.retrieve(session_id)
-            # Stripe typically uses payment_status = 'paid' for completed payments
-            if s and (s.get("payment_status") == "paid" or s.get("status") == "complete"):
-                details = s.get("customer_details") or {}
-                email = details.get("email")
+            s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
 
-                customer_id = s.get("customer")
-                subscription_id = s.get("subscription")
+            # Stripe signals:
+            # - s.status == "complete"
+            # - s.payment_status == "paid"
+            status = getattr(s, "status", None) if not isinstance(s, dict) else s.get("status")
+            pay_status = getattr(s, "payment_status", None) if not isinstance(s, dict) else s.get("payment_status")
 
-                if email:
-                    upsert_subscriber_active(email, customer_id, subscription_id)
-                    token = issue_magic_link(email, hours=24)
+            # Customer email
+            customer_details = getattr(s, "customer_details", None) if not isinstance(s, dict) else s.get("customer_details")
+            if not customer_details:
+                customer_details = {}
 
-                    # Email it too (if configured)
-                    if EMAIL_USER and EMAIL_PASS:
-                        app_base = str(request.base_url).rstrip("/")
-                        link = f"{app_base}/dashboard?token={token}"
-                        send_email(email, "Your Nautical Compass Access Link", f"Your access link (valid 24 hours):\n{link}\n")
+            email = customer_details.get("email")
+
+            # IDs (handles expanded or not)
+            customer_obj = getattr(s, "customer", None) if not isinstance(s, dict) else s.get("customer")
+            subscription_obj = getattr(s, "subscription", None) if not isinstance(s, dict) else s.get("subscription")
+
+            customer_id = customer_obj.get("id") if isinstance(customer_obj, dict) else str(customer_obj) if customer_obj else None
+            subscription_id = subscription_obj.get("id") if isinstance(subscription_obj, dict) else str(subscription_obj) if subscription_obj else None
+
+            is_paid = (pay_status == "paid") or (status == "complete")
+
+            if is_paid and email:
+                conn = db()
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
+                    VALUES (?, ?, ?, 'active', ?, ?)
+                    ON CONFLICT(email) DO UPDATE SET
+                      stripe_customer_id=excluded.stripe_customer_id,
+                      stripe_subscription_id=excluded.stripe_subscription_id,
+                      status='active',
+                      updated_at=excluded.updated_at
+                """, (email, customer_id, subscription_id, now_iso(), now_iso()))
+                conn.commit()
+                conn.close()
+
+                token = issue_magic_link(email, hours=24)
+                app_base = str(request.base_url).rstrip("/")
+                dashboard_link = f"{app_base}/dashboard?token={token}"
+
+                # Email the subscriber (optional)
+                if EMAIL_USER and EMAIL_PASS:
+                    send_email(
+                        email,
+                        "Your Nautical Compass Access Link",
+                        f"Welcome.\n\nYour access link (valid 24 hours):\n{dashboard_link}\n"
+                    )
         except Exception as e:
+            # Never fail the page render
             print("Success page Stripe fetch failed:", e)
 
-    return templates.TemplateResponse("success.html", {"request": request, "token": token, "email": email})
+    return template_or_fallback(
+        request,
+        "success.html",
+        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link}
+    )
 
 @app.get("/cancel", response_class=HTMLResponse)
 def cancel(request: Request):
-    return templates.TemplateResponse("cancel.html", {"request": request})
+    return template_or_fallback(request, "cancel.html", {"request": request})
 
 # --------------------
-# Stripe Webhook (Grants Access)
+# Stripe Webhook (GRANTS ACCESS)
 # --------------------
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
@@ -444,24 +467,53 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Webhook signature error: {e}")
 
-    if event["type"] == "checkout.session.completed":
+    etype = event.get("type")
+
+    if etype == "checkout.session.completed":
         session = event["data"]["object"]
-        customer_id = session.get("customer")
         customer_email = (session.get("customer_details") or {}).get("email")
+        customer_id = session.get("customer")
         subscription_id = session.get("subscription")
 
         if customer_email:
-            upsert_subscriber_active(customer_email, customer_id, subscription_id)
+            conn = db()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
+                VALUES (?, ?, ?, 'active', ?, ?)
+                ON CONFLICT(email) DO UPDATE SET
+                  stripe_customer_id=excluded.stripe_customer_id,
+                  stripe_subscription_id=excluded.stripe_subscription_id,
+                  status='active',
+                  updated_at=excluded.updated_at
+            """, (customer_email, str(customer_id), str(subscription_id), now_iso(), now_iso()))
+            conn.commit()
+            conn.close()
+
             token = issue_magic_link(customer_email, hours=24)
+            app_base = str(request.base_url).rstrip("/")
+            link = f"{app_base}/dashboard?token={token}"
 
             if EMAIL_USER and EMAIL_PASS:
-                app_base = str(request.base_url).rstrip("/")
-                link = f"{app_base}/dashboard?token={token}"
-                send_email(customer_email, "Your Nautical Compass Access Link", f"Your access link (valid 24 hours):\n{link}\n")
+                send_email(
+                    customer_email,
+                    "Your Nautical Compass Access Link",
+                    f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
+                )
 
-    if event["type"] == "customer.subscription.deleted":
+    elif etype == "customer.subscription.deleted":
         sub = event["data"]["object"]
-        cancel_subscriber_by_subscription(sub.get("id"))
+        sub_id = sub.get("id")
+        if sub_id:
+            conn = db()
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE subscribers
+                SET status='canceled', updated_at=?
+                WHERE stripe_subscription_id=?
+            """, (now_iso(), str(sub_id)))
+            conn.commit()
+            conn.close()
 
     return {"received": True}
 
@@ -469,11 +521,11 @@ async def stripe_webhook(request: Request):
 # Dashboard (Magic Link Protected)
 # --------------------
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, token: str | None = None):
+def dashboard(request: Request, token: Optional[str] = None):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token})
+    return template_or_fallback(request, "dashboard.html", {"request": request, "email": email, "token": token})
 
 # --------------------
 # Favicon helper
