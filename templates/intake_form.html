@@ -1,121 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nautical Compass Intake</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#0b1220; color:#e5e7eb; padding:24px; }
-    .card { max-width:640px; margin:0 auto; background:rgba(17,24,39,.85); border:1px solid rgba(255,255,255,.08);
-            border-radius:16px; padding:18px 18px 22px; box-shadow:0 18px 40px rgba(0,0,0,.35); }
-    .hdr { display:flex; gap:12px; align-items:center; margin-bottom:14px; }
-    .logo { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#0f172a,#1f2937);
-            display:flex; align-items:center; justify-content:center; font-weight:700; border:1px solid rgba(255,255,255,.1); }
-    h1 { font-size:20px; margin:0; }
-    .sub { color:#9ca3af; font-size:13px; margin-top:2px; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    label { font-size:12px; color:#cbd5e1; display:block; margin:10px 0 6px; }
-    input, select, textarea {
-      width:100%; padding:12px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.10); background:#0f172a; color:#e5e7eb;
-      outline:none;
-    }
-    textarea { min-height:96px; resize:vertical; }
-    .btn {
-      margin-top:14px; width:100%; padding:12px 14px; border-radius:12px; border:none;
-      background:#f59e0b; color:#111827; font-weight:700; cursor:pointer;
-    }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-    #responseBox { margin-top:12px; font-size:13px; }
-    .footer { margin-top:14px; color:#94a3b8; font-size:12px; }
-    a { color:#f59e0b; }
-    @media (max-width: 680px){ .grid{ grid-template-columns:1fr; } }
-  </style>
-</head>
+{% extends "base.html" %}
+{% block title %}Subscriber Intake • Nautical Compass{% endblock %}
 
-<body>
-  <div class="card">
-    <div class="hdr">
-      <div class="logo">NC</div>
-      <div>
-        <h1>Nautical Compass Intake</h1>
-        <div class="sub">Submit a request. It stores to the database (and emails if configured).</div>
-      </div>
+{% block content %}
+<div class="card">
+  <h2>Subscriber Intake</h2>
+  <p class="muted">Member-only intake. Authorized email: <strong>{{ email }}</strong></p>
+
+  <form class="form" method="post" action="/intake?token={{ token }}">
+    <div>
+      <label>Name</label>
+      <input name="name" required />
     </div>
 
-    <form id="intakeForm">
-      <div class="grid">
-        <div>
-          <label>Name</label>
-          <input type="text" name="name" required />
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" name="email" required />
-        </div>
-      </div>
+    <div>
+      <label>Email</label>
+      <input name="email" type="email" required />
+    </div>
 
+    <div>
       <label>Service Requested</label>
       <select name="service_requested" required>
-        <option value="" selected disabled>Select a service</option>
-        <option>Legal Intake</option>
-        <option>Contract Review</option>
-        <option>Demand Letter</option>
-        <option>Arbitration Packet</option>
-        <option>Other</option>
+        <option value="">Select a service…</option>
+        <option>Legal Intake Strategy</option>
+        <option>Contract Review & Risk Mapping</option>
+        <option>Demand Letter Drafting</option>
+        <option>Arbitration Package Assembly</option>
+        <option>Record Request Packet (CPRA/FOIA-style)</option>
+        <option>Dispute Timeline & Evidence Organization</option>
+        <option>Complaint Framing & Narrative Structuring</option>
+        <option>Platform / Marketplace Dispute Structuring</option>
+        <option>Billing / Payments Dispute Structuring</option>
+        <option>Other (explain in notes)</option>
       </select>
-
-      <label>Notes</label>
-      <textarea name="notes" placeholder="Add any key facts, dates, or what you want done."></textarea>
-
-      <button id="submitBtn" class="btn" type="submit">Submit</button>
-      <div id="responseBox">Ready.</div>
-    </form>
-
-    <div class="footer">
-      Admin view: <a href="/admin/intake">/admin/intake</a>
     </div>
-  </div>
 
-  <script>
-    const form = document.getElementById("intakeForm");
-    const submitBtn = document.getElementById("submitBtn");
-    const responseBox = document.getElementById("responseBox");
+    <div>
+      <label>Notes (optional)</label>
+      <textarea name="notes" placeholder="Key facts, deadlines, what happened, what you want done…"></textarea>
+    </div>
 
-    function setStatus(ok, text) {
-      responseBox.innerText = text;
-      responseBox.style.color = ok ? "#22c55e" : "#ef4444";
-    }
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Submitting...";
-
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      try {
-        const response = await fetch("/intake", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-
-        setStatus(
-          response.ok,
-          response.ok ? "✔ Intake stored successfully" : "⚠ Submission failed — check console"
-        );
-
-        if (response.ok) form.reset();
-      } catch (e) {
-        setStatus(false, "⚠ Network error — try again.");
-      }
-
-      submitBtn.disabled = false;
-      submitBtn.innerText = "Submit";
-    });
-  </script>
-</body>
-</html> 
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit Intake</button>
+      <a class="btn" href="/dashboard?token={{ token }}">Back to Dashboard</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
