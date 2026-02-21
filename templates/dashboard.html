@@ -2,28 +2,45 @@
 {% block title %}Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="grid">
-  <div class="card">
-    <h2>Dashboard</h2>
-    <p class="muted">Signed in as <strong>{{ email }}</strong></p>
+<div class="grid grid-2">
 
-    <div class="btnrow">
+  <div class="card">
+    <h2>Member Dashboard</h2>
+    <p class="muted">
+      Signed in as <strong>{{ email }}</strong>
+    </p>
+
+    <div class="alert ok">
+      Access is active. Your token is valid for member routes.
+    </div>
+
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
       <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
-      <a class="btn" href="/services">View Services</a>
-    </div>
-
-    <div class="alert ok" style="margin-top:12px;">
-      Your access token is valid for a limited time. Bookmark this dashboard link while active.
+      <a class="btn" href="/services">Services</a>
     </div>
   </div>
 
   <div class="card">
-    <h2>Next steps</h2>
-    <ul class="list">
-      <li>Use Subscriber Intake for any work you want structured and tracked.</li>
-      <li>Use General Inquiry for quick questions or pre-subscription contact.</li>
-      <li>Manufacturer/Sponsor lane is for vendors and strategic partners.</li>
-    </ul>
+    <h2>Next Steps</h2>
+    <p class="muted">
+      The fastest path is: Intake → structured timeline → exhibit pack → execution path.
+    </p>
+
+    <details class="dropdown">
+      <summary>
+        What happens after Intake?
+        <span class="badge">Expand</span>
+      </summary>
+      <div class="dropdown-body">
+        <ol class="muted" style="line-height:1.8; margin:0; padding-left:18px;">
+          <li>We convert your facts into a clean timeline.</li>
+          <li>We identify claims/issues + required proof.</li>
+          <li>We organize exhibits and missing gaps.</li>
+          <li>We generate the correct action packet (demand/arbitration/records/etc.).</li>
+        </ol>
+      </div>
+    </details>
   </div>
+
 </div>
 {% endblock %}
