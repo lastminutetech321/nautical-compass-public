@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Submitted • Nautical Compass{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Submission received</h2>
+  <p>Thank you{% if name %}, <strong>{{ name }}</strong>{% endif %}. Your contributor profile is now in review.</p>
+  <p class="muted">If approved, you’ll receive an NDA acceptance link to unlock the private contributor portal.</p>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/services">View Services</a>
+    <a class="btn" href="/">Home</a>
+  </div>
+</div>
+{% endblock %}
