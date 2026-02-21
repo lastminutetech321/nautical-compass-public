@@ -1,17 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Subscriber Dashboard</h1>
+{% extends "base.html" %}
+{% block title %}Dashboard • Nautical Compass{% endblock %}
 
-    <p>Welcome {{ email }}</p>
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Dashboard</h2>
+    <p class="muted">Signed in as <strong>{{ email }}</strong></p>
 
-    <hr>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
+      <a class="btn" href="/services">View Services</a>
+    </div>
 
-    <a href="/intake-form?token={{ token }}">Submit New Intake</a><br><br>
-    <a href="/services">View Services</a><br><br>
-    <a href="/">Home</a>
-</body>
-</html>
+    <div class="alert ok" style="margin-top:12px;">
+      Your access token is valid for a limited time. Bookmark this dashboard link while active.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Next steps</h2>
+    <ul class="list">
+      <li>Use Subscriber Intake for any work you want structured and tracked.</li>
+      <li>Use General Inquiry for quick questions or pre-subscription contact.</li>
+      <li>Manufacturer/Sponsor lane is for vendors and strategic partners.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
