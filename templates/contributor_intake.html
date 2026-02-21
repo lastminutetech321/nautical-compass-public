@@ -1,219 +1,319 @@
-# --------------------
-# Contributor Intake (Staff/Sales + Fit Extract)
-# --------------------
+{% extends "base.html" %}
+{% block title %}Contributor Intake • Nautical Compass{% endblock %}
 
-from typing import Optional
-from pydantic import BaseModel, EmailStr
-from fastapi.responses import HTMLResponse, JSONResponse
+{% block content %}
+<div class="card">
+  <h2>Contributor Intake</h2>
+  <p class="muted">
+    This intake maps you into a rail: Staff, Sales, Builder/Ops, Partner/Vendor, Hardware/Supply, Capital/Sponsor.
+    No wrong answers — the system routes you where you’ll win and where we move fastest.
+  </p>
 
-class ContributorForm(BaseModel):
-    name: str
-    email: EmailStr
-    phone: Optional[str] = None
-    company: Optional[str] = None
-    website: Optional[str] = None
+  <!-- Quick Fit -->
+  <details class="dropdown" open>
+    <summary>
+      Quick Fit (60 seconds)
+      <span class="badge">recommended</span>
+    </summary>
+    <div class="dropdown-body">
+      <div class="grid">
+        <div>
+          <div class="label">Contribution Track (what you’re here for)</div>
+          <select id="contribution_track" required>
+            <option value="">Select…</option>
+            <option value="ecosystem_staff">Ecosystem Staff (application-style)</option>
+            <option value="sales_growth">Sales / Growth (commission / residual)</option>
+            <option value="builder_operator">Builder / Operator (execution)</option>
+            <option value="partner_vendor">Partner / Vendor (products/services)</option>
+            <option value="hardware_supply">Hardware / Manufacturing / Supply</option>
+            <option value="capital_sponsor">Capital / Sponsor</option>
+            <option value="advisor_specialist">Advisor / Specialist</option>
+            <option value="not_sure">Not sure — route me</option>
+          </select>
+        </div>
 
-    # General role
-    primary_role: str
+        <div>
+          <div class="label">Director / Lane Owner (routing)</div>
+          <select id="director_owner" required>
+            <option value="Deuce" selected>Deuce (Director)</option>
+            <option value="Founder">Founder</option>
+            <option value="AutoRoute">Auto-route (system decides)</option>
+          </select>
+        </div>
+      </div>
 
-    # New: Staff/Sales application-style routing
-    contribution_track: str
-    position_interest: Optional[str] = None
-    comp_plan: Optional[str] = None
-    director_owner: Optional[str] = "Deuce"
+      <div class="grid" style="margin-top:12px;">
+        <div>
+          <div class="label">Position (if you want Staff or Sales)</div>
+          <select id="position_interest">
+            <option value="">Select…</option>
 
-    # Existing optional fields (kept simple)
-    assets: Optional[str] = None
-    regions: Optional[str] = None
-    capacity: Optional[str] = None
-    alignment: Optional[str] = None
-    message: Optional[str] = None
+            <optgroup label="Ecosystem Staff (application-style)">
+              <option value="intake_specialist">Intake Specialist (forms → clean case packet)</option>
+              <option value="client_success">Client Success / Member Support</option>
+              <option value="operations_coordinator">Operations Coordinator (follow-ups + routing)</option>
+              <option value="project_coordinator">Project Coordinator (deadlines + deliverables)</option>
+              <option value="research_assistant">Research Assistant (citations + sourcing)</option>
+              <option value="content_producer">Content / Podcast Producer</option>
+              <option value="community_builder">Community Builder / Member Onboarding</option>
+            </optgroup>
 
-    # Fit Extract (8)
-    fit_access: Optional[str] = None
-    fit_build_goal: Optional[str] = None
-    fit_opportunity: Optional[str] = None
-    fit_authority: Optional[str] = None
-    fit_lane: Optional[str] = None
-    fit_no_conditions: Optional[str] = None
-    fit_visibility: Optional[str] = None
-    fit_why_you: Optional[str] = None
+            <optgroup label="Sales / Growth (commission / residual)">
+              <option value="sales_rep">Sales Rep (subs + pipeline)</option>
+              <option value="closer">Closer (qualified calls)</option>
+              <option value="affiliate_partner_referrals">Affiliate / Referral Partner</option>
+              <option value="outreach_setter">Outreach / Appointment Setter</option>
+              <option value="partnerships_bd">Partnerships / Business Development</option>
+            </optgroup>
 
+            <optgroup label="Builder / Operator">
+              <option value="systems_operator">Systems Operator (process + automation)</option>
+              <option value="product_ops">Product Ops (features + rollout)</option>
+              <option value="qa_testing">QA / Testing (break it, fix it)</option>
+            </optgroup>
 
-def init_contributors_table():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS contributors (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            company TEXT,
-            website TEXT,
+            <optgroup label="Other">
+              <option value="other">Other (explain below)</option>
+            </optgroup>
+          </select>
 
-            primary_role TEXT NOT NULL,
+          <div class="muted" style="font-size:12px;margin-top:6px;">
+            If you choose Staff/Sales, this behaves like a traditional application lane — but faster.
+          </div>
+        </div>
 
-            -- New routing fields
-            contribution_track TEXT NOT NULL,
-            position_interest TEXT,
-            comp_plan TEXT,
-            director_owner TEXT,
+        <div>
+          <div class="label">Comp Plan Preference</div>
+          <select id="comp_plan">
+            <option value="">Select…</option>
+            <option value="staff_residual_20_under_deuce">Staff under Deuce: 20% residual + Deuce override</option>
+            <option value="sales_commission_residual">Sales: commission + residual</option>
+            <option value="contractor_hourly">Contractor: hourly / project rate</option>
+            <option value="revshare">Revenue share</option>
+            <option value="equity_upside">Equity / upside</option>
+            <option value="mixed">Mixed</option>
+            <option value="not_sure">Not sure</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </details>
 
-            assets TEXT,
-            regions TEXT,
-            capacity TEXT,
-            alignment TEXT,
-            message TEXT,
+  <form class="form" id="contribForm">
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="name" required />
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="email" type="email" required />
+      </div>
+    </div>
 
-            -- Fit Extract (8)
-            fit_access TEXT,
-            fit_build_goal TEXT,
-            fit_opportunity TEXT,
-            fit_authority TEXT,
-            fit_lane TEXT,
-            fit_no_conditions TEXT,
-            fit_visibility TEXT,
-            fit_why_you TEXT,
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Phone (optional)</div>
+        <input name="phone" />
+      </div>
+      <div>
+        <div class="label">Company (optional)</div>
+        <input name="company" />
+      </div>
+    </div>
 
-            score INTEGER NOT NULL DEFAULT 0,
-            rail TEXT NOT NULL DEFAULT 'triage',
-            status TEXT NOT NULL DEFAULT 'new',
-            created_at TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
+    <div>
+      <div class="label">Website (optional)</div>
+      <input name="website" placeholder="https://..." />
+    </div>
 
-init_contributors_table()
+    <div>
+      <div class="label">Primary Role (general)</div>
+      <select name="primary_role" required>
+        <option value="">Select…</option>
 
+        <optgroup label="Ecosystem / Staff / Sales">
+          <option>Ecosystem Operator / Staff</option>
+          <option>Sales Representative</option>
+          <option>Closer</option>
+          <option>Intake Specialist</option>
+          <option>Client Success / Support</option>
+          <option>Operations Coordinator</option>
+          <option>Partnerships / Business Development</option>
+        </optgroup>
 
-def _score_contributor(f: ContributorForm) -> int:
-    score = 0
+        <optgroup label="Industry / Capacity">
+          <option>Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
+          <option>Regional Sales / Rep</option>
+          <option>Integrator / Installer</option>
+          <option>Venue / Event Center / Stadium Ops</option>
+          <option>Real Estate / Development</option>
+          <option>Legal / Compliance / Admin Ops</option>
+          <option>Engineering / Software / Systems</option>
+          <option>Capital / Sponsor / Investor</option>
+        </optgroup>
 
-    track = (f.contribution_track or "").strip().lower()
-    track_weights = {
-        "ecosystem_staff": 18,
-        "sales_growth": 18,
-        "builder_operator": 16,
-        "partner_vendor": 14,
-        "hardware_supply": 16,
-        "capital_sponsor": 14,
-        "advisor_specialist": 10,
-        "not_sure": 8
+        <optgroup label="Other">
+          <option>Other</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <details class="dropdown">
+      <summary>
+        Assets + Capability (optional)
+        <span class="badge">boosts routing</span>
+      </summary>
+      <div class="dropdown-body">
+        <div class="grid">
+          <div>
+            <div class="label">Assets</div>
+            <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, relationships…"></textarea>
+          </div>
+          <div>
+            <div class="label">Capacity</div>
+            <textarea name="capacity" placeholder="How much can you handle per month? Crew size, lead times, install capacity…"></textarea>
+          </div>
+          <div>
+            <div class="label">Regions (optional)</div>
+            <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
+          </div>
+          <div>
+            <div class="label">Alignment (optional)</div>
+            <textarea name="alignment" placeholder="Why this mission matters to you, what you want to build, how you want to contribute…"></textarea>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="dropdown">
+      <summary>
+        Fit Extract (8 questions)
+        <span class="badge">routes you fast</span>
+      </summary>
+      <div class="dropdown-body">
+        <div class="grid">
+          <div>
+            <div class="label">1) What do you have access to that most people don’t?</div>
+            <textarea name="fit_access"></textarea>
+          </div>
+          <div>
+            <div class="label">2) What are you trying to build in the next 12 months?</div>
+            <textarea name="fit_build_goal"></textarea>
+          </div>
+          <div>
+            <div class="label">3) What opportunities do you want from the ecosystem?</div>
+            <textarea name="fit_opportunity"></textarea>
+          </div>
+          <div>
+            <div class="label">4) Decision power (budget/approvals/resources)?</div>
+            <select name="fit_authority">
+              <option value="">Select…</option>
+              <option value="owner_exec">Owner / Executive</option>
+              <option value="manager_influence">Manager / Influence</option>
+              <option value="partial">Partial</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">5) Strongest lane right now</div>
+            <select name="fit_lane">
+              <option value="">Select…</option>
+              <option value="sales">Sales / Growth</option>
+              <option value="ops">Operations / Execution</option>
+              <option value="hardware">Hardware / Supply</option>
+              <option value="legal">Legal / Compliance</option>
+              <option value="finance">Finance / Capital</option>
+              <option value="realestate">Real estate / venue</option>
+              <option value="tech">Software / Systems</option>
+              <option value="creative">Creative / Content</option>
+              <option value="unsure">Not sure</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">6) What would make this a “no” for you?</div>
+            <textarea name="fit_no_conditions"></textarea>
+          </div>
+          <div>
+            <div class="label">7) Visibility preference</div>
+            <select name="fit_visibility">
+              <option value="">Select…</option>
+              <option value="public">Public / credited</option>
+              <option value="quiet">Quiet / behind scenes</option>
+              <option value="either">Either</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">8) One sentence: why you?</div>
+            <input name="fit_why_you" />
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div>
+      <div class="label">Message (optional)</div>
+      <textarea name="message" placeholder="Anything else we should know?"></textarea>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" id="submitBtn" type="submit">Submit Contributor Intake</button>
+    </div>
+
+    <div id="responseBox" class="alert" style="display:none;"></div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("contribForm");
+  const responseBox = document.getElementById("responseBox");
+  const btn = document.getElementById("submitBtn");
+
+  function showStatus(ok, msg){
+    responseBox.style.display = "block";
+    responseBox.className = "alert " + (ok ? "ok" : "bad");
+    responseBox.innerText = msg;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.innerText = "Submitting…";
+
+    try{
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      data.contribution_track = document.getElementById("contribution_track").value || "";
+      data.position_interest = document.getElementById("position_interest").value || "";
+      data.comp_plan = document.getElementById("comp_plan").value || "";
+      data.director_owner = document.getElementById("director_owner").value || "Deuce";
+
+      if(!data.contribution_track){
+        showStatus(false, "Please select your Contribution Track.");
+        btn.disabled = false;
+        btn.innerText = "Submit Contributor Intake";
+        return;
+      }
+
+      const res = await fetch("/contributor", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+
+      const out = await res.json();
+      if(res.ok){
+        showStatus(true, `✔ Submitted. Rail: ${out.rail_assigned} • Score: ${out.score}`);
+        form.reset();
+      }else{
+        showStatus(false, out.error || "⚠ Submission failed.");
+      }
+    }catch(err){
+      showStatus(false, "⚠ Network error. Try again.");
+    }finally{
+      btn.disabled = false;
+      btn.innerText = "Submit Contributor Intake";
     }
-    score += track_weights.get(track, 10)
-
-    # Comp plan signal
-    comp = (f.comp_plan or "").strip().lower()
-    if "residual" in comp:
-        score += 10
-    elif "commission" in comp:
-        score += 10
-    elif "hourly" in comp:
-        score += 6
-    elif "equity" in comp or "revshare" in comp:
-        score += 8
-
-    # Proof/Assets signals
-    if f.assets and len(f.assets.strip()) > 10:
-        score += 10
-    if f.website and len(f.website.strip()) > 6:
-        score += 6
-    if f.company and len(f.company.strip()) > 2:
-        score += 4
-
-    # Fit Extract completion bonus
-    fit_fields = [
-        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
-        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you
-    ]
-    filled = sum(1 for x in fit_fields if x and str(x).strip())
-    score += min(16, filled * 2)
-
-    # Authority bonus
-    auth = (f.fit_authority or "").lower().strip()
-    if auth == "owner_exec":
-        score += 10
-    elif auth == "manager_influence":
-        score += 6
-    elif auth == "partial":
-        score += 3
-
-    return int(score)
-
-
-def _assign_rail(f: ContributorForm, score: int) -> str:
-    track = (f.contribution_track or "").strip().lower()
-    pos = (f.position_interest or "").strip().lower()
-    lane = (f.fit_lane or "").strip().lower()
-
-    if score >= 70:
-        if track == "sales_growth" or lane == "sales" or "sales" in pos or "closer" in pos:
-            return "sales_priority"
-        if track == "ecosystem_staff" or "intake" in pos or "ops" in pos or "client_success" in pos:
-            return "staff_priority"
-        if track == "hardware_supply" or lane == "hardware":
-            return "hardware_supply"
-        if track == "capital_sponsor" or lane == "finance":
-            return "capital"
-        return "priority"
-
-    if score >= 45:
-        if track == "sales_growth":
-            return "sales_pool"
-        if track == "ecosystem_staff":
-            return "staff_pool"
-        if track in ("partner_vendor", "hardware_supply"):
-            return "bd_followup"
-        return "review"
-
-    return "triage"
-
-
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request})
-
-
-@app.post("/contributor")
-def submit_contributor(form: ContributorForm):
-    score = _score_contributor(form)
-    rail = _assign_rail(form, score)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO contributors (
-            name, email, phone, company, website,
-            primary_role,
-            contribution_track, position_interest, comp_plan, director_owner,
-            assets, regions, capacity, alignment, message,
-            fit_access, fit_build_goal, fit_opportunity, fit_authority,
-            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-            score, rail, status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?,
-                ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?)
-    """, (
-        form.name, str(form.email), form.phone, form.company, form.website,
-        form.primary_role,
-        form.contribution_track, form.position_interest, form.comp_plan, form.director_owner,
-        form.assets, form.regions, form.capacity, form.alignment, form.message,
-        form.fit_access, form.fit_build_goal, form.fit_opportunity, form.fit_authority,
-        form.fit_lane, form.fit_no_conditions, form.fit_visibility, form.fit_why_you,
-        score, rail, "new", now_iso()
-    ))
-    conn.commit()
-    conn.close()
-
-    return JSONResponse({
-        "status": "Contributor submission received",
-        "rail_assigned": rail,
-        "score": score
-    })
+  });
+</script>
+{% endblock %}
