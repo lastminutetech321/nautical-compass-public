@@ -1,176 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Subscriber Intake • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Subscriber Intake</h1>
+  <p class="h-sub">Member-only intake. Authorized email: <strong>{{ email }}</strong></p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Subscriber Intake</h2>
-  <p class="muted">
-    Member-only intake. Authorized email: <strong>{{ email }}</strong>
-  </p>
+  <form method="post" action="/intake?token={{ token }}">
+    <div class="label">Name</div>
+    <input name="name" required />
 
-  <details class="dropdown">
-    <summary>
-      Full Service Catalog (Browse before choosing)
-      <span class="badge">Expand</span>
-    </summary>
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
 
-    <div class="dropdown-body">
-      <div class="grid">
-        <div>
-          <div class="badge">Intake / Strategy</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Legal Intake Strategy</li>
-            <li>Dispute Timeline & Evidence Organization</li>
-            <li>Complaint Framing & Narrative Structuring</li>
-            <li>Remedy Selection & Outcome Mapping</li>
-            <li>Damages & Loss Summary</li>
-            <li>Case File Cleanup / Missing Gaps Detection</li>
-          </ul>
+    <div class="label">Service Requested</div>
+    <select name="service_requested" required>
+      <option value="">Select a service…</option>
+      <option>Legal Intake Strategy</option>
+      <option>Contract Review & Risk Mapping</option>
+      <option>Demand Letter Drafting</option>
+      <option>Arbitration Package Assembly</option>
+      <option>Record Request Packet (CPRA/FOIA-style)</option>
+      <option>Dispute Timeline & Evidence Organization</option>
+      <option>Complaint Framing & Narrative Structuring</option>
+      <option>Platform / Marketplace Dispute Structuring</option>
+      <option>Billing / Payments Dispute Structuring</option>
+      <option>Other (explain in notes)</option>
+    </select>
+
+    <details class="dropdown">
+      <summary>
+        Full Catalog (optional reference)
+        <span class="badge">Expand</span>
+      </summary>
+      <div class="dropdown-body">
+        <div class="muted" style="line-height:1.8;">
+          Use this as a reference menu. If your exact item isn’t listed, pick “Other” and describe it.
         </div>
-
-        <div>
-          <div class="badge">Contracts</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Contract Review & Risk Mapping</li>
-            <li>Scope-of-Work Tightening</li>
-            <li>Payment Terms Reinforcement</li>
-            <li>NDA / IP / Non-Compete Review</li>
-            <li>Vendor / Client Agreement Structuring</li>
-            <li>Termination / Breach Response Strategy</li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="badge">Disputes & Demands</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Demand Letter Drafting</li>
-            <li>Billing / Payments Dispute Structuring</li>
-            <li>Platform / Marketplace Dispute Structuring</li>
-            <li>Chargeback Response Packet</li>
-            <li>Settlement Offer Packaging</li>
-            <li>Notice / Cure Letter Drafting</li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="badge">Arbitration / Proceedings</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Arbitration Package Assembly</li>
-            <li>Exhibit Book + Numbering Scheme</li>
-            <li>Discovery Request Planning</li>
-            <li>Hearing Prep Structure</li>
-            <li>Post-Hearing Summary</li>
-            <li>Procedural Posture Alignment</li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="badge">Records / Compliance</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Record Request Packet (FOIA/CPRA-style)</li>
-            <li>Data Access Request Structuring</li>
-            <li>Policy / Terms Analysis</li>
-            <li>Regulatory Complaint Framework</li>
-            <li>Documentation Retention System</li>
-            <li>Proof-of-Delivery / Notice Evidence</li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="badge">Other</div>
-          <ul class="muted" style="line-height:1.7; margin-top:10px;">
-            <li>Custom Pack (describe in notes)</li>
-            <li>Rapid Review / Triage (time-sensitive)</li>
-            <li>Template Customization & Branding</li>
-            <li>Operations Binder / Workflow Build</li>
-            <li>Contributor / Partner Onboarding Rails</li>
-          </ul>
+        <div style="margin-top:10px; line-height:1.9;">
+          <span class="badge">Legal Strategy</span> Intake • Risk • Response Architecture<br/>
+          <span class="badge">Contracts</span> Review • Redlines • Terms Audit<br/>
+          <span class="badge">Arbitration</span> Demand Package • Evidence Index • Timeline<br/>
+          <span class="badge">Business</span> Compliance • Admin process • Documentation Audit<br/>
+          <span class="badge">Gig/Platform</span> Payments • Routing • Deactivation Structuring
         </div>
       </div>
+    </details>
 
-      <div class="alert" style="margin-top:14px;">
-        Pick the best match in the dropdown below. If you’re unsure, choose <strong>Legal Intake Strategy</strong>.
-      </div>
-    </div>
-  </details>
+    <div class="label">Notes (optional)</div>
+    <textarea name="notes" placeholder="Key facts, deadlines, what happened, what you want done…"></textarea>
 
-  <form class="form" method="post" action="/intake?token={{ token }}" style="margin-top:16px;">
-    <div>
-      <label class="label">Name</label>
-      <input name="name" required />
-    </div>
-
-    <div>
-      <label class="label">Email</label>
-      <input name="email" type="email" required />
-    </div>
-
-    <div>
-      <label class="label">Service Requested</label>
-      <select name="service_requested" required>
-        <option value="">Select a service…</option>
-
-        <optgroup label="Intake / Strategy">
-          <option>Legal Intake Strategy</option>
-          <option>Dispute Timeline & Evidence Organization</option>
-          <option>Complaint Framing & Narrative Structuring</option>
-          <option>Remedy Selection & Outcome Mapping</option>
-          <option>Damages & Loss Summary</option>
-          <option>Case File Cleanup / Missing Gaps Detection</option>
-        </optgroup>
-
-        <optgroup label="Contracts">
-          <option>Contract Review & Risk Mapping</option>
-          <option>Scope-of-Work Tightening</option>
-          <option>Payment Terms Reinforcement</option>
-          <option>NDA / IP / Non-Compete Review</option>
-          <option>Vendor / Client Agreement Structuring</option>
-          <option>Termination / Breach Response Strategy</option>
-        </optgroup>
-
-        <optgroup label="Disputes & Demands">
-          <option>Demand Letter Drafting</option>
-          <option>Billing / Payments Dispute Structuring</option>
-          <option>Platform / Marketplace Dispute Structuring</option>
-          <option>Chargeback Response Packet</option>
-          <option>Settlement Offer Packaging</option>
-          <option>Notice / Cure Letter Drafting</option>
-        </optgroup>
-
-        <optgroup label="Arbitration / Proceedings">
-          <option>Arbitration Package Assembly</option>
-          <option>Exhibit Book + Numbering Scheme</option>
-          <option>Discovery Request Planning</option>
-          <option>Hearing Prep Structure</option>
-          <option>Post-Hearing Summary</option>
-          <option>Procedural Posture Alignment</option>
-        </optgroup>
-
-        <optgroup label="Records / Compliance">
-          <option>Record Request Packet (FOIA/CPRA-style)</option>
-          <option>Data Access Request Structuring</option>
-          <option>Policy / Terms Analysis</option>
-          <option>Regulatory Complaint Framework</option>
-          <option>Documentation Retention System</option>
-          <option>Proof-of-Delivery / Notice Evidence</option>
-        </optgroup>
-
-        <optgroup label="Other">
-          <option>Custom Pack (describe in notes)</option>
-          <option>Rapid Review / Triage (time-sensitive)</option>
-          <option>Template Customization & Branding</option>
-          <option>Operations Binder / Workflow Build</option>
-          <option>Contributor / Partner Onboarding Rails</option>
-        </optgroup>
-      </select>
-    </div>
-
-    <div>
-      <label class="label">Notes (optional)</label>
-      <textarea name="notes" placeholder="Key facts, dates, deadlines, what happened, what you want done…"></textarea>
-    </div>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+    <div class="btnrow">
       <button class="btn btn-primary" type="submit">Submit Intake</button>
       <a class="btn" href="/dashboard?token={{ token }}">Back to Dashboard</a>
     </div>
