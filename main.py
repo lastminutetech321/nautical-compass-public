@@ -1,57 +1,49 @@
 # --------------------
-# Contributor Intake (DEEP EXTRACT + RAIL ASSIGNMENT)
+# Contributor Intake (Fit Discovery + Rails)
 # --------------------
 
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from fastapi.responses import HTMLResponse, JSONResponse
 
-# ---------- MODEL ----------
 class ContributorForm(BaseModel):
-    # Identity
     name: str
     email: EmailStr
     phone: Optional[str] = None
     company: Optional[str] = None
     website: Optional[str] = None
 
-    # Core fit
-    contributor_type: str  # "operator" | "manufacturer" | "sponsor" | "builder" | "investor" | "advisor"
-    primary_role: str      # e.g., "LED Manufacturer Rep", "AV Ops", "Legal Ops", "Sales", etc.
+    contributor_type: str
+    primary_role: str
 
-    # Geography + coverage
-    home_region: str       # e.g., "DMV", "Northeast", "Southeast", "National", "Global"
-    can_travel: str        # "No" | "Regional" | "National" | "International"
-    coverage_regions: Optional[str] = None  # free text
+    home_region: str
+    can_travel: str
+    coverage_regions: Optional[str] = None
 
-    # Assets + capabilities
-    assets: Optional[str] = None            # "LED wall inventory", "warehouse", "trucks", "capital", etc.
-    specialties: Optional[str] = None       # list-like free text
+    assets: Optional[str] = None
+    specialties: Optional[str] = None
     certifications: Optional[str] = None
 
-    # Capacity + availability
-    weekly_hours: str      # "0-5" | "5-10" | "10-20" | "20-40" | "40+"
-    start_timeline: str    # "Now" | "1-2 weeks" | "30 days" | "60+"
+    weekly_hours: str
+    start_timeline: str
     bandwidth_note: Optional[str] = None
 
-    # Alignment + standards
-    alignment: str         # mission alignment statement (dropdown)
-    nonnegotiables: Optional[str] = None    # boundaries / constraints
+    alignment: str
+    nonnegotiables: Optional[str] = None
     success_definition: Optional[str] = None
 
-    # Deal + compensation preferences
-    deal_preference: str   # "cash" | "revshare" | "equity" | "mixed" | "sponsor"
-    budget_range: Optional[str] = None      # for sponsors/manufacturers
+    deal_preference: str
+    budget_range: Optional[str] = None
 
-    # Proof
     portfolio_links: Optional[str] = None
     references: Optional[str] = None
 
-    # Message
     message: Optional[str] = None
 
+    # Optional quick-fit (if template sends it)
+    primary_interest: Optional[str] = None
 
-# ---------- DB TABLE ----------
+
 def init_contributors_table():
     conn = db()
     cur = conn.cursor()
@@ -91,6 +83,8 @@ def init_contributors_table():
 
             message TEXT,
 
+            primary_interest TEXT,
+
             score INTEGER NOT NULL DEFAULT 0,
             rail TEXT NOT NULL DEFAULT 'triage',
             status TEXT NOT NULL DEFAULT 'new',
@@ -101,38 +95,39 @@ def init_contributors_table():
     conn.commit()
     conn.close()
 
-# Call it once during startup/init
 init_contributors_table()
 
 
-# ---------- SCORING + RAILS ----------
 def _score_contributor(f: ContributorForm) -> int:
     score = 0
 
-    # Type priority (you can tune this)
+    t = (f.contributor_type or "").lower().strip()
     type_weights = {
-        "operator": 20,
+        "builder": 18,
+        "operator": 16,
         "manufacturer": 18,
         "sponsor": 16,
-        "builder": 14,
         "investor": 16,
         "advisor": 10
     }
-    score += type_weights.get(f.contributor_type.lower().strip(), 8)
+    score += type_weights.get(t, 10)
 
-    # Timeline
+    # If they said "unknown / route me", do NOT penalize
+    pi = (f.primary_interest or "").lower().strip()
+    if pi in ("unknown", ""):
+        score += 6
+    elif pi in ("build", "infra", "hardware", "sponsor", "capital", "advice"):
+        score += 8
+
     timeline_weights = {"now": 18, "1-2 weeks": 14, "30 days": 10, "60+": 6}
-    score += timeline_weights.get(f.start_timeline.lower().strip(), 6)
+    score += timeline_weights.get((f.start_timeline or "").lower().strip(), 6)
 
-    # Weekly hours
     hours_weights = {"0-5": 4, "5-10": 8, "10-20": 12, "20-40": 16, "40+": 18}
-    score += hours_weights.get(f.weekly_hours.strip(), 6)
+    score += hours_weights.get((f.weekly_hours or "").strip(), 6)
 
-    # Travel capability
     travel_weights = {"no": 0, "regional": 6, "national": 10, "international": 12}
-    score += travel_weights.get(f.can_travel.lower().strip(), 4)
+    score += travel_weights.get((f.can_travel or "").lower().strip(), 4)
 
-    # Assets / proof signals
     if f.assets and len(f.assets.strip()) > 10:
         score += 10
     if f.portfolio_links and len(f.portfolio_links.strip()) > 8:
@@ -142,31 +137,27 @@ def _score_contributor(f: ContributorForm) -> int:
     if f.references and len(f.references.strip()) > 6:
         score += 6
 
-    # Alignment
-    alignment_bonus = {
-        "mission-first": 10,
-        "balanced": 6,
-        "profit-first": 2
-    }
-    score += alignment_bonus.get(f.alignment.lower().strip(), 4)
+    alignment_bonus = {"mission-first": 10, "balanced": 6, "profit-first": 2}
+    score += alignment_bonus.get((f.alignment or "").lower().strip(), 4)
 
     return int(score)
 
 
 def _assign_rail(f: ContributorForm, score: int) -> str:
-    t = f.contributor_type.lower().strip()
+    t = (f.contributor_type or "").lower().strip()
+    pi = (f.primary_interest or "").lower().strip()
 
-    # High-fit routing
+    # Priority routing
     if score >= 70:
-        if t == "manufacturer":
+        if t == "manufacturer" or pi == "hardware":
             return "hardware_supply"
-        if t == "sponsor":
+        if t == "sponsor" or pi == "sponsor":
             return "sponsorship"
-        if t == "operator":
-            return "ops_build"
-        if t == "investor":
+        if t in ("builder", "operator") or pi == "build":
+            return "builders_core"
+        if t == "investor" or pi == "capital":
             return "capital"
-        if t == "builder":
+        if pi == "infra":
             return "infrastructure"
         return "priority"
 
@@ -174,15 +165,15 @@ def _assign_rail(f: ContributorForm, score: int) -> str:
     if score >= 45:
         if t in ("manufacturer", "sponsor"):
             return "bd_followup"
-        if t == "operator":
-            return "ops_pool"
+        if t in ("builder", "operator"):
+            return "builders_pool"
+        if t == "investor":
+            return "capital_review"
         return "review"
 
-    # Low-fit / unclear
     return "triage"
 
 
-# ---------- ROUTES ----------
 @app.get("/contributor", response_class=HTMLResponse)
 def contributor_page(request: Request):
     return templates.TemplateResponse("contributor_intake.html", {"request": request})
@@ -206,6 +197,7 @@ def submit_contributor(form: ContributorForm):
             deal_preference, budget_range,
             portfolio_links, references,
             message,
+            primary_interest,
             score, rail, status,
             created_at
         )
@@ -217,6 +209,7 @@ def submit_contributor(form: ContributorForm):
                 ?, ?, ?,
                 ?, ?,
                 ?, ?,
+                ?,
                 ?,
                 ?, ?, ?,
                 ?)
@@ -230,13 +223,13 @@ def submit_contributor(form: ContributorForm):
         form.deal_preference, form.budget_range,
         form.portfolio_links, form.references,
         form.message,
+        form.primary_interest,
         score, rail, "new",
         now_iso()
     ))
     conn.commit()
     conn.close()
 
-    # Return BOTH: user-friendly and system-friendly
     return JSONResponse({
         "status": "Contributor submission received",
         "rail_assigned": rail,
