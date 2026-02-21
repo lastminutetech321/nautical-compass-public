@@ -4,26 +4,101 @@
 {% block content %}
 <div class="card">
   <h2>Services</h2>
-  <p class="muted">A broad menu so the customer immediately sees range and capability.</p>
+  <p class="muted">A clean menu first — then the full catalog for range and capability.</p>
 
-  <ul class="list">
+  <h3 style="margin-top:14px;">Most Requested</h3>
+  <ul>
     <li>Legal Intake Strategy</li>
     <li>Contract Review & Risk Mapping</li>
     <li>Demand Letter Drafting</li>
     <li>Arbitration Package Assembly</li>
-    <li>Regulatory / Administrative Process Guidance</li>
     <li>Dispute Timeline & Evidence Organization</li>
     <li>Complaint Framing & Narrative Structuring</li>
     <li>Record Requests (CPRA / FOIA-style packets)</li>
-    <li>Identity / Standing Documentation Support (structured packets)</li>
     <li>Payment & Billing Dispute Structuring</li>
     <li>Platform / Marketplace Dispute Structuring</li>
     <li>Business Compliance Positioning (basic intake)</li>
   </ul>
 
-  <div class="btnrow">
+  <details class="dropdown">
+    <summary>
+      <span>Full Catalog (Expand)</span>
+      <span class="badge">All Categories</span>
+    </summary>
+
+    <div class="dropdown-body">
+      <div class="grid">
+        <div>
+          <strong>Legal Strategy</strong>
+          <ul>
+            <li>Legal Intake Strategy</li>
+            <li>Case Framing & Narrative Structuring</li>
+            <li>Risk Mapping & Next-Step Plan</li>
+            <li>Jurisdiction / Venue Targeting (basic)</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Contracts</strong>
+          <ul>
+            <li>Contract Review & Risk Mapping</li>
+            <li>Contract Rewrite (Plain-English)</li>
+            <li>Scope & Deliverables Lockdown</li>
+            <li>Payment Terms Hardening</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Arbitration / Disputes</strong>
+          <ul>
+            <li>Arbitration Package Assembly</li>
+            <li>Demand Letter Drafting</li>
+            <li>Billing / Payments Dispute Structuring</li>
+            <li>Platform / Marketplace Dispute Structuring</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Records & Evidence</strong>
+          <ul>
+            <li>Record Requests (CPRA / FOIA style)</li>
+            <li>Dispute Timeline & Evidence Organization</li>
+            <li>Exhibit Index + Labeling System</li>
+            <li>Evidence Gaps Checklist</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Identity / Standing</strong>
+          <ul>
+            <li>Identity / Standing Documentation Support</li>
+            <li>Status Packet Structuring (non-legal advice)</li>
+            <li>Affidavit Set Formatting (non-legal advice)</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Premium</strong>
+          <ul>
+            <li>Priority Intake + Rapid Structuring</li>
+            <li>Executive Summary + Action Plan</li>
+            <li>Case “Binder Build” (full organization)</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Custom</strong>
+          <ul>
+            <li>Other (explain in notes)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <div class="btnrow" style="margin-top:16px;">
     <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
     <a class="btn" href="/">Back Home</a>
   </div>
 </div>
-{% endblock %} 
+{% endblock %}
