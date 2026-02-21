@@ -5,56 +5,42 @@
 <section class="hero">
   <h1 class="h-title">Nautical Compass</h1>
   <p class="h-sub">
-    A structured gateway into legal strategy, templates, and guided execution — built for speed, clarity, and outcomes.
+    Structured legal intake, subscriptions, and contributor onboarding — clean and fast.
   </p>
-
-  <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+  <div class="btnrow" style="margin-top:16px;">
     <a class="btn btn-primary" href="/checkout">Start Subscription</a>
     <a class="btn" href="/services">View Services</a>
-    <a class="btn" href="/lead">Public Lead Intake</a>
-  </div>
-
-  <div class="alert" style="margin-top:16px;">
-    <strong>Subscriber flow:</strong> Subscribe → Success page → get your access link → submit Member Intake.
+    <a class="btn" href="/contributor">Contributor Intake</a>
   </div>
 </section>
 {% endblock %}
 
 {% block content %}
 <div class="grid grid-2">
-
   <div class="card">
-    <h2>What this is</h2>
+    <h2>Public Intake</h2>
     <p class="muted">
-      Nautical Compass turns messy facts into a structured record: timeline, issues, remedies, exhibits, and execution rails.
+      If you’re not subscribing yet, submit a lead and we’ll route your request.
     </p>
-    <div class="grid">
-      <div class="badge">Clarity</div>
-      <div class="badge">Speed</div>
-      <div class="badge">Structure</div>
-      <div class="badge">Execution</div>
+    <div class="btnrow">
+      <a class="btn" href="/lead">General Inquiry</a>
+      <a class="btn" href="/partner">Manufacturer / Sponsor</a>
     </div>
   </div>
 
   <div class="card">
-    <h2>Start Here</h2>
+    <h2>Member Intake</h2>
     <p class="muted">
-      If you’re unsure what you need, begin with <strong>Legal Intake Strategy</strong>. We’ll route you from there.
+      Subscribers get access rails: dashboard + member-only intake form.
     </p>
-    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="btnrow">
       <a class="btn btn-primary" href="/checkout">Subscribe</a>
-      <a class="btn" href="/services">Browse Services</a>
     </div>
-  </div>
-
-</div>
-
-<div class="card" style="margin-top:18px;">
-  <h2>Open Channels</h2>
-  <p class="muted">These stay open even if you’re not subscribed yet.</p>
-  <div style="display:flex; gap:10px; flex-wrap:wrap;">
-    <a class="btn" href="/lead">Lead Intake</a>
-    <a class="btn" href="/partner">Partner Intake</a>
+    <div class="alert" style="margin-top:14px;">
+      <div class="muted">
+        After payment, you’ll receive a secure access link (token) to the dashboard.
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
