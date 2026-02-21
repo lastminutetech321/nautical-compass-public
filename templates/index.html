@@ -1,34 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Nautical Compass{% endblock %}
 
-{% block content %}
-<div class="grid">
-  <div class="card">
-    <h2>Welcome</h2>
-    <p class="muted">
-      Nautical Compass is built for people who want to move with clarity:
-      structured action, clean documentation, and calm control of the process.
-    </p>
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Nautical Compass</h1>
+  <p class="h-sub">
+    A structured gateway into legal strategy, templates, and guided execution — built for speed, clarity, and outcomes.
+  </p>
 
-    <div class="btnrow">
-      <a class="btn btn-primary" href="/services">View Services</a>
-      <a class="btn" href="/lead">General Inquiry</a>
-      <a class="btn" href="/partner">Manufacturer / Sponsor Intake</a>
+  <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-primary" href="/checkout">Start Subscription</a>
+    <a class="btn" href="/services">View Services</a>
+    <a class="btn" href="/lead">Public Lead Intake</a>
+  </div>
+
+  <div class="alert" style="margin-top:16px;">
+    <strong>Subscriber flow:</strong> Subscribe → Success page → get your access link → submit Member Intake.
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+
+  <div class="card">
+    <h2>What this is</h2>
+    <p class="muted">
+      Nautical Compass turns messy facts into a structured record: timeline, issues, remedies, exhibits, and execution rails.
+    </p>
+    <div class="grid">
+      <div class="badge">Clarity</div>
+      <div class="badge">Speed</div>
+      <div class="badge">Structure</div>
+      <div class="badge">Execution</div>
     </div>
   </div>
 
   <div class="card">
-    <h2>How it works</h2>
-    <ul class="list">
-      <li>Browse services + choose a direction.</li>
-      <li>Submit a public inquiry or subscribe for member intake.</li>
-      <li>Get structured steps and deliverables based on your facts.</li>
-    </ul>
-    <div style="margin-top:10px;">
-      <span class="tag">Clean Process</span>
-      <span class="tag">Low Friction</span>
-      <span class="tag">Documentation First</span>
+    <h2>Start Here</h2>
+    <p class="muted">
+      If you’re unsure what you need, begin with <strong>Legal Intake Strategy</strong>. We’ll route you from there.
+    </p>
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-primary" href="/checkout">Subscribe</a>
+      <a class="btn" href="/services">Browse Services</a>
     </div>
+  </div>
+
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <h2>Open Channels</h2>
+  <p class="muted">These stay open even if you’re not subscribed yet.</p>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn" href="/lead">Lead Intake</a>
+    <a class="btn" href="/partner">Partner Intake</a>
   </div>
 </div>
 {% endblock %}
