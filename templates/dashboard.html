@@ -1,46 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Dashboard • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Dashboard</h1>
+  <p class="h-sub">Access granted for: <strong>{{ email }}</strong></p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="grid grid-2">
-
   <div class="card">
-    <h2>Member Dashboard</h2>
-    <p class="muted">
-      Signed in as <strong>{{ email }}</strong>
-    </p>
-
-    <div class="alert ok">
-      Access is active. Your token is valid for member routes.
+    <h2>Member Intake</h2>
+    <p class="muted">Submit a member-only intake that routes into your structured workflow.</p>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Intake Form</a>
     </div>
 
-    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
-      <a class="btn" href="/services">Services</a>
+    {% if intake_submitted %}
+    <div class="alert ok" style="margin-top:14px;">
+      <strong>Intake received.</strong> Next step is routing + packet structure.
     </div>
+    {% endif %}
   </div>
 
   <div class="card">
-    <h2>Next Steps</h2>
-    <p class="muted">
-      The fastest path is: Intake → structured timeline → exhibit pack → execution path.
-    </p>
-
-    <details class="dropdown">
-      <summary>
-        What happens after Intake?
-        <span class="badge">Expand</span>
-      </summary>
-      <div class="dropdown-body">
-        <ol class="muted" style="line-height:1.8; margin:0; padding-left:18px;">
-          <li>We convert your facts into a clean timeline.</li>
-          <li>We identify claims/issues + required proof.</li>
-          <li>We organize exhibits and missing gaps.</li>
-          <li>We generate the correct action packet (demand/arbitration/records/etc.).</li>
-        </ol>
-      </div>
-    </details>
+    <h2>System Links</h2>
+    <p class="muted">These links require your token.</p>
+    <div style="line-height:1.9; margin-top:8px;">
+      <div><span class="badge">Dashboard</span> /dashboard?token=…</div>
+      <div><span class="badge">Intake</span> /intake-form?token=…</div>
+      <div><span class="badge">Services</span> /services</div>
+    </div>
   </div>
-
 </div>
 {% endblock %}
