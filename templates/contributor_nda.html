@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}NDA • Nautical Compass{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>NDA Acceptance</h2>
+  <p class="muted">Contributor: <strong>{{ c.name }}</strong> {% if c.company %}· {{ c.company }}{% endif %}</p>
+
+  <div class="callout">
+    <h3>Summary</h3>
+    <ul>
+      <li>Non-disclosure of internal plans, pricing, partner lists, pipeline, and deal flow.</li>
+      <li>No solicitation of partners introduced through Nautical Compass without permission.</li>
+      <li>Use information only for evaluated collaboration.</li>
+    </ul>
+    <p class="micro">This is a click-to-accept NDA gate. Full legal NDA can be added later as a downloadable PDF.</p>
+  </div>
+
+  <form method="post" action="/contributor/nda/accept">
+    <input type="hidden" name="token" value="{{ token }}" />
+    <label class="check">
+      <input type="checkbox" required />
+      I have read and agree to the NDA terms above.
+    </label>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Accept NDA</button>
+      <a class="btn" href="/">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
