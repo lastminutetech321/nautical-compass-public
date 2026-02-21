@@ -1,26 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Services | Nautical Compass</title>
-</head>
-<body>
-    <h1>Services</h1>
+{% extends "base.html" %}
+{% block title %}Services • Nautical Compass{% endblock %}
 
-    <ul>
-        <li>Legal Intake Strategy</li>
-        <li>Contract Review & Risk Mapping</li>
-        <li>Demand Letter Drafting</li>
-        <li>Arbitration Package Assembly</li>
-        <li>Compliance Positioning</li>
-        <li>Strategic Response Architecture</li>
-        <li>Case Framing & Narrative Structuring</li>
-        <li>Documentation Audit</li>
-        <li>Administrative Process Guidance</li>
-    </ul>
+{% block content %}
+<div class="card">
+  <h2>Services</h2>
+  <p class="muted">A broad menu so the customer immediately sees range and capability.</p>
 
-    <hr>
+  <ul class="list">
+    <li>Legal Intake Strategy</li>
+    <li>Contract Review & Risk Mapping</li>
+    <li>Demand Letter Drafting</li>
+    <li>Arbitration Package Assembly</li>
+    <li>Regulatory / Administrative Process Guidance</li>
+    <li>Dispute Timeline & Evidence Organization</li>
+    <li>Complaint Framing & Narrative Structuring</li>
+    <li>Record Requests (CPRA / FOIA-style packets)</li>
+    <li>Identity / Standing Documentation Support (structured packets)</li>
+    <li>Payment & Billing Dispute Structuring</li>
+    <li>Platform / Marketplace Dispute Structuring</li>
+    <li>Business Compliance Positioning (basic intake)</li>
+  </ul>
 
-    <a href="/checkout">Become a Subscriber</a><br><br>
-    <a href="/">Back Home</a>
-</body>
-</html>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
+    <a class="btn" href="/">Back Home</a>
+  </div>
+</div>
+{% endblock %} 
