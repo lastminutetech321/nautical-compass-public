@@ -6,19 +6,14 @@ import secrets
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import stripe
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import (
-    HTMLResponse,
-    FileResponse,
-    RedirectResponse,
-    JSONResponse,
-)
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
+from pydantic import BaseModel, EmailStr
 
 # --------------------
 # Paths (LOCKED)
@@ -28,7 +23,6 @@ DB_PATH = BASE_DIR / "nc.db"
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-
 # --------------------
 # App
 # --------------------
@@ -36,19 +30,26 @@ app = FastAPI(title="Nautical Compass Intake")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+# --------------------
+# Security Flags
+# --------------------
+DEV_MODE = (os.getenv("DEV_MODE", "") or "").strip() == "1"
+ADMIN_KEY = (os.getenv("ADMIN_KEY", "") or "").strip()  # set this in DO env vars
 
 # --------------------
 # Stripe Config
 # --------------------
-STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip().replace("\n", "").replace("\r", "")
-STRIPE_PRICE_ID = (os.getenv("STRIPE_PRICE_ID") or "").strip()
-SUCCESS_URL = (os.getenv("SUCCESS_URL") or "").strip()
-CANCEL_URL = (os.getenv("CANCEL_URL") or "").strip()
-STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
+STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY", "") or "").strip()
+STRIPE_PRICE_ID = (os.getenv("STRIPE_PRICE_ID", "") or "").strip()
+SUCCESS_URL = (os.getenv("SUCCESS_URL", "") or "").strip()
+CANCEL_URL = (os.getenv("CANCEL_URL", "") or "").strip()
+STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET", "") or "").strip()
+
+# Stop newline/header issues forever
+STRIPE_SECRET_KEY = STRIPE_SECRET_KEY.replace("\n", "").replace("\r", "")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
-
 
 # --------------------
 # Email (optional)
@@ -56,39 +57,77 @@ if STRIPE_SECRET_KEY:
 EMAIL_USER = (os.getenv("EMAIL_USER") or "").strip()
 EMAIL_PASS = (os.getenv("EMAIL_PASS") or "").strip()
 
-# If you switched to Mailgun SMTP, set these env vars and the app will use them:
-SMTP_HOST = (os.getenv("SMTP_HOST") or "").strip()         # e.g. smtp.mailgun.org
-SMTP_PORT = int(os.getenv("SMTP_PORT") or "0")             # e.g. 587
-SMTP_USER = (os.getenv("SMTP_USER") or "").strip()         # your mailgun smtp login
-SMTP_PASS = (os.getenv("SMTP_PASS") or "").strip()         # your mailgun smtp password
-SMTP_FROM = (os.getenv("SMTP_FROM") or EMAIL_USER).strip() # from address
+# --------------------
+# Models
+# --------------------
+class IntakeForm(BaseModel):
+    name: str
+    email: EmailStr
+    service_requested: str
+    notes: Optional[str] = None
 
+class LeadForm(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    interest: str
+    message: Optional[str] = None
+
+class PartnerForm(BaseModel):
+    name: str
+    email: EmailStr
+    company: str
+    role: str
+    product_type: str
+    website: Optional[str] = None
+    regions: Optional[str] = None
+    message: Optional[str] = None
+
+class ContributorForm(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    website: Optional[str] = None
+
+    primary_role: str
+    contribution_track: str
+    position_interest: Optional[str] = None
+    comp_plan: Optional[str] = None
+    director_owner: Optional[str] = "Deuce"
+
+    assets: Optional[str] = None
+    regions: Optional[str] = None
+    capacity: Optional[str] = None
+    alignment: Optional[str] = None
+    message: Optional[str] = None
+
+    # Fit extract (6–8 prompts)
+    fit_access: Optional[str] = None
+    fit_build_goal: Optional[str] = None
+    fit_opportunity: Optional[str] = None
+    fit_authority: Optional[str] = None
+    fit_lane: Optional[str] = None
+    fit_no_conditions: Optional[str] = None
+    fit_visibility: Optional[str] = None
+    fit_why_you: Optional[str] = None
 
 # --------------------
-# Dev Tools (optional)
-# --------------------
-DEV_TOOLS_ENABLED = (os.getenv("DEV_TOOLS_ENABLED") or "").strip().lower() in ("1", "true", "yes", "on")
-DEV_TOOLS_KEY = (os.getenv("DEV_TOOLS_KEY") or "").strip()  # optional shared secret for dev routes
-
-
-# --------------------
-# DB
+# DB Setup
 # --------------------
 def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-
-def now_iso() -> str:
+def now_iso():
     return datetime.utcnow().isoformat()
-
 
 def init_db():
     conn = db()
     cur = conn.cursor()
 
-    # Subscriber intake
     cur.execute("""
         CREATE TABLE IF NOT EXISTS intake (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +139,6 @@ def init_db():
         )
     """)
 
-    # Public lead capture
     cur.execute("""
         CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,7 +152,6 @@ def init_db():
         )
     """)
 
-    # Partner/vendor intake
     cur.execute("""
         CREATE TABLE IF NOT EXISTS partners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,7 +167,28 @@ def init_db():
         )
     """)
 
-    # Contributors (staff/sales/builders)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE,
+            stripe_customer_id TEXT,
+            stripe_subscription_id TEXT,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS magic_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            token_hash TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS contributors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,7 +199,6 @@ def init_db():
             website TEXT,
 
             primary_role TEXT NOT NULL,
-
             contribution_track TEXT NOT NULL,
             position_interest TEXT,
             comp_plan TEXT,
@@ -169,43 +226,16 @@ def init_db():
         )
     """)
 
-    # Subscribers
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS subscribers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE,
-            stripe_customer_id TEXT,
-            stripe_subscription_id TEXT,
-            status TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )
-    """)
-
-    # Magic links
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS magic_links (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT NOT NULL,
-            token_hash TEXT NOT NULL,
-            expires_at TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
-
     conn.commit()
     conn.close()
 
-
 init_db()
 
-
 # --------------------
-# Helpers
+# Helpers (Auth / Tokens)
 # --------------------
 def sha256(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
-
 
 def issue_magic_link(email: str, hours: int = 24) -> str:
     token = secrets.token_urlsafe(32)
@@ -221,7 +251,6 @@ def issue_magic_link(email: str, hours: int = 24) -> str:
     conn.commit()
     conn.close()
     return token
-
 
 def validate_magic_link(token: str) -> Optional[str]:
     token_hash = sha256(token)
@@ -243,7 +272,6 @@ def validate_magic_link(token: str) -> Optional[str]:
 
     return row["email"]
 
-
 def is_active_subscriber(email: str) -> bool:
     conn = db()
     cur = conn.cursor()
@@ -252,70 +280,18 @@ def is_active_subscriber(email: str) -> bool:
     conn.close()
     return bool(row) and row["status"] == "active"
 
+def require_subscriber_token(token: Optional[str]):
+    if not token:
+        return None, HTMLResponse("Missing token.", status_code=401)
 
-def upsert_subscriber_active(email: str, customer_id: Optional[str] = None, subscription_id: Optional[str] = None):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
-        VALUES (?, ?, ?, 'active', ?, ?)
-        ON CONFLICT(email) DO UPDATE SET
-          stripe_customer_id=excluded.stripe_customer_id,
-          stripe_subscription_id=excluded.stripe_subscription_id,
-          status='active',
-          updated_at=excluded.updated_at
-    """, (email, customer_id, subscription_id, now_iso(), now_iso()))
-    conn.commit()
-    conn.close()
+    email = validate_magic_link(token)
+    if not email:
+        return None, HTMLResponse("Invalid or expired link.", status_code=401)
 
+    if not is_active_subscriber(email):
+        return None, HTMLResponse("Subscription not active.", status_code=403)
 
-def cancel_subscriber_by_sub_id(sub_id: str):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE subscribers
-        SET status='canceled', updated_at=?
-        WHERE stripe_subscription_id=?
-    """, (now_iso(), sub_id))
-    conn.commit()
-    conn.close()
-
-
-def send_email(to_email: str, subject: str, body: str):
-    """
-    Uses Mailgun SMTP if SMTP_HOST/PORT/USER/PASS are set,
-    otherwise falls back to Gmail SSL if EMAIL_USER/EMAIL_PASS exist.
-    """
-    try:
-        # Mailgun / generic SMTP (recommended)
-        if SMTP_HOST and SMTP_PORT and SMTP_USER and SMTP_PASS:
-            msg = EmailMessage()
-            msg["Subject"] = subject
-            msg["From"] = SMTP_FROM or SMTP_USER
-            msg["To"] = to_email
-            msg.set_content(body)
-
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
-                smtp.starttls()
-                smtp.login(SMTP_USER, SMTP_PASS)
-                smtp.send_message(msg)
-            return
-
-        # Gmail SSL fallback
-        if EMAIL_USER and EMAIL_PASS:
-            msg = EmailMessage()
-            msg["Subject"] = subject
-            msg["From"] = EMAIL_USER
-            msg["To"] = to_email
-            msg.set_content(body)
-
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-                smtp.login(EMAIL_USER, EMAIL_PASS)
-                smtp.send_message(msg)
-
-    except Exception as e:
-        print("Email failed:", e)
-
+    return email, None
 
 def require_env():
     missing = []
@@ -331,43 +307,44 @@ def require_env():
         return JSONResponse({"error": "Missing environment variables", "missing": missing}, status_code=500)
     return None
 
-
-def require_subscriber_token(token: Optional[str]) -> Tuple[Optional[str], Optional[HTMLResponse]]:
-    if not token:
-        return None, HTMLResponse("Missing token.", status_code=401)
-
-    email = validate_magic_link(token)
-    if not email:
-        return None, HTMLResponse("Invalid or expired link.", status_code=401)
-
-    if not is_active_subscriber(email):
-        return None, HTMLResponse("Subscription not active.", status_code=403)
-
-    return email, None
-
-
-async def read_payload(request: Request) -> dict:
+def require_admin(request: Request):
     """
-    Accept both:
-      - application/json (fetch)
-      - application/x-www-form-urlencoded or multipart (HTML forms)
+    Admin auth: add header X-ADMIN-KEY: <ADMIN_KEY>
+    Or use query ?admin_key=<ADMIN_KEY> (useful on phone)
     """
-    ctype = (request.headers.get("content-type") or "").lower()
-    if "application/json" in ctype:
-        try:
-            return await request.json()
-        except Exception:
-            return {}
-    form = await request.form()
-    return dict(form)
+    if not ADMIN_KEY:
+        return HTMLResponse("ADMIN_KEY not set.", status_code=500)
 
+    header_key = (request.headers.get("x-admin-key") or "").strip()
+    query_key = (request.query_params.get("admin_key") or "").strip()
+
+    if header_key == ADMIN_KEY or query_key == ADMIN_KEY:
+        return None
+    return HTMLResponse("Unauthorized.", status_code=401)
+
+def send_email(to_email: str, subject: str, body: str):
+    if not (EMAIL_USER and EMAIL_PASS):
+        return
+
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = EMAIL_USER
+        msg["To"] = to_email
+        msg.set_content(body)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(EMAIL_USER, EMAIL_PASS)
+            smtp.send_message(msg)
+    except Exception as e:
+        print("Email failed:", e)
 
 # --------------------
-# Contributor scoring + rail assignment
+# Scoring + Rail Assign
 # --------------------
-def _score_contributor(f: dict) -> int:
+def _score_contributor(f: ContributorForm) -> int:
     score = 0
-    track = (f.get("contribution_track") or "").strip().lower()
+    track = (f.contribution_track or "").strip().lower()
 
     track_weights = {
         "ecosystem_staff": 18,
@@ -381,7 +358,7 @@ def _score_contributor(f: dict) -> int:
     }
     score += track_weights.get(track, 10)
 
-    comp = (f.get("comp_plan") or "").strip().lower()
+    comp = (f.comp_plan or "").strip().lower()
     if "residual" in comp:
         score += 10
     elif "commission" in comp:
@@ -391,27 +368,21 @@ def _score_contributor(f: dict) -> int:
     elif "equity" in comp or "revshare" in comp:
         score += 8
 
-    if (f.get("assets") or "").strip():
+    if f.assets and len(f.assets.strip()) > 10:
         score += 10
-    if (f.get("website") or "").strip():
+    if f.website and len(f.website.strip()) > 6:
         score += 6
-    if (f.get("company") or "").strip():
+    if f.company and len(f.company.strip()) > 2:
         score += 4
 
     fit_fields = [
-        f.get("fit_access"),
-        f.get("fit_build_goal"),
-        f.get("fit_opportunity"),
-        f.get("fit_authority"),
-        f.get("fit_lane"),
-        f.get("fit_no_conditions"),
-        f.get("fit_visibility"),
-        f.get("fit_why_you"),
+        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
+        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you
     ]
     filled = sum(1 for x in fit_fields if x and str(x).strip())
     score += min(16, filled * 2)
 
-    auth = (f.get("fit_authority") or "").lower().strip()
+    auth = (f.fit_authority or "").lower().strip()
     if auth == "owner_exec":
         score += 10
     elif auth == "manager_influence":
@@ -421,11 +392,10 @@ def _score_contributor(f: dict) -> int:
 
     return int(score)
 
-
-def _assign_rail(f: dict, score: int) -> str:
-    track = (f.get("contribution_track") or "").strip().lower()
-    pos = (f.get("position_interest") or "").strip().lower()
-    lane = (f.get("fit_lane") or "").strip().lower()
+def _assign_rail(f: ContributorForm, score: int) -> str:
+    track = (f.contribution_track or "").strip().lower()
+    pos = (f.position_interest or "").strip().lower()
+    lane = (f.fit_lane or "").strip().lower()
 
     if score >= 70:
         if track == "sales_growth" or lane == "sales" or "sales" in pos or "closer" in pos:
@@ -449,131 +419,60 @@ def _assign_rail(f: dict, score: int) -> str:
 
     return "triage"
 
-
 # --------------------
-# Pages (Public)
+# Public Pages
 # --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "year": datetime.utcnow().year})
-
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/services", response_class=HTMLResponse)
-def services_page(request: Request):
-    return templates.TemplateResponse("services.html", {"request": request, "year": datetime.utcnow().year})
-
+def services(request: Request):
+    return templates.TemplateResponse("services.html", {"request": request})
 
 @app.get("/lead", response_class=HTMLResponse)
 def lead_page(request: Request):
-    return templates.TemplateResponse("lead_intake.html", {"request": request, "year": datetime.utcnow().year})
+    return templates.TemplateResponse("lead_intake.html", {"request": request})
 
-
-@app.get("/partner", response_class=HTMLResponse)
-def partner_page(request: Request):
-    return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-
-# --------------------
-# Public submits
-# --------------------
 @app.post("/lead")
-async def submit_lead(request: Request):
-    data = await read_payload(request)
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    interest = (data.get("interest") or "").strip()
-
-    if not (name and email and interest):
-        return JSONResponse({"error": "Missing required fields"}, status_code=422)
-
-    phone = (data.get("phone") or "").strip() or None
-    company = (data.get("company") or "").strip() or None
-    message = (data.get("message") or "").strip() or None
-
+def submit_lead(form: LeadForm):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO leads (name, email, phone, company, interest, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, phone, company, interest, message, now_iso()))
+    """, (form.name, str(form.email), form.phone, form.company, form.interest, form.message, now_iso()))
     conn.commit()
     conn.close()
+    return {"status": "Lead received"}
 
-    return JSONResponse({"status": "Lead received"})
-
+@app.get("/partner", response_class=HTMLResponse)
+def partner_page(request: Request):
+    return templates.TemplateResponse("partner_intake.html", {"request": request})
 
 @app.post("/partner")
-async def submit_partner(request: Request):
-    data = await read_payload(request)
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    company = (data.get("company") or "").strip()
-    role = (data.get("role") or "").strip()
-    product_type = (data.get("product_type") or "").strip()
-
-    if not (name and email and company and role and product_type):
-        return JSONResponse({"error": "Missing required fields"}, status_code=422)
-
-    website = (data.get("website") or "").strip() or None
-    regions = (data.get("regions") or "").strip() or None
-    message = (data.get("message") or "").strip() or None
-
+def submit_partner(form: PartnerForm):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
+    """, (form.name, str(form.email), form.company, form.role, form.product_type, form.website, form.regions, form.message, now_iso()))
     conn.commit()
     conn.close()
+    return {"status": "Partner submission received"}
 
-    return JSONResponse({"status": "Partner submission received"})
-
+# --------------------
+# Contributor Intake (PUBLIC)
+# --------------------
+@app.get("/contributor", response_class=HTMLResponse)
+def contributor_page(request: Request):
+    return templates.TemplateResponse("contributor_intake.html", {"request": request})
 
 @app.post("/contributor")
-async def submit_contributor(request: Request):
-    data = await read_payload(request)
-
-    # required
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    primary_role = (data.get("primary_role") or "").strip()
-    contribution_track = (data.get("contribution_track") or "").strip()
-
-    if not (name and email and primary_role and contribution_track):
-        return JSONResponse({"error": "Missing required fields"}, status_code=422)
-
-    # score + rail
-    score = _score_contributor(data)
-    rail = _assign_rail(data, score)
-
-    # optional
-    phone = (data.get("phone") or "").strip() or None
-    company = (data.get("company") or "").strip() or None
-    website = (data.get("website") or "").strip() or None
-    position_interest = (data.get("position_interest") or "").strip() or None
-    comp_plan = (data.get("comp_plan") or "").strip() or None
-    director_owner = (data.get("director_owner") or "Deuce").strip() or "Deuce"
-
-    assets = (data.get("assets") or "").strip() or None
-    regions = (data.get("regions") or "").strip() or None
-    capacity = (data.get("capacity") or "").strip() or None
-    alignment = (data.get("alignment") or "").strip() or None
-    message = (data.get("message") or "").strip() or None
-
-    fit_access = (data.get("fit_access") or "").strip() or None
-    fit_build_goal = (data.get("fit_build_goal") or "").strip() or None
-    fit_opportunity = (data.get("fit_opportunity") or "").strip() or None
-    fit_authority = (data.get("fit_authority") or "").strip() or None
-    fit_lane = (data.get("fit_lane") or "").strip() or None
-    fit_no_conditions = (data.get("fit_no_conditions") or "").strip() or None
-    fit_visibility = (data.get("fit_visibility") or "").strip() or None
-    fit_why_you = (data.get("fit_why_you") or "").strip() or None
+def submit_contributor(form: ContributorForm):
+    score = _score_contributor(form)
+    rail = _assign_rail(form, score)
 
     conn = db()
     cur = conn.cursor()
@@ -595,12 +494,12 @@ async def submit_contributor(request: Request):
                 ?, ?, ?, ?,
                 ?, ?, ?, ?)
     """, (
-        name, email, phone, company, website,
-        primary_role,
-        contribution_track, position_interest, comp_plan, director_owner,
-        assets, regions, capacity, alignment, message,
-        fit_access, fit_build_goal, fit_opportunity, fit_authority,
-        fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
+        form.name, str(form.email), form.phone, form.company, form.website,
+        form.primary_role,
+        form.contribution_track, form.position_interest, form.comp_plan, form.director_owner,
+        form.assets, form.regions, form.capacity, form.alignment, form.message,
+        form.fit_access, form.fit_build_goal, form.fit_opportunity, form.fit_authority,
+        form.fit_lane, form.fit_no_conditions, form.fit_visibility, form.fit_why_you,
         score, rail, "new", now_iso()
     ))
     conn.commit()
@@ -608,98 +507,39 @@ async def submit_contributor(request: Request):
 
     return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
 
-
 # --------------------
-# Subscriber Intake (Token gated)
+# Subscriber Intake (GATED)
 # --------------------
 @app.get("/intake-form", response_class=HTMLResponse)
 def intake_form(request: Request, token: Optional[str] = None):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse(
-        "intake_form.html",
-        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
-    )
-
+    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token})
 
 @app.post("/intake")
-async def submit_intake(request: Request, token: Optional[str] = None):
+def submit_intake(form: IntakeForm, token: Optional[str] = None):
     email, err = require_subscriber_token(token)
     if err:
         return err
-
-    data = await read_payload(request)
-    name = (data.get("name") or "").strip()
-    user_email = (data.get("email") or "").strip()
-    service_requested = (data.get("service_requested") or "").strip()
-    notes = (data.get("notes") or "").strip() or None
-
-    if not (name and user_email and service_requested):
-        return JSONResponse({"error": "Missing required fields"}, status_code=422)
 
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO intake (name, email, service_requested, notes, created_at)
         VALUES (?, ?, ?, ?, ?)
-    """, (name, user_email, service_requested, notes, now_iso()))
+    """, (form.name, str(form.email), form.service_requested, form.notes, now_iso()))
     conn.commit()
     conn.close()
 
-    # Optional internal notification
-    if (SMTP_HOST and SMTP_USER and SMTP_PASS) or (EMAIL_USER and EMAIL_PASS):
+    if EMAIL_USER and EMAIL_PASS:
         send_email(
-            SMTP_FROM or EMAIL_USER or user_email,
+            EMAIL_USER,
             "New Subscriber Intake Submission",
-            f"Authorized subscriber: {email}\n\nName: {name}\nEmail: {user_email}\nService: {service_requested}\nNotes: {notes}"
+            f"Subscriber: {email}\n\nName: {form.name}\nEmail: {form.email}\nService: {form.service_requested}\nNotes: {form.notes}"
         )
 
-    return JSONResponse({"status": "Intake stored successfully"})
-
-
-# --------------------
-# Admin readouts (simple)
-# --------------------
-@app.get("/admin/intake")
-def view_intake():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM intake ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
-
-@app.get("/admin/leads")
-def view_leads():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM leads ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
-
-@app.get("/admin/partners")
-def view_partners():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM partners ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
-
-@app.get("/admin/contributors")
-def view_contributors():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM contributors ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
+    return {"status": "Intake stored successfully"}
 
 # --------------------
 # Stripe Checkout
@@ -721,56 +561,52 @@ def checkout():
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-
 @app.get("/success", response_class=HTMLResponse)
 def success(request: Request, session_id: Optional[str] = None):
-    """
-    Success page creates a token too (so you are NOT dependent on email being configured).
-    """
     token = None
     email = None
-    dashboard_link = None
 
     if session_id and STRIPE_SECRET_KEY:
         try:
             s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
-            details = s.get("customer_details") or {}
-            email = details.get("email")
+            if s and s.get("status") in ("complete", "completed"):
+                details = s.get("customer_details") or {}
+                email = details.get("email")
+                customer_id = s.get("customer")
+                subscription_id = s.get("subscription")
 
-            # Stripe can return "complete" for status on Checkout
-            if email and (s.get("status") in ("complete", "completed")):
-                customer_id = str(s.get("customer") or "")
-                subscription_id = str(s.get("subscription") or "")
-                upsert_subscriber_active(email, customer_id=customer_id, subscription_id=subscription_id)
+                if email:
+                    conn = db()
+                    cur = conn.cursor()
+                    cur.execute("""
+                        INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
+                        VALUES (?, ?, ?, 'active', ?, ?)
+                        ON CONFLICT(email) DO UPDATE SET
+                          stripe_customer_id=excluded.stripe_customer_id,
+                          stripe_subscription_id=excluded.stripe_subscription_id,
+                          status='active',
+                          updated_at=excluded.updated_at
+                    """, (email, str(customer_id), str(subscription_id), now_iso(), now_iso()))
+                    conn.commit()
+                    conn.close()
 
-                token = issue_magic_link(email, hours=24)
-                app_base = str(request.base_url).rstrip("/")
-                dashboard_link = f"{app_base}/dashboard?token={token}"
+                    token = issue_magic_link(email, hours=24)
 
-                # Email the access link too (if configured)
-                if (SMTP_HOST and SMTP_USER and SMTP_PASS) or (EMAIL_USER and EMAIL_PASS):
-                    send_email(
-                        email,
-                        "Your Nautical Compass Access Link",
-                        f"Welcome.\n\nYour access link (valid 24 hours):\n{dashboard_link}\n"
-                    )
-
+                    if EMAIL_USER and EMAIL_PASS:
+                        app_base = str(request.base_url).rstrip("/")
+                        link = f"{app_base}/dashboard?token={token}"
+                        send_email(email, "Your Nautical Compass Access Link", f"Welcome.\n\nAccess link (24h):\n{link}\n")
         except Exception as e:
             print("Success page Stripe fetch failed:", e)
 
-    return templates.TemplateResponse(
-        "success.html",
-        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year},
-    )
-
+    return templates.TemplateResponse("success.html", {"request": request, "token": token, "email": email})
 
 @app.get("/cancel", response_class=HTMLResponse)
 def cancel(request: Request):
-    return templates.TemplateResponse("cancel.html", {"request": request, "year": datetime.utcnow().year})
-
+    return templates.TemplateResponse("cancel.html", {"request": request})
 
 # --------------------
-# Stripe Webhook (GRANTS ACCESS)
+# Stripe Webhook
 # --------------------
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
@@ -787,78 +623,120 @@ async def stripe_webhook(request: Request):
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        customer_id = str(session.get("customer") or "")
-        customer_email = (session.get("customer_details", {}) or {}).get("email")
-        subscription_id = str(session.get("subscription") or "")
+        customer_id = session.get("customer")
+        customer_email = session.get("customer_details", {}).get("email")
+        subscription_id = session.get("subscription")
 
         if customer_email:
-            upsert_subscriber_active(customer_email, customer_id=customer_id, subscription_id=subscription_id)
-
-            token = issue_magic_link(customer_email, hours=24)
-            app_base = str(request.base_url).rstrip("/")
-            link = f"{app_base}/dashboard?token={token}"
-
-            if (SMTP_HOST and SMTP_USER and SMTP_PASS) or (EMAIL_USER and EMAIL_PASS):
-                send_email(
-                    customer_email,
-                    "Your Nautical Compass Access Link",
-                    f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
-                )
+            conn = db()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
+                VALUES (?, ?, ?, 'active', ?, ?)
+                ON CONFLICT(email) DO UPDATE SET
+                  stripe_customer_id=excluded.stripe_customer_id,
+                  stripe_subscription_id=excluded.stripe_subscription_id,
+                  status='active',
+                  updated_at=excluded.updated_at
+            """, (customer_email, str(customer_id), str(subscription_id), now_iso(), now_iso()))
+            conn.commit()
+            conn.close()
 
     if event["type"] == "customer.subscription.deleted":
         sub = event["data"]["object"]
-        sub_id = str(sub.get("id") or "")
-        if sub_id:
-            cancel_subscriber_by_sub_id(sub_id)
+        sub_id = sub.get("id")
+
+        conn = db()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE subscribers
+            SET status='canceled', updated_at=?
+            WHERE stripe_subscription_id=?
+        """, (now_iso(), str(sub_id)))
+        conn.commit()
+        conn.close()
 
     return {"received": True}
 
-
 # --------------------
-# Dashboard (Magic Link Protected)
+# Dashboard (GATED)
 # --------------------
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, token: Optional[str] = None):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
-    )
-
+    return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token})
 
 # --------------------
-# Dev: Generate token (NO PAY) — OPTIONAL
+# Admin (PROTECTED)
 # --------------------
-@app.get("/dev/generate-token")
-def dev_generate_token(email: str, key: Optional[str] = None):
-    """
-    Usage:
-      /dev/generate-token?email=you@example.com
-    Optional lock:
-      set DEV_TOOLS_KEY, then call:
-      /dev/generate-token?email=you@example.com&key=YOURKEY
+@app.get("/admin/intake")
+def admin_intake(request: Request):
+    err = require_admin(request)
+    if err:
+        return err
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM intake ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"entries": rows}
 
-    Behavior:
-      - marks subscriber ACTIVE for that email
-      - issues a 24h magic link
-      - redirects to /dashboard?token=...
-    """
-    if not DEV_TOOLS_ENABLED:
-        raise HTTPException(status_code=404, detail="Not Found")
+@app.get("/admin/contributors")
+def admin_contributors(request: Request):
+    err = require_admin(request)
+    if err:
+        return err
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM contributors ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"entries": rows}
 
-    if DEV_TOOLS_KEY and (key or "") != DEV_TOOLS_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden")
+@app.get("/admin/leads")
+def admin_leads(request: Request):
+    err = require_admin(request)
+    if err:
+        return err
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leads ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"entries": rows}
 
-    email = (email or "").strip()
+@app.get("/admin/partners")
+def admin_partners(request: Request):
+    err = require_admin(request)
+    if err:
+        return err
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM partners ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"entries": rows}
+
+# --------------------
+# Dev-only Generate Token (LOCKED)
+# --------------------
+@app.get("/dev/generate-token", include_in_schema=False)
+def dev_generate_token(email: str):
+    if not DEV_MODE:
+        return JSONResponse({"error": "Not Found"}, status_code=404)
+
+    email = (email or "").strip().lower()
     if not email:
-        raise HTTPException(status_code=422, detail="email is required")
+        return JSONResponse({"error": "email required"}, status_code=400)
 
-    upsert_subscriber_active(email, customer_id="DEV", subscription_id="DEV")
+    # IMPORTANT: token only works if subscriber is active
+    if not is_active_subscriber(email):
+        return JSONResponse({"error": "Subscriber not active for this email"}, status_code=403)
+
     token = issue_magic_link(email, hours=24)
-    return RedirectResponse(url=f"/dashboard?token={token}", status_code=303)
-
+    return {"token": token, "dashboard": f"/dashboard?token={token}", "intake": f"/intake-form?token={token}"}
 
 # --------------------
 # Favicon
