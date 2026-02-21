@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Admin • Intake{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Subscriber Intake Entries</h2>
+  <div class="tablewrap">
+    <table class="table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Service</th><th>Notes</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.email }}</td>
+          <td>{{ r.service_requested }}</td>
+          <td class="muted">{{ r.notes or "" }}</td>
+          <td class="muted">{{ r.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
