@@ -1,148 +1,93 @@
 {% extends "base.html" %}
 {% block title %}Services • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Services</h1>
+  <p class="h-sub">A curated menu up front — plus a full catalog dropdown for psychology + scope.</p>
+</section>
+{% endblock %}
+
 {% block content %}
-<div class="grid grid-2">
+<div class="card">
+  <h2>Core Services (Curated)</h2>
+  <p class="muted">This is the tight list that signals “clean + capable.”</p>
 
-  <div class="card">
-    <h2>Core Services (Most Requested)</h2>
-    <p class="muted">
-      High-impact entry points. If you’re not sure, pick one of these.
-    </p>
+  <ul style="line-height:1.8; margin-top:10px;">
+    <li>Legal Intake Strategy</li>
+    <li>Contract Review & Risk Mapping</li>
+    <li>Demand Letter Drafting</li>
+    <li>Arbitration Package Assembly</li>
+    <li>Dispute Timeline & Evidence Organization</li>
+    <li>Complaint Framing & Narrative Structuring</li>
+    <li>Record Requests (CPRA / FOIA-style packets)</li>
+    <li>Platform / Marketplace Dispute Structuring</li>
+    <li>Billing / Payments Dispute Structuring</li>
+    <li>Business Compliance Positioning (basic intake)</li>
+  </ul>
 
-    <div class="grid">
-      <div class="card" style="padding:16px">
-        <div class="badge">Top</div>
-        <h3 style="margin:10px 0 6px">Legal Intake Strategy</h3>
-        <p class="muted" style="margin:0">Raw facts → timeline → targets → execution plan.</p>
-      </div>
-
-      <div class="card" style="padding:16px">
-        <div class="badge">Fast</div>
-        <h3 style="margin:10px 0 6px">Contract Review & Risk Mapping</h3>
-        <p class="muted" style="margin:0">Find exposure, missing terms, leverage, enforceability.</p>
-      </div>
-
-      <div class="card" style="padding:16px">
-        <div class="badge">Pressure</div>
-        <h3 style="margin:10px 0 6px">Demand Letter Drafting</h3>
-        <p class="muted" style="margin:0">Structured demand with exhibits, deadlines, remedies.</p>
-      </div>
-
-      <div class="card" style="padding:16px">
-        <div class="badge">Build</div>
-        <h3 style="margin:10px 0 6px">Arbitration Package Assembly</h3>
-        <p class="muted" style="margin:0">Claims + exhibits + procedure + damages package.</p>
-      </div>
-    </div>
-
-    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-primary" href="/checkout">Subscribe</a>
-      <a class="btn" href="/lead">Public Lead Intake</a>
-      <a class="btn" href="/partner">Partner Intake</a>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Full Catalog</h2>
-    <p class="muted">
-      Expanded list — designed to trigger “I might need that” thinking.
-      You’ll choose the exact option inside the Subscriber Intake after access is granted.
-    </p>
-
-    <details class="dropdown" open>
-      <summary>
-        Explore the Complete Service Catalog
-        <span class="badge">Expand</span>
-      </summary>
-
-      <div class="dropdown-body">
-        <div class="grid">
-
-          <div>
-            <div class="badge">Intake / Strategy</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Legal Intake Strategy</li>
-              <li>Dispute Timeline & Evidence Organization</li>
-              <li>Complaint Framing & Narrative Structuring</li>
-              <li>Remedy Selection & Outcome Mapping</li>
-              <li>Damages & Loss Summary</li>
-              <li>Case File Cleanup / Missing Gaps Detection</li>
-            </ul>
+  <details class="dropdown">
+    <summary>
+      Full Catalog (expand)
+      <span class="badge">All categories</span>
+    </summary>
+    <div class="dropdown-body">
+      <div class="grid">
+        <div>
+          <span class="badge">Legal Strategy</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            Intake Strategy • Risk Mapping • Strategy Briefs • Response Architecture
           </div>
-
-          <div>
-            <div class="badge">Contracts</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Contract Review & Risk Mapping</li>
-              <li>Scope-of-Work Tightening</li>
-              <li>Payment Terms Reinforcement</li>
-              <li>NDA / IP / Non-Compete Review</li>
-              <li>Vendor / Client Agreement Structuring</li>
-              <li>Termination / Breach Response Strategy</li>
-            </ul>
-          </div>
-
-          <div>
-            <div class="badge">Disputes & Demands</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Demand Letter Drafting</li>
-              <li>Billing / Payments Dispute Structuring</li>
-              <li>Platform / Marketplace Dispute Structuring</li>
-              <li>Chargeback Response Packet</li>
-              <li>Settlement Offer Packaging</li>
-              <li>Notice / Cure Letter Drafting</li>
-            </ul>
-          </div>
-
-          <div>
-            <div class="badge">Arbitration / Proceedings</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Arbitration Package Assembly</li>
-              <li>Exhibit Book + Numbering Scheme</li>
-              <li>Discovery Request Planning</li>
-              <li>Hearing Prep Structure</li>
-              <li>Post-Hearing Summary</li>
-              <li>Procedural Posture Alignment</li>
-            </ul>
-          </div>
-
-          <div>
-            <div class="badge">Records / Compliance</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Record Request Packet (FOIA/CPRA-style)</li>
-              <li>Data Access Request Structuring</li>
-              <li>Policy / Terms Analysis</li>
-              <li>Regulatory Complaint Framework</li>
-              <li>Documentation Retention System</li>
-              <li>Proof-of-Delivery / Notice Evidence</li>
-            </ul>
-          </div>
-
-          <div>
-            <div class="badge">Other</div>
-            <ul class="muted" style="line-height:1.7; margin-top:10px;">
-              <li>Custom Pack (describe in notes)</li>
-              <li>Rapid Review / Triage (time-sensitive)</li>
-              <li>Template Customization & Branding</li>
-              <li>Operations Binder / Workflow Build</li>
-              <li>Contributor / Partner Onboarding Rails</li>
-            </ul>
-          </div>
-
         </div>
 
-        <div class="alert" style="margin-top:14px;">
-          <strong>Best move:</strong> Subscribe → finish checkout → use your access link → submit Subscriber Intake.
+        <div>
+          <span class="badge">Contracts</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            Review • Redlines • Terms Audit • Vendor/Client Positioning
+          </div>
+        </div>
+
+        <div>
+          <span class="badge">Arbitration</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            Demand Package • Evidence Index • Timeline • Filing Checklist
+          </div>
+        </div>
+
+        <div>
+          <span class="badge">Business</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            Compliance Intake • Admin Process Guidance • Documentation Audit
+          </div>
+        </div>
+
+        <div>
+          <span class="badge">Gig / Platform</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            App Disputes • Payments • Routing/Steering Issues • Deactivation Structuring
+          </div>
+        </div>
+
+        <div>
+          <span class="badge">Premium</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            Priority Routing • Fast Turnaround • Higher-touch packet assembly
+          </div>
+        </div>
+
+        <div>
+          <span class="badge">Custom</span>
+          <div style="margin-top:8px; line-height:1.8;">
+            If it doesn’t fit a category, we structure it clean and route it.
+          </div>
         </div>
       </div>
-    </details>
-
-    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-primary" href="/checkout">Start Subscription</a>
-      <a class="btn" href="/lead">Lead Intake</a>
     </div>
+  </details>
 
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
+    <a class="btn" href="/">Back Home</a>
   </div>
 </div>
 {% endblock %}
