@@ -1,40 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Manufacturer / Sponsor Intake</title>
-</head>
-<body>
-    <h1>Manufacturer / Sponsor Intake</h1>
+{% extends "base.html" %}
+{% block title %}Manufacturer / Sponsor Intake • Nautical Compass{% endblock %}
 
-    <form method="post" action="/partner">
-        Name:<br>
-        <input type="text" name="name" required><br><br>
+{% block content %}
+<div class="card">
+  <h2>Manufacturer / Sponsor Intake</h2>
+  <p class="muted">For vendors, manufacturers, sponsors, and strategic partners.</p>
 
-        Email:<br>
-        <input type="email" name="email" required><br><br>
+  <form class="form" method="post" action="/partner">
+    <div>
+      <label>Name</label>
+      <input name="name" required />
+    </div>
 
-        Company:<br>
-        <input type="text" name="company" required><br><br>
+    <div>
+      <label>Email</label>
+      <input name="email" type="email" required />
+    </div>
 
-        Role:<br>
-        <input type="text" name="role" required><br><br>
+    <div>
+      <label>Company</label>
+      <input name="company" required />
+    </div>
 
-        Product Type:<br>
-        <input type="text" name="product_type" required><br><br>
+    <div>
+      <label>Role</label>
+      <input name="role" placeholder="Regional Sales / Manufacturer / Distributor / Sponsor" required />
+    </div>
 
-        Website:<br>
-        <input type="text" name="website"><br><br>
+    <div>
+      <label>Product Type</label>
+      <input name="product_type" placeholder="LED wall / staging / logistics / software / etc." required />
+    </div>
 
-        Regions:<br>
-        <input type="text" name="regions"><br><br>
+    <div>
+      <label>Website (optional)</label>
+      <input name="website" />
+    </div>
 
-        Message:<br>
-        <textarea name="message"></textarea><br><br>
+    <div>
+      <label>Regions (optional)</label>
+      <input name="regions" placeholder="DMV / East Coast / National / Global" />
+    </div>
 
-        <button type="submit">Submit</button>
-    </form>
+    <div>
+      <label>Message (optional)</label>
+      <textarea name="message"></textarea>
+    </div>
 
-    <hr>
-    <a href="/">Back Home</a>
-</body>
-</html>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/">Back Home</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
