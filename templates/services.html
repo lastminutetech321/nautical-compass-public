@@ -2,103 +2,164 @@
 {% block title %}Services • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>Services</h2>
-  <p class="muted">A clean menu first — then the full catalog for range and capability.</p>
 
-  <h3 style="margin-top:14px;">Most Requested</h3>
-  <ul>
-    <li>Legal Intake Strategy</li>
-    <li>Contract Review & Risk Mapping</li>
-    <li>Demand Letter Drafting</li>
-    <li>Arbitration Package Assembly</li>
-    <li>Dispute Timeline & Evidence Organization</li>
-    <li>Complaint Framing & Narrative Structuring</li>
-    <li>Record Requests (CPRA / FOIA-style packets)</li>
-    <li>Payment & Billing Dispute Structuring</li>
-    <li>Platform / Marketplace Dispute Structuring</li>
-    <li>Business Compliance Positioning (basic intake)</li>
-  </ul>
+<div class="grid grid-2">
 
-  <details class="dropdown">
-    <summary>
-      <span>Full Catalog (Expand)</span>
-      <span class="badge">All Categories</span>
-    </summary>
+  <!-- LEFT: Curated / high-conversion list -->
+  <div class="card">
+    <h2>Core Services (Most Requested)</h2>
+    <p class="muted">
+      These are the highest-impact entry points. If you’re not sure where to start, pick one of these.
+    </p>
 
-    <div class="dropdown-body">
-      <div class="grid">
-        <div>
-          <strong>Legal Strategy</strong>
-          <ul>
-            <li>Legal Intake Strategy</li>
-            <li>Case Framing & Narrative Structuring</li>
-            <li>Risk Mapping & Next-Step Plan</li>
-            <li>Jurisdiction / Venue Targeting (basic)</li>
-          </ul>
-        </div>
+    <div class="grid">
+      <div class="card" style="padding:16px">
+        <div class="badge">Top</div>
+        <h3 style="margin:10px 0 6px">Legal Intake Strategy</h3>
+        <p class="muted" style="margin:0">
+          We turn raw facts into a clean timeline + target outcomes + action plan.
+        </p>
+      </div>
 
-        <div>
-          <strong>Contracts</strong>
-          <ul>
-            <li>Contract Review & Risk Mapping</li>
-            <li>Contract Rewrite (Plain-English)</li>
-            <li>Scope & Deliverables Lockdown</li>
-            <li>Payment Terms Hardening</li>
-          </ul>
-        </div>
+      <div class="card" style="padding:16px">
+        <div class="badge">Fast</div>
+        <h3 style="margin:10px 0 6px">Contract Review & Risk Mapping</h3>
+        <p class="muted" style="margin:0">
+          Identify exposure, missing terms, enforcement angles, and negotiation leverage.
+        </p>
+      </div>
 
-        <div>
-          <strong>Arbitration / Disputes</strong>
-          <ul>
-            <li>Arbitration Package Assembly</li>
-            <li>Demand Letter Drafting</li>
-            <li>Billing / Payments Dispute Structuring</li>
-            <li>Platform / Marketplace Dispute Structuring</li>
-          </ul>
-        </div>
+      <div class="card" style="padding:16px">
+        <div class="badge">Pressure</div>
+        <h3 style="margin:10px 0 6px">Demand Letter Drafting</h3>
+        <p class="muted" style="margin:0">
+          A tight, structured demand with facts, exhibits, deadlines, and remedies.
+        </p>
+      </div>
 
-        <div>
-          <strong>Records & Evidence</strong>
-          <ul>
-            <li>Record Requests (CPRA / FOIA style)</li>
-            <li>Dispute Timeline & Evidence Organization</li>
-            <li>Exhibit Index + Labeling System</li>
-            <li>Evidence Gaps Checklist</li>
-          </ul>
-        </div>
-
-        <div>
-          <strong>Identity / Standing</strong>
-          <ul>
-            <li>Identity / Standing Documentation Support</li>
-            <li>Status Packet Structuring (non-legal advice)</li>
-            <li>Affidavit Set Formatting (non-legal advice)</li>
-          </ul>
-        </div>
-
-        <div>
-          <strong>Premium</strong>
-          <ul>
-            <li>Priority Intake + Rapid Structuring</li>
-            <li>Executive Summary + Action Plan</li>
-            <li>Case “Binder Build” (full organization)</li>
-          </ul>
-        </div>
-
-        <div>
-          <strong>Custom</strong>
-          <ul>
-            <li>Other (explain in notes)</li>
-          </ul>
-        </div>
+      <div class="card" style="padding:16px">
+        <div class="badge">Build</div>
+        <h3 style="margin:10px 0 6px">Arbitration Package Assembly</h3>
+        <p class="muted" style="margin:0">
+          Organized filing packet: claims, exhibits, timeline, damages, and procedure.
+        </p>
       </div>
     </div>
-  </details>
 
-  <div class="btnrow" style="margin-top:16px;">
-    <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
-    <a class="btn" href="/">Back Home</a>
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-primary" href="/checkout">Subscribe</a>
+      <a class="btn" href="/lead">Public Lead Intake</a>
+      <a class="btn" href="/partner">Partner Intake</a>
+    </div>
+
+    <div class="alert" style="margin-top:16px;">
+      <strong>Subscriber Intake:</strong>
+      After checkout, your Success page gives an access link. Use that link to open the member intake.
+    </div>
   </div>
+
+  <!-- RIGHT: Full catalog dropdown (psychology win) -->
+  <div class="card">
+    <h2>Full Catalog</h2>
+    <p class="muted">
+      This is the expanded list — designed to trigger “I might need that” thinking.
+      You’ll choose the exact option inside the Subscriber Intake form after access is granted.
+    </p>
+
+    <details class="dropdown" open>
+      <summary>
+        Explore the Complete Service Catalog
+        <span class="badge">Expand</span>
+      </summary>
+
+      <div class="dropdown-body">
+        <div class="grid">
+
+          <div>
+            <div class="badge">Intake / Strategy</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Legal Intake Strategy</li>
+              <li>Dispute Timeline & Evidence Organization</li>
+              <li>Complaint Framing & Narrative Structuring</li>
+              <li>Remedy Selection & Outcome Mapping</li>
+              <li>Damages & Loss Summary (non-financial + financial)</li>
+              <li>Case File Cleanup / Missing Gaps Detection</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="badge">Contracts</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Contract Review & Risk Mapping</li>
+              <li>Scope-of-Work Tightening</li>
+              <li>Payment Terms Reinforcement</li>
+              <li>Non-Compete / NDA / IP language check</li>
+              <li>Vendor / Client Agreement structure</li>
+              <li>Termination / breach response strategy</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="badge">Disputes & Demands</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Demand Letter Drafting</li>
+              <li>Billing / Payments Dispute Structuring</li>
+              <li>Platform / Marketplace Dispute Structuring</li>
+              <li>Chargeback response packet</li>
+              <li>Refund/return enforcement framing</li>
+              <li>Settlement offer packaging</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="badge">Arbitration / Proceedings</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Arbitration Package Assembly</li>
+              <li>Exhibit Book + numbering scheme</li>
+              <li>Procedural posture + timeline alignment</li>
+              <li>Discovery request planning</li>
+              <li>Hearing prep structure</li>
+              <li>Post-hearing summary & remedies memo</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="badge">Records / Compliance</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Record Request Packet (FOIA/CPRA-style)</li>
+              <li>Data access request structure</li>
+              <li>Policy / terms analysis</li>
+              <li>Regulatory complaint drafting (framework)</li>
+              <li>Documentation retention system</li>
+              <li>Proof-of-delivery / notice evidence</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="badge">Other</div>
+            <ul class="muted" style="line-height:1.7; margin-top:10px;">
+              <li>Custom Pack (describe in notes)</li>
+              <li>Rapid review / triage (time-sensitive)</li>
+              <li>Template customization & branding</li>
+              <li>Operations binder / workflow build</li>
+              <li>Contributor / Partner onboarding rails</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="alert" style="margin-top:14px;">
+          <strong>Best move:</strong> Subscribe → finish checkout → use your access link → submit Subscriber Intake with the exact service selected.
+        </div>
+      </div>
+    </details>
+
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-primary" href="/checkout">Start Subscription</a>
+      <a class="btn" href="/lead">Public Lead Intake</a>
+    </div>
+  </div>
+
 </div>
+
 {% endblock %}
