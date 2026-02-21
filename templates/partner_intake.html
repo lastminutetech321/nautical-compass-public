@@ -1,55 +1,76 @@
 {% extends "base.html" %}
-{% block title %}Manufacturer / Sponsor Intake • Nautical Compass{% endblock %}
+{% block title %}Partner Intake • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Manufacturer / Sponsor Intake</h2>
-  <p class="muted">For vendors, manufacturers, sponsors, and strategic partners.</p>
+  <h2>Partner Intake</h2>
+  <p class="muted">
+    For manufacturers, sponsors, regional sales reps, and strategic partners.
+    We’re building rails — you plug into the system where you fit.
+  </p>
 
   <form class="form" method="post" action="/partner">
     <div>
-      <label>Name</label>
+      <label class="label">Name</label>
       <input name="name" required />
     </div>
 
     <div>
-      <label>Email</label>
+      <label class="label">Email</label>
       <input name="email" type="email" required />
     </div>
 
     <div>
-      <label>Company</label>
+      <label class="label">Company</label>
       <input name="company" required />
     </div>
 
     <div>
-      <label>Role</label>
-      <input name="role" placeholder="Regional Sales / Manufacturer / Distributor / Sponsor" required />
+      <label class="label">Role</label>
+      <select name="role" required>
+        <option value="">Select…</option>
+        <option>Regional Sales</option>
+        <option>Manufacturer</option>
+        <option>Distributor</option>
+        <option>Sponsor</option>
+        <option>Integrator</option>
+        <option>Other</option>
+      </select>
     </div>
 
     <div>
-      <label>Product Type</label>
-      <input name="product_type" placeholder="LED wall / staging / logistics / software / etc." required />
+      <label class="label">Product Type</label>
+      <select name="product_type" required>
+        <option value="">Select…</option>
+        <option>LED Wall / Panels</option>
+        <option>Video / Projection</option>
+        <option>Audio</option>
+        <option>Lighting</option>
+        <option>Rigging / Staging</option>
+        <option>Power / Data Infrastructure</option>
+        <option>Other</option>
+      </select>
     </div>
 
     <div>
-      <label>Website (optional)</label>
+      <label class="label">Website (optional)</label>
       <input name="website" />
     </div>
 
     <div>
-      <label>Regions (optional)</label>
-      <input name="regions" placeholder="DMV / East Coast / National / Global" />
+      <label class="label">Regions (optional)</label>
+      <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
     </div>
 
     <div>
-      <label>Message (optional)</label>
-      <textarea name="message"></textarea>
+      <label class="label">Message (optional)</label>
+      <textarea name="message" placeholder="What do you offer? What capacity? Any exclusivity?"></textarea>
     </div>
 
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/">Back Home</a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+      <button class="btn btn-primary" type="submit">Submit Partner Info</button>
+      <a class="btn" href="/services">Services</a>
+      <a class="btn" href="/checkout">Subscribe</a>
     </div>
   </form>
 </div>
