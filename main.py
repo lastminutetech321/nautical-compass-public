@@ -1,13 +1,4 @@
 import os
-import sqlite3
-import smtplib
-import hashlib
-import secrets
-from datetime import datetime, timedelta
-from email.message import EmailMessage
-from pathlib import Path
-
-import stripe
 from fastapi import FastAPI, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
