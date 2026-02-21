@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Canceled • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Subscription Canceled</h1>
+  <p class="h-sub">Your subscription process was not completed.</p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Checkout Canceled</h2>
-  <p class="muted">
-    No worries — you can resume whenever you’re ready.
-  </p>
-
-  <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+  <div class="btnrow">
     <a class="btn btn-primary" href="/checkout">Try Again</a>
-    <a class="btn" href="/services">View Services</a>
-    <a class="btn" href="/lead">Lead Intake</a>
+    <a class="btn" href="/services">Return to Services</a>
+    <a class="btn" href="/">Home</a>
   </div>
 </div>
 {% endblock %}
