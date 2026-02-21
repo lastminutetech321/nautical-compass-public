@@ -1,17 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Nautical Compass</title>
-</head>
-<body>
-    <h1>Nautical Compass</h1>
-    <p>Precision legal positioning & structured action.</p>
+{% extends "base.html" %}
+{% block title %}Nautical Compass{% endblock %}
 
-    <hr>
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Welcome</h2>
+    <p class="muted">
+      Nautical Compass is built for people who want to move with clarity:
+      structured action, clean documentation, and calm control of the process.
+    </p>
 
-    <a href="/services">View Services</a><br><br>
-    <a href="/checkout">Subscribe</a><br><br>
-    <a href="/lead">General Inquiry</a><br><br>
-    <a href="/partner">Manufacturer / Sponsor Intake</a>
-</body>
-</html>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/services">View Services</a>
+      <a class="btn" href="/lead">General Inquiry</a>
+      <a class="btn" href="/partner">Manufacturer / Sponsor Intake</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <ul class="list">
+      <li>Browse services + choose a direction.</li>
+      <li>Submit a public inquiry or subscribe for member intake.</li>
+      <li>Get structured steps and deliverables based on your facts.</li>
+    </ul>
+    <div style="margin-top:10px;">
+      <span class="tag">Clean Process</span>
+      <span class="tag">Low Friction</span>
+      <span class="tag">Documentation First</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
