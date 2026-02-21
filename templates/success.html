@@ -3,34 +3,29 @@
 
 {% block content %}
 <div class="card">
-  <h2>Subscription Status</h2>
+  <h2>Subscription Successful</h2>
+  <p class="muted">
+    Your subscription is active.
+  </p>
 
-  {% if email and token %}
+  {% if token %}
     <div class="alert ok">
-      <strong>Payment confirmed.</strong><br/>
-      Subscriber email: <strong>{{ email }}</strong>
+      <strong>Your Access Link (valid 24 hours):</strong><br />
+      <a href="/dashboard?token={{ token }}">Open Dashboard</a>
     </div>
 
-    <p class="muted" style="margin-top:10px;">
-      Your access link (valid ~24 hours):
-    </p>
-
-    <p>
-      <a class="btn btn-primary" href="/dashboard?token={{ token }}">Continue to Dashboard</a>
-    </p>
-
-    <p class="muted">
-      If the button doesn’t work, use this URL:
-      <br/>
-      <code>/dashboard?token={{ token }}</code>
-    </p>
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-primary" href="/dashboard?token={{ token }}">Go to Dashboard</a>
+      <a class="btn" href="/services">Services</a>
+    </div>
   {% else %}
-    <div class="alert">
-      Success page loaded. If you just paid, this page needs a <code>session_id</code> from Stripe to generate your access link.
+    <div class="alert bad">
+      We couldn’t generate an access link yet. Refresh this page in a few seconds.
+      If it still doesn’t show, contact support.
     </div>
 
-    <div class="btnrow" style="margin-top:12px;">
-      <a class="btn btn-primary" href="/services">Back to Services</a>
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-primary" href="/services">Services</a>
       <a class="btn" href="/">Home</a>
     </div>
   {% endif %}
