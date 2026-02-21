@@ -1,319 +1,173 @@
 {% extends "base.html" %}
 {% block title %}Contributor Intake • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Contributor Intake</h1>
+  <p class="h-sub">
+    Operators, builders, staff, sales, partners, sponsors. Fill this out and we route you into rails.
+  </p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Contributor Intake</h2>
-  <p class="muted">
-    This intake maps you into a rail: Staff, Sales, Builder/Ops, Partner/Vendor, Hardware/Supply, Capital/Sponsor.
-    No wrong answers — the system routes you where you’ll win and where we move fastest.
-  </p>
+  {% if submitted %}
+  <div class="alert ok">
+    <strong>Submitted.</strong> Contributor intake received.
+    {% if rail %}<div class="muted" style="margin-top:6px;">Rail assigned: <strong>{{ rail }}</strong> · Score: <strong>{{ score }}</strong></div>{% endif %}
+  </div>
+  {% endif %}
 
-  <!-- Quick Fit -->
-  <details class="dropdown" open>
-    <summary>
-      Quick Fit (60 seconds)
-      <span class="badge">recommended</span>
-    </summary>
-    <div class="dropdown-body">
-      <div class="grid">
-        <div>
-          <div class="label">Contribution Track (what you’re here for)</div>
-          <select id="contribution_track" required>
-            <option value="">Select…</option>
-            <option value="ecosystem_staff">Ecosystem Staff (application-style)</option>
-            <option value="sales_growth">Sales / Growth (commission / residual)</option>
-            <option value="builder_operator">Builder / Operator (execution)</option>
-            <option value="partner_vendor">Partner / Vendor (products/services)</option>
-            <option value="hardware_supply">Hardware / Manufacturing / Supply</option>
-            <option value="capital_sponsor">Capital / Sponsor</option>
-            <option value="advisor_specialist">Advisor / Specialist</option>
-            <option value="not_sure">Not sure — route me</option>
-          </select>
-        </div>
+  <form method="post" action="/contributor">
+    <div class="label">Name</div>
+    <input name="name" required />
 
-        <div>
-          <div class="label">Director / Lane Owner (routing)</div>
-          <select id="director_owner" required>
-            <option value="Deuce" selected>Deuce (Director)</option>
-            <option value="Founder">Founder</option>
-            <option value="AutoRoute">Auto-route (system decides)</option>
-          </select>
-        </div>
-      </div>
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
 
-      <div class="grid" style="margin-top:12px;">
-        <div>
-          <div class="label">Position (if you want Staff or Sales)</div>
-          <select id="position_interest">
-            <option value="">Select…</option>
+    <div class="label">Phone (optional)</div>
+    <input name="phone" />
 
-            <optgroup label="Ecosystem Staff (application-style)">
-              <option value="intake_specialist">Intake Specialist (forms → clean case packet)</option>
-              <option value="client_success">Client Success / Member Support</option>
-              <option value="operations_coordinator">Operations Coordinator (follow-ups + routing)</option>
-              <option value="project_coordinator">Project Coordinator (deadlines + deliverables)</option>
-              <option value="research_assistant">Research Assistant (citations + sourcing)</option>
-              <option value="content_producer">Content / Podcast Producer</option>
-              <option value="community_builder">Community Builder / Member Onboarding</option>
-            </optgroup>
+    <div class="label">Company (optional)</div>
+    <input name="company" placeholder="Company / brand / entity" />
 
-            <optgroup label="Sales / Growth (commission / residual)">
-              <option value="sales_rep">Sales Rep (subs + pipeline)</option>
-              <option value="closer">Closer (qualified calls)</option>
-              <option value="affiliate_partner_referrals">Affiliate / Referral Partner</option>
-              <option value="outreach_setter">Outreach / Appointment Setter</option>
-              <option value="partnerships_bd">Partnerships / Business Development</option>
-            </optgroup>
+    <div class="label">Website (optional)</div>
+    <input name="website" placeholder="https://…" />
 
-            <optgroup label="Builder / Operator">
-              <option value="systems_operator">Systems Operator (process + automation)</option>
-              <option value="product_ops">Product Ops (features + rollout)</option>
-              <option value="qa_testing">QA / Testing (break it, fix it)</option>
-            </optgroup>
+    <div class="label">Primary Role</div>
+    <select name="primary_role" required>
+      <option value="">Select...</option>
+      <option value="hardware_manufacturer">Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
+      <option value="regional_sales_rep">Regional Sales / Rep</option>
+      <option value="integrator_installer">Integrator / Installer</option>
+      <option value="venue_ops">Venue / Event Center / Stadium Ops</option>
+      <option value="real_estate_dev">Real Estate / Development</option>
+      <option value="legal_admin_ops">Legal / Compliance / Admin Ops</option>
+      <option value="engineering_software">Engineering / Software / Systems</option>
+      <option value="capital_investor">Capital / Sponsor / Investor</option>
+      <option value="ecosystem_staff">Ecosystem Staff (ops / intake / support)</option>
+      <option value="sales_growth">Sales / Growth (subs + pipeline)</option>
+      <option value="other">Other</option>
+    </select>
 
-            <optgroup label="Other">
-              <option value="other">Other (explain below)</option>
-            </optgroup>
-          </select>
+    <div class="label">Contribution Track</div>
+    <select name="contribution_track" required>
+      <option value="">Select...</option>
+      <option value="builder_operator">Builder / Operator (execute builds, ops, delivery)</option>
+      <option value="sales_growth">Sales / Growth (subs + pipeline)</option>
+      <option value="ecosystem_staff">Ecosystem Staff (intake / ops / support)</option>
+      <option value="partner_vendor">Partner / Vendor</option>
+      <option value="hardware_supply">Hardware Supply</option>
+      <option value="capital_sponsor">Capital / Sponsor</option>
+      <option value="advisor_specialist">Advisor / Specialist</option>
+      <option value="not_sure">Not sure</option>
+    </select>
 
-          <div class="muted" style="font-size:12px;margin-top:6px;">
-            If you choose Staff/Sales, this behaves like a traditional application lane — but faster.
-          </div>
-        </div>
+    <div class="label">Position Interest (optional)</div>
+    <input name="position_interest" placeholder="Sales Rep, Appointment Setter, Closer, Intake Specialist, Ops Coordinator..." />
 
-        <div>
-          <div class="label">Comp Plan Preference</div>
-          <select id="comp_plan">
-            <option value="">Select…</option>
-            <option value="staff_residual_20_under_deuce">Staff under Deuce: 20% residual + Deuce override</option>
-            <option value="sales_commission_residual">Sales: commission + residual</option>
-            <option value="contractor_hourly">Contractor: hourly / project rate</option>
-            <option value="revshare">Revenue share</option>
-            <option value="equity_upside">Equity / upside</option>
-            <option value="mixed">Mixed</option>
-            <option value="not_sure">Not sure</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </details>
+    <div class="label">Comp Plan Preference (optional)</div>
+    <select name="comp_plan">
+      <option value="">Select...</option>
+      <option value="commission">Commission</option>
+      <option value="residual">Residual / Override</option>
+      <option value="hourly">Hourly</option>
+      <option value="revshare">Rev-share / Equity-style</option>
+      <option value="not_sure">Not sure</option>
+    </select>
 
-  <form class="form" id="contribForm">
-    <div class="grid grid-2">
-      <div>
-        <div class="label">Name</div>
-        <input name="name" required />
-      </div>
-      <div>
-        <div class="label">Email</div>
-        <input name="email" type="email" required />
-      </div>
-    </div>
+    <input type="hidden" name="director_owner" value="Duece" />
 
-    <div class="grid grid-2">
-      <div>
-        <div class="label">Phone (optional)</div>
-        <input name="phone" />
-      </div>
-      <div>
-        <div class="label">Company (optional)</div>
-        <input name="company" />
-      </div>
-    </div>
+    <div class="label">Assets (optional)</div>
+    <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, IP, relationships..."></textarea>
 
-    <div>
-      <div class="label">Website (optional)</div>
-      <input name="website" placeholder="https://..." />
-    </div>
+    <div class="label">Regions (optional)</div>
+    <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide..." />
 
-    <div>
-      <div class="label">Primary Role (general)</div>
-      <select name="primary_role" required>
-        <option value="">Select…</option>
+    <div class="label">Capacity (optional)</div>
+    <textarea name="capacity" placeholder="Volume per month, lead times, constraints, crew size, install capacity..."></textarea>
 
-        <optgroup label="Ecosystem / Staff / Sales">
-          <option>Ecosystem Operator / Staff</option>
-          <option>Sales Representative</option>
-          <option>Closer</option>
-          <option>Intake Specialist</option>
-          <option>Client Success / Support</option>
-          <option>Operations Coordinator</option>
-          <option>Partnerships / Business Development</option>
-        </optgroup>
+    <div class="label">Alignment (optional)</div>
+    <input name="alignment" placeholder="What mission/outcome are you aligned with?" />
 
-        <optgroup label="Industry / Capacity">
-          <option>Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
-          <option>Regional Sales / Rep</option>
-          <option>Integrator / Installer</option>
-          <option>Venue / Event Center / Stadium Ops</option>
-          <option>Real Estate / Development</option>
-          <option>Legal / Compliance / Admin Ops</option>
-          <option>Engineering / Software / Systems</option>
-          <option>Capital / Sponsor / Investor</option>
-        </optgroup>
-
-        <optgroup label="Other">
-          <option>Other</option>
-        </optgroup>
-      </select>
-    </div>
+    <div class="label">Message (optional)</div>
+    <textarea name="message" placeholder="What should we know?"></textarea>
 
     <details class="dropdown">
       <summary>
-        Assets + Capability (optional)
-        <span class="badge">boosts routing</span>
+        Fit Extract (optional) — 6–8 quick questions
+        <span class="badge">Improves routing</span>
       </summary>
+
       <div class="dropdown-body">
-        <div class="grid">
-          <div>
-            <div class="label">Assets</div>
-            <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, relationships…"></textarea>
-          </div>
-          <div>
-            <div class="label">Capacity</div>
-            <textarea name="capacity" placeholder="How much can you handle per month? Crew size, lead times, install capacity…"></textarea>
-          </div>
-          <div>
-            <div class="label">Regions (optional)</div>
-            <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
-          </div>
-          <div>
-            <div class="label">Alignment (optional)</div>
-            <textarea name="alignment" placeholder="Why this mission matters to you, what you want to build, how you want to contribute…"></textarea>
-          </div>
-        </div>
+        <div class="label">Access level</div>
+        <select name="fit_access">
+          <option value="">Select...</option>
+          <option value="direct_access">I can directly introduce / move decisions</option>
+          <option value="warm_access">I can get you in front of decision makers</option>
+          <option value="limited_access">Limited access</option>
+        </select>
+
+        <div class="label">Build goal</div>
+        <input name="fit_build_goal" placeholder="What are you trying to build with us?" />
+
+        <div class="label">Opportunity type</div>
+        <select name="fit_opportunity">
+          <option value="">Select...</option>
+          <option value="revenue_now">Revenue now</option>
+          <option value="infrastructure">Infrastructure / buildout</option>
+          <option value="partnership">Partnership / integration</option>
+          <option value="long_term">Long-term strategic</option>
+        </select>
+
+        <div class="label">Authority level</div>
+        <select name="fit_authority">
+          <option value="">Select...</option>
+          <option value="owner_exec">Owner / Exec</option>
+          <option value="manager_influence">Manager / Strong influence</option>
+          <option value="partial">Partial influence</option>
+          <option value="none">No authority</option>
+        </select>
+
+        <div class="label">Lane</div>
+        <select name="fit_lane">
+          <option value="">Select...</option>
+          <option value="sales">Sales</option>
+          <option value="ops">Ops</option>
+          <option value="hardware">Hardware</option>
+          <option value="venue">Venue / Stadium</option>
+          <option value="realestate">Real Estate</option>
+          <option value="finance">Finance / Capital</option>
+          <option value="software">Software</option>
+          <option value="legal">Legal / Compliance</option>
+        </select>
+
+        <div class="label">Any conditions?</div>
+        <select name="fit_no_conditions">
+          <option value="">Select...</option>
+          <option value="no">No conditions</option>
+          <option value="some">Some conditions</option>
+          <option value="many">Many conditions</option>
+        </select>
+
+        <div class="label">Visibility preference</div>
+        <select name="fit_visibility">
+          <option value="">Select...</option>
+          <option value="public">Public-facing</option>
+          <option value="private">Private / behind the scenes</option>
+          <option value="either">Either</option>
+        </select>
+
+        <div class="label">Why you?</div>
+        <input name="fit_why_you" placeholder="What makes you the right person for this lane?" />
       </div>
     </details>
-
-    <details class="dropdown">
-      <summary>
-        Fit Extract (8 questions)
-        <span class="badge">routes you fast</span>
-      </summary>
-      <div class="dropdown-body">
-        <div class="grid">
-          <div>
-            <div class="label">1) What do you have access to that most people don’t?</div>
-            <textarea name="fit_access"></textarea>
-          </div>
-          <div>
-            <div class="label">2) What are you trying to build in the next 12 months?</div>
-            <textarea name="fit_build_goal"></textarea>
-          </div>
-          <div>
-            <div class="label">3) What opportunities do you want from the ecosystem?</div>
-            <textarea name="fit_opportunity"></textarea>
-          </div>
-          <div>
-            <div class="label">4) Decision power (budget/approvals/resources)?</div>
-            <select name="fit_authority">
-              <option value="">Select…</option>
-              <option value="owner_exec">Owner / Executive</option>
-              <option value="manager_influence">Manager / Influence</option>
-              <option value="partial">Partial</option>
-              <option value="none">None</option>
-            </select>
-          </div>
-          <div>
-            <div class="label">5) Strongest lane right now</div>
-            <select name="fit_lane">
-              <option value="">Select…</option>
-              <option value="sales">Sales / Growth</option>
-              <option value="ops">Operations / Execution</option>
-              <option value="hardware">Hardware / Supply</option>
-              <option value="legal">Legal / Compliance</option>
-              <option value="finance">Finance / Capital</option>
-              <option value="realestate">Real estate / venue</option>
-              <option value="tech">Software / Systems</option>
-              <option value="creative">Creative / Content</option>
-              <option value="unsure">Not sure</option>
-            </select>
-          </div>
-          <div>
-            <div class="label">6) What would make this a “no” for you?</div>
-            <textarea name="fit_no_conditions"></textarea>
-          </div>
-          <div>
-            <div class="label">7) Visibility preference</div>
-            <select name="fit_visibility">
-              <option value="">Select…</option>
-              <option value="public">Public / credited</option>
-              <option value="quiet">Quiet / behind scenes</option>
-              <option value="either">Either</option>
-            </select>
-          </div>
-          <div>
-            <div class="label">8) One sentence: why you?</div>
-            <input name="fit_why_you" />
-          </div>
-        </div>
-      </div>
-    </details>
-
-    <div>
-      <div class="label">Message (optional)</div>
-      <textarea name="message" placeholder="Anything else we should know?"></textarea>
-    </div>
 
     <div class="btnrow">
-      <button class="btn btn-primary" id="submitBtn" type="submit">Submit Contributor Intake</button>
+      <button class="btn btn-primary" type="submit">Submit Contributor Intake</button>
+      <a class="btn" href="/">Back Home</a>
     </div>
-
-    <div id="responseBox" class="alert" style="display:none;"></div>
   </form>
 </div>
-
-<script>
-  const form = document.getElementById("contribForm");
-  const responseBox = document.getElementById("responseBox");
-  const btn = document.getElementById("submitBtn");
-
-  function showStatus(ok, msg){
-    responseBox.style.display = "block";
-    responseBox.className = "alert " + (ok ? "ok" : "bad");
-    responseBox.innerText = msg;
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    btn.disabled = true;
-    btn.innerText = "Submitting…";
-
-    try{
-      const data = Object.fromEntries(new FormData(form).entries());
-
-      data.contribution_track = document.getElementById("contribution_track").value || "";
-      data.position_interest = document.getElementById("position_interest").value || "";
-      data.comp_plan = document.getElementById("comp_plan").value || "";
-      data.director_owner = document.getElementById("director_owner").value || "Deuce";
-
-      if(!data.contribution_track){
-        showStatus(false, "Please select your Contribution Track.");
-        btn.disabled = false;
-        btn.innerText = "Submit Contributor Intake";
-        return;
-      }
-
-      const res = await fetch("/contributor", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(data)
-      });
-
-      const out = await res.json();
-      if(res.ok){
-        showStatus(true, `✔ Submitted. Rail: ${out.rail_assigned} • Score: ${out.score}`);
-        form.reset();
-      }else{
-        showStatus(false, out.error || "⚠ Submission failed.");
-      }
-    }catch(err){
-      showStatus(false, "⚠ Network error. Try again.");
-    }finally{
-      btn.disabled = false;
-      btn.innerText = "Submit Contributor Intake";
-    }
-  });
-</script>
 {% endblock %}
