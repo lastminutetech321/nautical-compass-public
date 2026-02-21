@@ -1,14 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Cancelled • Nautical Compass{% endblock %}
+{% block title %}Canceled • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Subscription Cancelled</h2>
-  <p class="muted">Your subscription process was not completed.</p>
+  <h2>Checkout Canceled</h2>
+  <p class="muted">
+    No worries — you can resume whenever you’re ready.
+  </p>
 
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/services">Return to Services</a>
-    <a class="btn" href="/">Home</a>
+  <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-primary" href="/checkout">Try Again</a>
+    <a class="btn" href="/services">View Services</a>
+    <a class="btn" href="/lead">Lead Intake</a>
   </div>
 </div>
 {% endblock %}
