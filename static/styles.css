@@ -136,12 +136,10 @@ body{
 /* ---------------- CARDS ---------------- */
 
 .card{
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:22px;
-  box-shadow:var(--shadow);
-
+  background: #111;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
