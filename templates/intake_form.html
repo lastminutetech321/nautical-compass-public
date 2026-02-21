@@ -6,8 +6,7 @@
   <h2>Subscriber Intake</h2>
   <p class="muted">Member-only intake. Authorized email: <strong>{{ email }}</strong></p>
 
-  <form class="form" method="post" action="/intake?token={{ token }}" id="subscriberIntakeForm">
-
+  <form class="form" method="post" action="/intake?token={{ token }}">
     <div>
       <label>Name</label>
       <input name="name" required />
@@ -18,135 +17,60 @@
       <input name="email" type="email" required />
     </div>
 
-    <!-- 1) Curated quick list (clean + guided) -->
     <div>
-      <label>Service Requested (Quick Picks)</label>
-      <select id="quickPick">
-        <option value="">Select a quick service…</option>
-        <option>Legal Intake Strategy</option>
-        <option>Contract Review & Risk Mapping</option>
-        <option>Demand Letter Drafting</option>
-        <option>Arbitration Package Assembly</option>
-        <option>Record Request Packet (CPRA/FOIA-style)</option>
-        <option>Dispute Timeline & Evidence Organization</option>
-        <option>Complaint Framing & Narrative Structuring</option>
-        <option>Platform / Marketplace Dispute Structuring</option>
-        <option>Billing / Payments Dispute Structuring</option>
-        <option>Other (explain in notes)</option>
-      </select>
-      <p class="muted" style="margin:.35rem 0 0;">
-        Prefer a guided choice? Use Quick Picks. Want the full vault? Use the Capability Vault below.
-      </p>
-    </div>
+      <label>Service Requested</label>
+      <select name="service_requested" required>
+        <option value="">Select a service…</option>
 
-    <!-- 2) Full capability vault (psychology + depth) -->
-    <div>
-      <label>Capability Vault (Full List)</label>
-      <select id="vaultPick">
-        <option value="">Browse full capabilities…</option>
-
-        <optgroup label="Legal Strategy & Case Building">
-          <option>Case Intake + Triage</option>
-          <option>Litigation Positioning Memo</option>
-          <option>Settlement Strategy Outline</option>
-          <option>Evidence Binder Build</option>
-          <option>Dispute Timeline & Evidence Organization</option>
+        <optgroup label="Legal Strategy">
+          <option>Legal Intake Strategy</option>
+          <option>Risk Mapping & Next-Step Plan</option>
           <option>Complaint Framing & Narrative Structuring</option>
-          <option>Administrative Appeal Packet</option>
-          <option>Injunction Strategy Overview</option>
+          <option>Strategic Response Architecture</option>
         </optgroup>
 
-        <optgroup label="Demand, Notices, Complaints">
-          <option>Demand Letter Draft</option>
-          <option>Cease & Desist Letter</option>
-          <option>Contract Breach Notice</option>
-          <option>Regulatory Complaint Draft</option>
+        <optgroup label="Contracts">
+          <option>Contract Review & Risk Mapping</option>
+          <option>Contract Rewrite (Plain-English)</option>
+          <option>Scope / Deliverables Lockdown</option>
+          <option>Payment Terms Hardening</option>
+        </optgroup>
+
+        <optgroup label="Arbitration / Disputes">
+          <option>Demand Letter Drafting</option>
+          <option>Arbitration Package Assembly</option>
           <option>Platform / Marketplace Dispute Structuring</option>
           <option>Billing / Payments Dispute Structuring</option>
         </optgroup>
 
-        <optgroup label="Arbitration">
-          <option>Arbitration Package (Consumer)</option>
-          <option>Arbitration Package (Employment)</option>
-          <option>Arbitration Package Assembly</option>
-        </optgroup>
-
-        <optgroup label="Records & Requests">
-          <option>FOIA / Records Request</option>
+        <optgroup label="Records & Evidence">
           <option>Record Request Packet (CPRA/FOIA-style)</option>
+          <option>Dispute Timeline & Evidence Organization</option>
+          <option>Exhibit Index + Labeling System</option>
+          <option>Evidence Gap Checklist</option>
         </optgroup>
 
-        <optgroup label="Contracts & Risk">
-          <option>Contract Review (Plain English)</option>
-          <option>Contract Rewrite</option>
-          <option>Contract Review & Risk Mapping</option>
-          <option>Breach Analysis</option>
-          <option>Indemnity Clause Review</option>
-          <option>Liability Risk Mapping</option>
-          <option>Non-Compete Analysis</option>
-          <option>Partnership Agreement Draft</option>
-          <option>Joint Venture Outline</option>
+        <optgroup label="Identity / Standing">
+          <option>Identity / Standing Documentation Support</option>
+          <option>Status Packet Structuring (non-legal advice)</option>
+          <option>Affidavit Set Formatting (non-legal advice)</option>
         </optgroup>
 
-        <optgroup label="Business & Compliance">
-          <option>Entity Setup Blueprint</option>
-          <option>Operating Agreement Structure</option>
-          <option>Corporate Resolution Draft</option>
-          <option>Vendor Agreement Pack</option>
-          <option>Independent Contractor Agreement</option>
-          <option>Internal Policy Draft</option>
-          <option>Risk & Compliance Map</option>
-          <option>IP Protection Checklist</option>
-          <option>Brand Protection Memo</option>
-          <option>Contract Template Library Access</option>
-          <option>Payment Dispute Response Kit</option>
+        <optgroup label="Premium">
+          <option>Priority Intake + Rapid Structuring</option>
+          <option>Executive Summary + Action Plan</option>
+          <option>Case Binder Build (full organization)</option>
         </optgroup>
 
-        <optgroup label="Gig / Platform / Labor (Optional Track)">
-          <option>Misclassification Packet</option>
-          <option>Algorithmic Pay Review</option>
-          <option>Gig Earnings Audit</option>
-          <option>Incident Documentation Kit</option>
-          <option>Platform Account Deactivation Appeal</option>
-          <option>Tax Classification Review</option>
-          <option>Driver Cost Ledger Pack</option>
-          <option>Depreciation Analysis Kit</option>
-          <option>1099 Dispute Outline</option>
+        <optgroup label="Custom">
+          <option>Other (explain in notes)</option>
         </optgroup>
-
-        <optgroup label="Premium / Complex">
-          <option>Multi-Issue Case Architecture</option>
-          <option>Strategic Positioning Brief</option>
-          <option>High-Stakes Timeline Buildout</option>
-          <option>Custom Enforcement Pathway</option>
-          <option>Executive-Level Risk Strategy</option>
-          <option>Complex Dispute Framework</option>
-          <option>Evidence Escalation Strategy</option>
-        </optgroup>
-
-        <optgroup label="Custom / Other">
-          <option>Tool Build Request</option>
-          <option>System Expansion Request</option>
-          <option>New Capability Proposal</option>
-          <option>Private Consulting Engagement</option>
-          <option>Other (Describe in Notes)</option>
-        </optgroup>
-
       </select>
-    </div>
-
-    <!-- 3) Actual field your backend reads -->
-    <div>
-      <label>Confirmed Service Requested</label>
-      <input name="service_requested" id="serviceRequested" required placeholder="Select from above lists…" />
-      <p class="muted" style="margin:.35rem 0 0;">
-        This is what will be stored. Choosing a Quick Pick or Vault item auto-fills this field.
-      </p>
     </div>
 
     <div>
       <label>Notes (optional)</label>
-      <textarea name="notes" placeholder="Key facts, deadlines, what happened, what you want done…"></textarea>
+      <textarea name="notes" placeholder="Key facts, deadlines, what happened, what outcome you want…"></textarea>
     </div>
 
     <div class="btnrow">
@@ -155,31 +79,4 @@
     </div>
   </form>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-  (function(){
-    const quick = document.getElementById("quickPick");
-    const vault = document.getElementById("vaultPick");
-    const out  = document.getElementById("serviceRequested");
-
-    function setService(val){
-      if (!val) return;
-      out.value = val;
-    }
-
-    quick.addEventListener("change", function(){
-      // If they choose from quick list, clear vault selection
-      if (quick.value) vault.value = "";
-      setService(quick.value);
-    });
-
-    vault.addEventListener("change", function(){
-      // If they choose from vault, clear quick selection
-      if (vault.value) quick.value = "";
-      setService(vault.value);
-    });
-  })();
-</script>
 {% endblock %}
