@@ -1,5 +1,5 @@
 # --------------------
-# Contributor Intake (Fit Discovery + Rails)
+# Contributor Intake (with Fit Extract 8)
 # --------------------
 
 from typing import Optional
@@ -26,11 +26,9 @@ class ContributorForm(BaseModel):
 
     weekly_hours: str
     start_timeline: str
-    bandwidth_note: Optional[str] = None
 
     alignment: str
     nonnegotiables: Optional[str] = None
-    success_definition: Optional[str] = None
 
     deal_preference: str
     budget_range: Optional[str] = None
@@ -39,9 +37,17 @@ class ContributorForm(BaseModel):
     references: Optional[str] = None
 
     message: Optional[str] = None
-
-    # Optional quick-fit (if template sends it)
     primary_interest: Optional[str] = None
+
+    # Fit Extract (8)
+    fit_access: Optional[str] = None
+    fit_build_goal: Optional[str] = None
+    fit_opportunity: Optional[str] = None
+    fit_authority: Optional[str] = None
+    fit_lane: Optional[str] = None
+    fit_no_conditions: Optional[str] = None
+    fit_visibility: Optional[str] = None
+    fit_why_you: Optional[str] = None
 
 
 def init_contributors_table():
@@ -69,11 +75,9 @@ def init_contributors_table():
 
             weekly_hours TEXT NOT NULL,
             start_timeline TEXT NOT NULL,
-            bandwidth_note TEXT,
 
             alignment TEXT NOT NULL,
             nonnegotiables TEXT,
-            success_definition TEXT,
 
             deal_preference TEXT NOT NULL,
             budget_range TEXT,
@@ -82,13 +86,21 @@ def init_contributors_table():
             references TEXT,
 
             message TEXT,
-
             primary_interest TEXT,
+
+            -- Fit Extract (8)
+            fit_access TEXT,
+            fit_build_goal TEXT,
+            fit_opportunity TEXT,
+            fit_authority TEXT,
+            fit_lane TEXT,
+            fit_no_conditions TEXT,
+            fit_visibility TEXT,
+            fit_why_you TEXT,
 
             score INTEGER NOT NULL DEFAULT 0,
             rail TEXT NOT NULL DEFAULT 'triage',
             status TEXT NOT NULL DEFAULT 'new',
-
             created_at TEXT NOT NULL
         )
     """)
@@ -112,7 +124,6 @@ def _score_contributor(f: ContributorForm) -> int:
     }
     score += type_weights.get(t, 10)
 
-    # If they said "unknown / route me", do NOT penalize
     pi = (f.primary_interest or "").lower().strip()
     if pi in ("unknown", ""):
         score += 6
@@ -140,16 +151,24 @@ def _score_contributor(f: ContributorForm) -> int:
     alignment_bonus = {"mission-first": 10, "balanced": 6, "profit-first": 2}
     score += alignment_bonus.get((f.alignment or "").lower().strip(), 4)
 
+    # Fit Extract bonus (only if they actually filled it)
+    fit_fields = [
+        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
+        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you
+    ]
+    filled = sum(1 for x in fit_fields if x and str(x).strip())
+    score += min(16, filled * 2)  # up to +16
+
     return int(score)
 
 
 def _assign_rail(f: ContributorForm, score: int) -> str:
     t = (f.contributor_type or "").lower().strip()
+    lane = (f.fit_lane or "").lower().strip()
     pi = (f.primary_interest or "").lower().strip()
 
-    # Priority routing
     if score >= 70:
-        if t == "manufacturer" or pi == "hardware":
+        if t == "manufacturer" or lane == "hardware" or pi == "hardware":
             return "hardware_supply"
         if t == "sponsor" or pi == "sponsor":
             return "sponsorship"
@@ -157,11 +176,10 @@ def _assign_rail(f: ContributorForm, score: int) -> str:
             return "builders_core"
         if t == "investor" or pi == "capital":
             return "capital"
-        if pi == "infra":
+        if lane == "realestate" or pi == "infra":
             return "infrastructure"
         return "priority"
 
-    # Mid-fit routing
     if score >= 45:
         if t in ("manufacturer", "sponsor"):
             return "bd_followup"
@@ -192,40 +210,44 @@ def submit_contributor(form: ContributorForm):
             contributor_type, primary_role,
             home_region, can_travel, coverage_regions,
             assets, specialties, certifications,
-            weekly_hours, start_timeline, bandwidth_note,
-            alignment, nonnegotiables, success_definition,
+            weekly_hours, start_timeline,
+            alignment, nonnegotiables,
             deal_preference, budget_range,
             portfolio_links, references,
-            message,
-            primary_interest,
-            score, rail, status,
-            created_at
+            message, primary_interest,
+
+            fit_access, fit_build_goal, fit_opportunity, fit_authority,
+            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
+
+            score, rail, status, created_at
         )
         VALUES (?, ?, ?, ?, ?,
                 ?, ?,
                 ?, ?, ?,
                 ?, ?, ?,
-                ?, ?, ?,
-                ?, ?, ?,
                 ?, ?,
                 ?, ?,
-                ?,
-                ?,
-                ?, ?, ?,
-                ?)
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?, ?)
     """, (
         form.name, str(form.email), form.phone, form.company, form.website,
         form.contributor_type, form.primary_role,
         form.home_region, form.can_travel, form.coverage_regions,
         form.assets, form.specialties, form.certifications,
-        form.weekly_hours, form.start_timeline, form.bandwidth_note,
-        form.alignment, form.nonnegotiables, form.success_definition,
+        form.weekly_hours, form.start_timeline,
+        form.alignment, form.nonnegotiables,
         form.deal_preference, form.budget_range,
         form.portfolio_links, form.references,
-        form.message,
-        form.primary_interest,
-        score, rail, "new",
-        now_iso()
+        form.message, form.primary_interest,
+
+        form.fit_access, form.fit_build_goal, form.fit_opportunity, form.fit_authority,
+        form.fit_lane, form.fit_no_conditions, form.fit_visibility, form.fit_why_you,
+
+        score, rail, "new", now_iso()
     ))
     conn.commit()
     conn.close()
@@ -235,13 +257,3 @@ def submit_contributor(form: ContributorForm):
         "rail_assigned": rail,
         "score": score
     })
-
-
-@app.get("/admin/contributors")
-def admin_contributors():
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM contributors ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
