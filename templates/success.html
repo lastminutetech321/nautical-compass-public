@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Nautical Compass — Success</title>
+</head>
+<body>
+  <h1>Nautical Compass</h1>
+  <p>Subscription status:</p>
+
+  {% if email and dashboard_link %}
+    <p><strong>Payment confirmed.</strong></p>
+    <p>Subscriber email: <strong>{{ email }}</strong></p>
+    <p>Access link (valid 24 hours):</p>
+    <p><a href="{{ dashboard_link }}">{{ dashboard_link }}</a></p>
+    <p><a href="{{ dashboard_link }}">Continue to Dashboard</a></p>
+  {% else %}
+    <p><strong>Success page loaded.</strong></p>
+    <p>If you just paid, this page needs the <code>session_id</code> from Stripe redirect to generate your access link.</p>
+    <p><a href="/services">Back to Services</a></p>
+  {% endif %}
+
+  <hr />
+  <p><a href="/">Home</a> | <a href="/services">Services</a> | <a href="/lead">General Inquiry</a> | <a href="/partner">Manufacturer / Sponsor</a></p>
+</body>
+</html>
