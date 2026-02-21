@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Admin • Role Dashboard{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Role Mapping Dashboard</h2>
+  <p class="muted">Role buckets + counts + top score per role.</p>
+
+  <div class="tablewrap">
+    <table class="table">
+      <thead>
+        <tr><th>Role</th><th>Count</th><th>Top Score</th></tr>
+      </thead>
+      <tbody>
+        {% for r in roles %}
+        <tr>
+          <td>{{ r.role }}</td>
+          <td>{{ r.cnt }}</td>
+          <td><strong>{{ r.top or 0 }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
