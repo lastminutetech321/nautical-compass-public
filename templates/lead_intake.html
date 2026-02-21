@@ -1,34 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>General Inquiry</title>
-</head>
-<body>
-    <h1>General Inquiry</h1>
+{% extends "base.html" %}
+{% block title %}General Inquiry • Nautical Compass{% endblock %}
 
-    <form method="post" action="/lead">
-        Name:<br>
-        <input type="text" name="name" required><br><br>
+{% block content %}
+<div class="card">
+  <h2>General Inquiry</h2>
+  <p class="muted">Public lead capture. No paywall.</p>
 
-        Email:<br>
-        <input type="email" name="email" required><br><br>
+  <form class="form" method="post" action="/lead">
+    <div>
+      <label>Name</label>
+      <input name="name" required />
+    </div>
 
-        Interest:<br>
-        <input type="text" name="interest" required><br><br>
+    <div>
+      <label>Email</label>
+      <input name="email" type="email" required />
+    </div>
 
-        Phone:<br>
-        <input type="text" name="phone"><br><br>
+    <div>
+      <label>Phone (optional)</label>
+      <input name="phone" />
+    </div>
 
-        Company:<br>
-        <input type="text" name="company"><br><br>
+    <div>
+      <label>Company (optional)</label>
+      <input name="company" />
+    </div>
 
-        Message:<br>
-        <textarea name="message"></textarea><br><br>
+    <div>
+      <label>Interest</label>
+      <input name="interest" placeholder="What are you trying to solve?" required />
+    </div>
 
-        <button type="submit">Submit</button>
-    </form>
+    <div>
+      <label>Message (optional)</label>
+      <textarea name="message"></textarea>
+    </div>
 
-    <hr>
-    <a href="/">Back Home</a>
-</body>
-</html>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/">Back Home</a>
+    </div>
+  </form>
+
+  <div class="alert" style="margin-top:12px;">
+    Note: This is a lead capture form. Subscribers get member intake + dashboard access.
+  </div>
+</div>
+{% endblock %}
