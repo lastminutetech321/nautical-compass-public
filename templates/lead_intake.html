@@ -1,50 +1,60 @@
 {% extends "base.html" %}
-{% block title %}General Inquiry • Nautical Compass{% endblock %}
+{% block title %}Lead Intake • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>General Inquiry</h2>
-  <p class="muted">Public lead capture. No paywall.</p>
+  <h2>Public Lead Intake</h2>
+  <p class="muted">
+    This is open to everyone. If you want full access rails, subscribe after submitting (or first).
+  </p>
 
   <form class="form" method="post" action="/lead">
     <div>
-      <label>Name</label>
+      <label class="label">Name</label>
       <input name="name" required />
     </div>
 
     <div>
-      <label>Email</label>
+      <label class="label">Email</label>
       <input name="email" type="email" required />
     </div>
 
     <div>
-      <label>Phone (optional)</label>
+      <label class="label">Phone (optional)</label>
       <input name="phone" />
     </div>
 
     <div>
-      <label>Company (optional)</label>
+      <label class="label">Company (optional)</label>
       <input name="company" />
     </div>
 
     <div>
-      <label>Interest</label>
-      <input name="interest" placeholder="What are you trying to solve?" required />
+      <label class="label">Interest</label>
+      <select name="interest" required>
+        <option value="">Select…</option>
+        <option>Legal help / dispute</option>
+        <option>Business contracts</option>
+        <option>Arbitration package</option>
+        <option>Record requests / compliance</option>
+        <option>Other</option>
+      </select>
     </div>
 
     <div>
-      <label>Message (optional)</label>
-      <textarea name="message"></textarea>
+      <label class="label">Message (optional)</label>
+      <textarea name="message" placeholder="What’s going on? Time sensitivity? Desired outcome?"></textarea>
     </div>
 
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/">Back Home</a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+      <button class="btn btn-primary" type="submit">Submit Lead</button>
+      <a class="btn" href="/checkout">Subscribe</a>
+      <a class="btn" href="/services">Services</a>
     </div>
   </form>
 
-  <div class="alert" style="margin-top:12px;">
-    Note: This is a lead capture form. Subscribers get member intake + dashboard access.
+  <div class="alert" style="margin-top:14px;">
+    <strong>Note:</strong> This lead form does not grant member-only access. Subscription does.
   </div>
 </div>
 {% endblock %}
