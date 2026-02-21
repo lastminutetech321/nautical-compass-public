@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nautical Compass — Dashboard</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;margin:0;background:#0b1220;color:#e6eefc}
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    .card{background:#0f1b33;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(34,197,94,.35);color:#86efac;background:rgba(34,197,94,.08);font-size:12px}
+    a{color:#93c5fd}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>Subscriber Dashboard <span class="pill">Active</span></h2>
+      <p>Logged in as: <b>{{ email }}</b></p>
+      <p>Member Intake: add your token to access the form:</p>
+      <p><a href="/intake-form?token={{ request.query_params.get('token') }}">Open Member Intake</a></p>
+    </div>
+  </div>
+</body>
+</html>
