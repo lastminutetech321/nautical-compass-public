@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Contributor Intake • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Contributor / Operator Intake</h2>
+  <p class="muted">
+    This intake is for aligned operators, manufacturers, venue owners, hardware suppliers,
+    real estate holders, capital partners, and infrastructure builders.
+  </p>
+
+  <form class="form" method="post" action="/contributor">
+
+    <div>
+      <label>Name</label>
+      <input name="name" required />
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input name="email" type="email" required />
+    </div>
+
+    <div>
+      <label>Company / Entity</label>
+      <input name="company" />
+    </div>
+
+    <div>
+      <label>Primary Role</label>
+      <select name="role" required>
+        <option value="">Select role…</option>
+        <option>LED Manufacturer / Hardware Supplier</option>
+        <option>Regional Sales Rep</option>
+        <option>Event Center Operator</option>
+        <option>Stadium / Venue Executive</option>
+        <option>Construction / Build-Out Contractor</option>
+        <option>Real Estate Holder</option>
+        <option>Capital Partner / Investor</option>
+        <option>Logistics / Warehousing</option>
+        <option>System Architect / Technical Operator</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Assets You Control</label>
+      <textarea name="assets" placeholder="Hardware inventory, land, warehouse, capital, contracts, venue access…"></textarea>
+    </div>
+
+    <div>
+      <label>Regions You Operate In</label>
+      <input name="regions" placeholder="DMV, East Coast, Global, etc." />
+    </div>
+
+    <div>
+      <label>Deployment Capacity</label>
+      <select name="capacity">
+        <option>Small (pilot scale)</option>
+        <option>Regional</option>
+        <option>Multi-state</option>
+        <option>National</option>
+        <option>International</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Alignment With Vision</label>
+      <textarea name="alignment" placeholder="How do you see yourself fitting into hardware, event center, stadium, or real estate rails?"></textarea>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit Contributor Intake</button>
+      <a class="btn" href="/">Back Home</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
