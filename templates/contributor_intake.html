@@ -1,4 +1,3 @@
-<!-- templates/contributor_intake.html  (FULL COMPLETED) -->
 {% extends "base.html" %}
 {% block title %}Contributor Intake • Nautical Compass{% endblock %}
 
@@ -6,82 +5,236 @@
 <div class="card">
   <h2>Contributor Intake</h2>
   <p class="muted">
-    This is for operators, builders, manufacturers, and partners who want to plug into the rails.
-    Fill this out and we’ll map you to roles, regions, and capacity clusters.
+    This is a capability + alignment extractor. If you're a fit, the system routes you into a rail automatically.
   </p>
 
-  <form class="form" method="post" action="/contributor">
-    <div>
-      <label class="label">Name</label>
-      <input name="name" required />
+  <form class="form" id="contribForm">
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="name" required />
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="email" type="email" required />
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Phone (optional)</div>
+        <input name="phone" />
+      </div>
+      <div>
+        <div class="label">Company (optional)</div>
+        <input name="company" />
+      </div>
     </div>
 
     <div>
-      <label class="label">Email</label>
-      <input name="email" type="email" required />
+      <div class="label">Website (optional)</div>
+      <input name="website" placeholder="https://..." />
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Contributor Type</div>
+        <select name="contributor_type" required>
+          <option value="">Select…</option>
+          <option value="operator">Operator / Builder (executes)</option>
+          <option value="manufacturer">Manufacturer / Vendor</option>
+          <option value="sponsor">Sponsor / Partner</option>
+          <option value="investor">Investor / Capital</option>
+          <option value="builder">Infrastructure / Real Estate</option>
+          <option value="advisor">Advisor / Specialist</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Primary Role</div>
+        <input name="primary_role" required placeholder="e.g., LED sales, AV ops, legal ops, finance, construction…" />
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Home Region</div>
+        <select name="home_region" required>
+          <option value="">Select…</option>
+          <option>DMV</option>
+          <option>Northeast</option>
+          <option>Southeast</option>
+          <option>Midwest</option>
+          <option>Southwest</option>
+          <option>West Coast</option>
+          <option>National</option>
+          <option>Global</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Can Travel</div>
+        <select name="can_travel" required>
+          <option value="">Select…</option>
+          <option>No</option>
+          <option>Regional</option>
+          <option>National</option>
+          <option>International</option>
+        </select>
+      </div>
     </div>
 
     <div>
-      <label class="label">Company (optional)</label>
-      <input name="company" placeholder="Company / brand / entity" />
+      <div class="label">Coverage Regions (optional)</div>
+      <input name="coverage_regions" placeholder="Cities/states/regions you can cover" />
+    </div>
+
+    <details class="dropdown">
+      <summary>
+        Assets + Capabilities (recommended)
+        <span class="badge">boosts routing</span>
+      </summary>
+      <div class="dropdown-body">
+        <div class="grid">
+          <div>
+            <div class="label">Assets (inventory, trucks, warehouse, capital, contacts)</div>
+            <textarea name="assets" placeholder="What do you control access to?"></textarea>
+          </div>
+          <div>
+            <div class="label">Specialties</div>
+            <textarea name="specialties" placeholder="What are you uniquely good at?"></textarea>
+          </div>
+          <div>
+            <div class="label">Certifications (optional)</div>
+            <input name="certifications" placeholder="OSHA, rigging, PMP, etc." />
+          </div>
+          <div>
+            <div class="label">Portfolio / Links (optional)</div>
+            <input name="portfolio_links" placeholder="Links separated by commas" />
+          </div>
+          <div>
+            <div class="label">References (optional)</div>
+            <input name="references" placeholder="Names/companies/links" />
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Weekly Availability</div>
+        <select name="weekly_hours" required>
+          <option value="">Select…</option>
+          <option>0-5</option>
+          <option>5-10</option>
+          <option>10-20</option>
+          <option>20-40</option>
+          <option>40+</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Start Timeline</div>
+        <select name="start_timeline" required>
+          <option value="">Select…</option>
+          <option>Now</option>
+          <option>1-2 weeks</option>
+          <option>30 days</option>
+          <option>60+</option>
+        </select>
+      </div>
     </div>
 
     <div>
-      <label class="label">Primary Role</label>
-      <select name="role" required>
-        <option value="">Select…</option>
-        <option>Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
-        <option>Regional Sales / Rep</option>
-        <option>Integrator / Installer</option>
-        <option>Venue / Event Center / Stadium Ops</option>
-        <option>Real Estate / Development</option>
-        <option>Legal / Compliance / Admin Ops</option>
-        <option>Engineering / Software / Systems</option>
-        <option>Capital / Sponsor / Investor</option>
-        <option>Other</option>
-      </select>
+      <div class="label">Bandwidth Notes (optional)</div>
+      <input name="bandwidth_note" placeholder="Constraints, schedule, travel limits, etc." />
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Alignment</div>
+        <select name="alignment" required>
+          <option value="">Select…</option>
+          <option value="mission-first">Mission-first (build rails, uplift people)</option>
+          <option value="balanced">Balanced (mission + profit)</option>
+          <option value="profit-first">Profit-first (deal-by-deal)</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Deal Preference</div>
+        <select name="deal_preference" required>
+          <option value="">Select…</option>
+          <option value="cash">Cash</option>
+          <option value="revshare">Revenue share</option>
+          <option value="equity">Equity / upside</option>
+          <option value="mixed">Mixed</option>
+          <option value="sponsor">Sponsor / placement</option>
+        </select>
+      </div>
     </div>
 
     <div>
-      <label class="label">Assets (optional)</label>
-      <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, IP, relationships…"></textarea>
+      <div class="label">Budget Range (optional — sponsors/manufacturers)</div>
+      <input name="budget_range" placeholder="$ / month or budget range" />
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Non-negotiables (optional)</div>
+        <textarea name="nonnegotiables" placeholder="What you won't do / must-haves"></textarea>
+      </div>
+      <div>
+        <div class="label">What does success look like? (optional)</div>
+        <textarea name="success_definition" placeholder="Your goal + outcomes"></textarea>
+      </div>
     </div>
 
     <div>
-      <label class="label">Regions (optional)</label>
-      <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide…" />
+      <div class="label">Message (optional)</div>
+      <textarea name="message" placeholder="Anything else we should know?"></textarea>
     </div>
 
-    <div>
-      <label class="label">Capacity (optional)</label>
-      <textarea name="capacity" placeholder="How much can you handle per month? Volume, lead times, limits, crew size, install capacity…"></textarea>
+    <div class="btnrow">
+      <button class="btn btn-primary" id="submitBtn" type="submit">Submit Contributor Intake</button>
     </div>
 
-    <div>
-      <label class="label">Alignment (optional)</label>
-      <textarea name="alignment" placeholder="What outcomes are you aligned with? Fair pay, premium service, rapid-response, build-outs, long-term infrastructure…"></textarea>
-    </div>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-      <button class="btn btn-primary" type="submit">Submit Contributor Profile</button>
-      <a class="btn" href="/services">Services</a>
-      <a class="btn" href="/checkout">Subscribe</a>
-    </div>
+    <div id="responseBox" class="alert" style="display:none;"></div>
   </form>
-
-  <details class="dropdown" style="margin-top:16px;">
-    <summary>
-      What happens next after I submit?
-      <span class="badge">Expand</span>
-    </summary>
-    <div class="dropdown-body">
-      <ol class="muted" style="line-height:1.8; margin:0; padding-left:18px;">
-        <li>Your profile is stored in the contributor ledger.</li>
-        <li>We map you by role + region + capacity clusters (C).</li>
-        <li>We can route partner introductions through the rails (manufacturers → venues → projects).</li>
-        <li>High-fit contributors get prioritized follow-up and placement.</li>
-      </ol>
-    </div>
-  </details>
 </div>
+
+<script>
+  const form = document.getElementById("contribForm");
+  const responseBox = document.getElementById("responseBox");
+  const btn = document.getElementById("submitBtn");
+
+  function showStatus(ok, msg){
+    responseBox.style.display = "block";
+    responseBox.className = "alert " + (ok ? "ok" : "bad");
+    responseBox.innerText = msg;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.innerText = "Submitting…";
+
+    try{
+      const data = Object.fromEntries(new FormData(form).entries());
+      const res = await fetch("/contributor", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      const out = await res.json();
+      if(res.ok){
+        showStatus(true, `✔ Submitted. Rail: ${out.rail_assigned} • Score: ${out.score}`);
+        form.reset();
+      }else{
+        showStatus(false, out.error || "⚠ Submission failed.");
+      }
+    }catch(err){
+      showStatus(false, "⚠ Network error. Try again.");
+    }finally{
+      btn.disabled = false;
+      btn.innerText = "Submit Contributor Intake";
+    }
+  });
+</script>
 {% endblock %}
