@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nautical Compass — Member Intake</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial; margin: 0; background:#0b1220; color:#e6eefc; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .card { background:#0f1b33; border:1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 18px; }
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    p { margin: 0 0 14px; color: rgba(230,238,252,.8); line-height: 1.4; }
+    label { display:block; margin: 12px 0 6px; font-size: 14px; color: rgba(230,238,252,.85); }
+    input, select, textarea { width:100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background:#0b1730; color:#e6eefc; }
+    textarea { min-height: 120px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 720px){ .row{ grid-template-columns: 1fr; } }
+    .btn { margin-top: 14px; width: 100%; padding: 12px 14px; border-radius: 12px; border: none; background: #16a34a; color: white; font-weight: 800; font-size: 15px; cursor: pointer; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .status { margin-top: 14px; padding: 12px; border-radius: 12px; border:1px solid rgba(255,255,255,.12); background:#0b1730; }
+    .ok { border-color: rgba(34,197,94,.35); color:#86efac; }
+    .bad { border-color: rgba(239,68,68,.35); color:#fca5a5; }
+    .tag { display:inline-block; font-size:12px; padding:4px 8px; border-radius: 999px; background: rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.25); color:#93c5fd; margin-left:8px; }
+    .tiny { font-size: 12px; color: rgba(230,238,252,.65); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Member Intake <span class="tag">Subscriber Priority</span></h1>
+      <p>Choose a service, submit details, and you’ll be processed in the member queue.</p>
+
+      <form id="memberForm">
+        <input type="hidden" id="token" name="token" value="{{ token }}" />
+
+        <div class="row">
+          <div>
+            <label for="name">Your Name</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+          <div>
+            <label for="email">Your Email</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+        </div>
+
+        <label for="service_requested">Select Service</label>
+        <select id="service_requested" name="service_requested" required>
+          <option value="">Select one…</option>
+
+          <optgroup label="Intake + Case Building">
+            <option>General Legal Intake (Fast Start)</option>
+            <option>Case Strategy Call Request</option>
+            <option>Evidence Intake + Timeline Build</option>
+            <option>Complaint Drafting Intake</option>
+            <option>Cease & Desist Intake</option>
+            <option>Demand Letter Intake</option>
+            <option>Settlement Negotiation Packet</option>
+            <option>Small Claims Packet</option>
+            <option>State Complaint Packet (AG / Consumer Affairs)</option>
+            <option>Federal Complaint Packet (FTC / CFPB / DOT / EEOC intake prep)</option>
+            <option>FOIA / Public Records Request Packet</option>
+          </optgroup>
+
+          <optgroup label="Consumer Protection + Billing Disputes">
+            <option>Chargeback & Merchant Dispute Packet</option>
+            <option>Subscription Cancellation + Refund Demand</option>
+            <option>Warranty / Repair Dispute Packet</option>
+            <option>Telecom / ISP Billing Dispute Packet</option>
+            <option>Identity Theft / Fraud Dispute Packet</option>
+            <option>Debt Validation + Credit Dispute Packet</option>
+            <option>Credit Bureau Dispute Letters (FCRA style)</option>
+            <option>FDCPA Harassment Packet</option>
+          </optgroup>
+
+          <optgroup label="Arbitration + Litigation Support">
+            <option>Arbitration Demand Package</option>
+            <option>Arbitration Response Package</option>
+            <option>Motion to Compel Arbitration Packet</option>
+            <option>Exhibit Binder + Index Generator</option>
+            <option>Discovery Requests Draft Pack</option>
+            <option>Interrogatories + RFP Templates</option>
+            <option>Deposition Question Builder</option>
+            <option>Court Filing Cover Sheets Pack</option>
+          </optgroup>
+
+          <optgroup label="Contracts + Business">
+            <option>Contract Review (Basic)</option>
+            <option>Contract Review (Aggressive Redline)</option>
+            <option>Vendor Agreement Review</option>
+            <option>NDA / NCNDA Draft</option>
+            <option>Independent Contractor Agreement Draft</option>
+            <option>Client Service Agreement Draft</option>
+            <option>Invoice Terms + Late Fee Clause Set</option>
+            <option>Scope of Work Builder</option>
+            <option>Business Compliance Checklist</option>
+          </optgroup>
+
+          <optgroup label="Employment + Gig Work">
+            <option>Misclassification (1099 vs W2) Packet</option>
+            <option>Wage Theft Packet</option>
+            <option>Retaliation / Wrongful Termination Packet</option>
+            <option>OSHA / Unsafe Conditions Packet</option>
+            <option>Workers’ Comp Packet Builder</option>
+            <option>Employment Demand Letter</option>
+          </optgroup>
+
+          <optgroup label="Rideshare / Delivery">
+            <option>Deactivation Appeal Packet</option>
+            <option>Pay Dispute Packet</option>
+            <option>False Report Defense Packet</option>
+            <option>Algorithmic Routing Evidence Log Intake</option>
+            <option>Incident Report + Police Narrative Draft</option>
+            <option>Vehicle Damage / Depreciation Packet</option>
+          </optgroup>
+
+          <optgroup label="Property / Vehicle / Tow / Repo">
+            <option>Tow Hearing Packet</option>
+            <option>Repo Dispute Packet</option>
+            <option>DMV Ticket Fight Packet</option>
+            <option>Mechanic / Body Shop Dispute Packet</option>
+            <option>Rental / Landlord Dispute Packet</option>
+            <option>HOA Dispute Packet</option>
+          </optgroup>
+
+          <optgroup label="Sponsor / Manufacturer / Partner Track">
+            <option>Sponsor Inquiry (Corporate)</option>
+            <option>Manufacturer Partnership (LED Walls / AV)</option>
+            <option>Venue Partnership (Preferred Vendor)</option>
+            <option>Union / Local Partnership</option>
+            <option>Training Partner / Certification Partner</option>
+            <option>Affiliate / Referral Partner</option>
+            <option>Investor / Strategic Partner Inquiry</option>
+          </optgroup>
+
+          <optgroup label="Private / Members Only (Teaser)">
+            <option>Priority Case Queue (Members)</option>
+            <option>Custom Packet Assembly (Members)</option>
+            <option>Rapid Response Letter (Members)</option>
+            <option>Escalation Pack (Members)</option>
+          </optgroup>
+        </select>
+
+        <label for="notes">Details</label>
+        <textarea id="notes" name="notes" placeholder="Give the story, timeline, who did what, and what outcome you want."></textarea>
+
+        <button id="submitBtn" class="btn" type="submit">Submit Member Intake</button>
+        <div id="statusBox" class="status" style="display:none;"></div>
+        <div class="tiny">Member intake is prioritized. If a service is in rollout, we still capture it and respond with next steps.</div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("memberForm");
+    const btn = document.getElementById("submitBtn");
+    const statusBox = document.getElementById("statusBox");
+
+    function setStatus(ok, msg) {
+      statusBox.style.display = "block";
+      statusBox.className = "status " + (ok ? "ok" : "bad");
+      statusBox.textContent = msg;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      setStatus(true, "Submitting…");
+
+      const payload = {
+        token: document.getElementById("token").value,
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        service_requested: form.service_requested.value,
+        notes: form.notes.value.trim() || null
+      };
+
+      try {
+        const r = await fetch("/intake", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+          setStatus(true, "✔ Intake stored successfully. Watch your email for next steps.");
+          form.reset();
+        } else {
+          setStatus(false, data.detail || data.error || "⚠ Submission failed — try again.");
+        }
+      } catch (err) {
+        setStatus(false, "Network error — try again.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
