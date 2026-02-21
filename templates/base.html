@@ -1,46 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Nautical Compass{% endblock %}</title>
-  <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-  <div class="nav">
-    <div class="nav-inner">
-      <div class="brand">
-        <div class="brand-badge">NC</div>
-        <div>
-          <div style="line-height:1.1">Nautical Compass</div>
-          <div style="color:var(--muted); font-size:12px; font-weight:700;">Legal Intake + Access</div>
-        </div>
-      </div>
 
-      <div class="nav-links">
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">NC</span>
+        <span class="brand-text">Nautical Compass</span>
+      </a>
+
+      <nav class="nav">
         <a href="/">Home</a>
         <a href="/services">Services</a>
         <a href="/lead">Lead Intake</a>
         <a href="/partner">Partner</a>
-        <a href="/checkout">Subscribe</a>
-      </div>
+        <a class="btn btn-primary" href="/checkout">Subscribe</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="hero">
-    {% block hero %}
-    <h1 class="h-title">Nautical Compass</h1>
-    <p class="h-sub">Structured legal intake, subscriptions, and partner onboarding — clean and fast.</p>
-    {% endblock %}
-  </div>
+  {% block hero %}{% endblock %}
 
-  <div class="container">
+  <main class="wrap main">
     {% block content %}{% endblock %}
-  </div>
+  </main>
 
-  <div class="footer">
-    © {{ year if year else "2026" }} Nautical Compass · Built by CVCS
-  </div>
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="muted">© {{ year if year else "" }} Nautical Compass · Built by CVCS</div>
+      <div class="muted">Private platform · Structured intake · Secure checkout</div>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
 </body>
 </html>
