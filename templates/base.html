@@ -1,11 +1,9 @@
-<!-- templates/base.html  (FULL COMPLETED — adds Contributor link to the nav) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Nautical Compass{% endblock %}</title>
-
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/static/styles.css" />
   {% block head %}{% endblock %}
@@ -16,10 +14,14 @@
     <div class="nav-inner">
       <a class="brand" href="/">
         <span class="brand-badge">NC</span>
-        <span>Nautical Compass</span>
+        <span>
+          Nautical Compass
+          <small>Legal Intake + Access</small>
+        </span>
       </a>
 
       <nav class="nav-links">
+        <a href="/">Home</a>
         <a href="/services">Services</a>
         <a href="/lead">Lead Intake</a>
         <a href="/partner">Partners</a>
@@ -36,8 +38,7 @@
   </main>
 
   <footer class="footer">
-    <div>© Nautical Compass</div>
-    <div>Secure intake · Structured execution · Subscription access rails</div>
+    <div>© {{ year if year else "" }} Nautical Compass · Built by CVCS</div>
   </footer>
 
   {% block scripts %}{% endblock %}
