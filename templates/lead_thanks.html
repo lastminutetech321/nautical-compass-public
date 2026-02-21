@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Received • Nautical Compass{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Lead received</h2>
+  <p>Thanks{% if name %}, <strong>{{ name }}</strong>{% endif %}. We’ll route this to the right rail.</p>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/checkout">Subscribe</a>
+    <a class="btn" href="/services">Services</a>
+  </div>
+</div>
+{% endblock %}
