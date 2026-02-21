@@ -1,32 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Success • Nautical Compass{% endblock %}
 
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Success</h1>
+  <p class="h-sub">Payment confirmed. Your access link is ready.</p>
+</section>
+{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Subscription Successful</h2>
-  <p class="muted">
-    Your subscription is active.
-  </p>
-
-  {% if token %}
+  {% if email and dashboard_link %}
     <div class="alert ok">
-      <strong>Your Access Link (valid 24 hours):</strong><br />
-      <a href="/dashboard?token={{ token }}">Open Dashboard</a>
+      <strong>Active subscription created.</strong>
+      <div class="muted" style="margin-top:6px;">Subscriber: <strong>{{ email }}</strong></div>
     </div>
 
-    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-primary" href="/dashboard?token={{ token }}">Go to Dashboard</a>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="{{ dashboard_link }}">Continue to Dashboard</a>
+      <a class="btn" href="{{ intake_link }}">Open Intake Form</a>
       <a class="btn" href="/services">Services</a>
+    </div>
+
+    <div class="alert" style="margin-top:14px;">
+      <div class="muted">
+        Your link is token-based and expires. If you need a fresh link, contact support.
+      </div>
     </div>
   {% else %}
     <div class="alert bad">
-      We couldn’t generate an access link yet. Refresh this page in a few seconds.
-      If it still doesn’t show, contact support.
+      <strong>Success page loaded.</strong>
+      <div class="muted" style="margin-top:6px;">
+        We didn’t receive session details here. If you just paid, refresh once — or check your email.
+      </div>
     </div>
 
-    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-primary" href="/services">Services</a>
-      <a class="btn" href="/">Home</a>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="/checkout">Retry Checkout</a>
+      <a class="btn" href="/services">Back to Services</a>
     </div>
   {% endif %}
 </div>
