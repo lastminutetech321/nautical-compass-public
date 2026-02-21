@@ -1,12 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Subscription Cancelled</title>
-</head>
-<body>
-    <h1>Subscription Cancelled</h1>
-    <p>Your subscription process was not completed.</p>
+{% extends "base.html" %}
+{% block title %}Cancelled • Nautical Compass{% endblock %}
 
-    <a href="/services">Return to Services</a>
-</body>
-</html>
+{% block content %}
+<div class="card">
+  <h2>Subscription Cancelled</h2>
+  <p class="muted">Your subscription process was not completed.</p>
+
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/services">Return to Services</a>
+    <a class="btn" href="/">Home</a>
+  </div>
+</div>
+{% endblock %}
