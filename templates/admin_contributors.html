@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Admin • Contributors{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Contributors</h2>
+  <p class="muted">Sorted by score. Admin key required.</p>
+
+  {% if request.query_params.get("nda_link") %}
+    <div class="callout">
+      <h3>NDA Link Generated</h3>
+      <p class="micro">Copy this link and send it (or rely on email if configured):</p>
+      <code style="word-break:break-all">{{ request.query_params.get("nda_link") }}</code>
+    </div>
+  {% endif %}
+
+  <div class="tablewrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Email</th><th>Company</th><th>Role</th><th>Status</th><th>Score</th><th>Tags</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.email }}</td>
+          <td>{{ r.company or "" }}</td>
+          <td>{{ r.role }}</td>
+          <td><span class="pill">{{ r.status }}</span></td>
+          <td><strong>{{ r.score_total }}</strong></td>
+          <td class="muted">{{ r.tags or "" }}</td>
+          <td>
+            <form style="display:inline" method="post" action="/admin/contributors/{{ r.id }}/review?admin_key={{ admin_key }}">
+              <button class="btn btn-sm" type="submit">Mark Reviewed</button>
+            </form>
+            <form style="display:inline" method="post" action="/admin/contributors/{{ r.id }}/send-nda?admin_key={{ admin_key }}">
+              <button class="btn btn-sm btn-primary" type="submit">Send NDA</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="btnrow">
+    <a class="btn" href="/admin/roles?admin_key={{ admin_key }}">Role Dashboard</a>
+  </div>
+</div>
+{% endblock %}
