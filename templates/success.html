@@ -1,26 +1,38 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Nautical Compass — Success</title>
-</head>
-<body>
-  <h1>Nautical Compass</h1>
-  <p>Subscription status:</p>
+{% extends "base.html" %}
+{% block title %}Success • Nautical Compass{% endblock %}
 
-  {% if email and dashboard_link %}
-    <p><strong>Payment confirmed.</strong></p>
-    <p>Subscriber email: <strong>{{ email }}</strong></p>
-    <p>Access link (valid 24 hours):</p>
-    <p><a href="{{ dashboard_link }}">{{ dashboard_link }}</a></p>
-    <p><a href="{{ dashboard_link }}">Continue to Dashboard</a></p>
+{% block content %}
+<div class="card">
+  <h2>Subscription Status</h2>
+
+  {% if email and token %}
+    <div class="alert ok">
+      <strong>Payment confirmed.</strong><br/>
+      Subscriber email: <strong>{{ email }}</strong>
+    </div>
+
+    <p class="muted" style="margin-top:10px;">
+      Your access link (valid ~24 hours):
+    </p>
+
+    <p>
+      <a class="btn btn-primary" href="/dashboard?token={{ token }}">Continue to Dashboard</a>
+    </p>
+
+    <p class="muted">
+      If the button doesn’t work, use this URL:
+      <br/>
+      <code>/dashboard?token={{ token }}</code>
+    </p>
   {% else %}
-    <p><strong>Success page loaded.</strong></p>
-    <p>If you just paid, this page needs the <code>session_id</code> from Stripe redirect to generate your access link.</p>
-    <p><a href="/services">Back to Services</a></p>
-  {% endif %}
+    <div class="alert">
+      Success page loaded. If you just paid, this page needs a <code>session_id</code> from Stripe to generate your access link.
+    </div>
 
-  <hr />
-  <p><a href="/">Home</a> | <a href="/services">Services</a> | <a href="/lead">General Inquiry</a> | <a href="/partner">Manufacturer / Sponsor</a></p>
-</body>
-</html>
+    <div class="btnrow" style="margin-top:12px;">
+      <a class="btn btn-primary" href="/services">Back to Services</a>
+      <a class="btn" href="/">Home</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
