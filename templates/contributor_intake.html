@@ -18,7 +18,7 @@
       <div class="grid">
         <div>
           <div class="label">What are you most interested in contributing to?</div>
-          <select name="primary_interest" id="primary_interest">
+          <select id="primary_interest">
             <option value="">Select…</option>
             <option value="build">Build / operate the ecosystem</option>
             <option value="hardware">Hardware / manufacturing / supply</option>
@@ -26,13 +26,13 @@
             <option value="capital">Capital / investment</option>
             <option value="infra">Real estate / venue / infrastructure</option>
             <option value="advice">Advising / strategy</option>
-            <option value="unknown">Not sure — I want the system to route me</option>
+            <option value="unknown">Not sure — route me</option>
           </select>
         </div>
 
         <div>
           <div class="label">What describes you best today?</div>
-          <select name="contributor_type" id="contributor_type" required>
+          <select id="contributor_type" required>
             <option value="">Select…</option>
             <option value="builder">Builder / Operator (execution)</option>
             <option value="manufacturer">Manufacturer / Vendor</option>
@@ -128,7 +128,7 @@
 
     <details class="dropdown">
       <summary>
-        Assets + Proof (helps the system route you faster)
+        Assets + Proof (optional)
         <span class="badge">boosts routing</span>
       </summary>
       <div class="dropdown-body">
@@ -208,16 +208,96 @@
       </div>
     </div>
 
-    <div class="grid grid-2">
-      <div>
-        <div class="label">What does success look like? (optional)</div>
-        <textarea name="success_definition" placeholder="Your goal + outcomes"></textarea>
-      </div>
+    <!-- FIT EXTRACT (6–8 QUESTIONS) -->
+    <details class="dropdown">
+      <summary>
+        Fit Extract (8 questions)
+        <span class="badge">routes you faster</span>
+      </summary>
+      <div class="dropdown-body">
+        <p class="muted" style="margin-top:0;">
+          Optional — but if you answer these, the system can place you into the right rail immediately.
+        </p>
 
-      <div>
-        <div class="label">Message (optional)</div>
-        <textarea name="message" placeholder="Anything else we should know?"></textarea>
+        <div class="grid">
+          <div>
+            <div class="label">1) What do you have access to that most people don’t?</div>
+            <textarea name="fit_access" placeholder="e.g., venue access, LED inventory, decision-makers, legal ops, funding, crews, warehouses…"></textarea>
+          </div>
+
+          <div>
+            <div class="label">2) What are you trying to build personally in the next 12 months?</div>
+            <textarea name="fit_build_goal" placeholder="What outcome are you aiming for?"></textarea>
+          </div>
+
+          <div>
+            <div class="label">3) What kind of opportunities do you want from this ecosystem?</div>
+            <select name="fit_opportunity">
+              <option value="">Select…</option>
+              <option value="deals">Deal flow / contracts</option>
+              <option value="distribution">Distribution / channels</option>
+              <option value="clients">Clients</option>
+              <option value="partners">Partners</option>
+              <option value="capital">Capital</option>
+              <option value="jobs">Projects / work</option>
+              <option value="community">Community / alignment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">4) Decision power: can you sign, approve budgets, or move resources?</div>
+            <select name="fit_authority">
+              <option value="">Select…</option>
+              <option value="yes_owner">Yes — owner/executive</option>
+              <option value="yes_manager">Yes — manager/budget influence</option>
+              <option value="partial">Partial</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">5) What is your strongest lane right now?</div>
+            <select name="fit_lane">
+              <option value="">Select…</option>
+              <option value="hardware">Hardware / manufacturing / supply</option>
+              <option value="sales">Sales / partnerships</option>
+              <option value="ops">Operations / execution</option>
+              <option value="legal">Legal / compliance</option>
+              <option value="finance">Finance / capital</option>
+              <option value="realestate">Real estate / venue</option>
+              <option value="tech">Software / engineering</option>
+              <option value="creative">Creative / media</option>
+              <option value="unsure">Not sure</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">6) What would make this a “no” for you?</div>
+            <textarea name="fit_no_conditions" placeholder="Red lines / dealbreakers / risks you won’t accept"></textarea>
+          </div>
+
+          <div>
+            <div class="label">7) Are you willing to collaborate publicly (credits/visibility) or prefer quiet execution?</div>
+            <select name="fit_visibility">
+              <option value="">Select…</option>
+              <option value="public">Public (credits/visibility ok)</option>
+              <option value="quiet">Quiet (behind the scenes)</option>
+              <option value="either">Either</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">8) One sentence: why you?</div>
+            <input name="fit_why_you" placeholder="What makes you the right person for your lane?" />
+          </div>
+        </div>
       </div>
+    </details>
+
+    <div>
+      <div class="label">Message (optional)</div>
+      <textarea name="message" placeholder="Anything else we should know?"></textarea>
     </div>
 
     <div class="btnrow">
@@ -247,9 +327,11 @@
     try{
       const data = Object.fromEntries(new FormData(form).entries());
 
-      // also capture the quick-fit dropdown values
+      // quick fit values
       const pi = document.getElementById("primary_interest")?.value || "";
+      const ct = document.getElementById("contributor_type")?.value || "";
       if(pi) data.primary_interest = pi;
+      if(ct) data.contributor_type = ct;
 
       const res = await fetch("/contributor", {
         method: "POST",
