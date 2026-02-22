@@ -1,173 +1,217 @@
+<!-- templates/contributor_intake.html — FULL SCRIPT (6–8 “fit extract” questions + staff/sales options) -->
 {% extends "base.html" %}
 {% block title %}Contributor Intake • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">Contributor Intake</h1>
-  <p class="h-sub">
-    Operators, builders, staff, sales, partners, sponsors. Fill this out and we route you into rails.
-  </p>
-</section>
-{% endblock %}
-
 {% block content %}
 <div class="card">
-  {% if submitted %}
-  <div class="alert ok">
-    <strong>Submitted.</strong> Contributor intake received.
-    {% if rail %}<div class="muted" style="margin-top:6px;">Rail assigned: <strong>{{ rail }}</strong> · Score: <strong>{{ score }}</strong></div>{% endif %}
-  </div>
-  {% endif %}
+  <h2>Contributor Intake</h2>
+  <p class="muted">
+    Operators, builders, sales, staff — this routes you into the right rail.
+    Multiple talents? Choose your <strong>primary</strong> lane here; you can list additional skills in “Assets/Notes”.
+  </p>
 
-  <form method="post" action="/contributor">
-    <div class="label">Name</div>
+  <form class="form" method="post" action="/contributor">
+
+    <!-- Identity -->
+    <label class="label">Name</label>
     <input name="name" required />
 
-    <div class="label">Email</div>
+    <label class="label">Email</label>
     <input name="email" type="email" required />
 
-    <div class="label">Phone (optional)</div>
-    <input name="phone" />
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Phone (optional)</label>
+        <input name="phone" />
+      </div>
+      <div>
+        <label class="label">Company (optional)</label>
+        <input name="company" />
+      </div>
+    </div>
 
-    <div class="label">Company (optional)</div>
-    <input name="company" placeholder="Company / brand / entity" />
+    <label class="label">Website / Portfolio (optional)</label>
+    <input name="website" placeholder="https://"/>
 
-    <div class="label">Website (optional)</div>
-    <input name="website" placeholder="https://…" />
-
-    <div class="label">Primary Role</div>
+    <!-- Primary Role -->
+    <label class="label">Primary role</label>
     <select name="primary_role" required>
-      <option value="">Select...</option>
-      <option value="hardware_manufacturer">Hardware / Manufacturer (LED, Audio, Lighting, Rigging)</option>
-      <option value="regional_sales_rep">Regional Sales / Rep</option>
-      <option value="integrator_installer">Integrator / Installer</option>
-      <option value="venue_ops">Venue / Event Center / Stadium Ops</option>
-      <option value="real_estate_dev">Real Estate / Development</option>
-      <option value="legal_admin_ops">Legal / Compliance / Admin Ops</option>
-      <option value="engineering_software">Engineering / Software / Systems</option>
-      <option value="capital_investor">Capital / Sponsor / Investor</option>
-      <option value="ecosystem_staff">Ecosystem Staff (ops / intake / support)</option>
-      <option value="sales_growth">Sales / Growth (subs + pipeline)</option>
-      <option value="other">Other</option>
+      <option value="">Select…</option>
+      <option>Sales / Growth</option>
+      <option>Operations / Intake</option>
+      <option>Product / Program</option>
+      <option>Frontend</option>
+      <option>Backend</option>
+      <option>Data / DB</option>
+      <option>DevOps / Deploy</option>
+      <option>Security</option>
+      <option>Hardware / Supply</option>
+      <option>Capital / Sponsor</option>
+      <option>Advisor / Specialist</option>
+      <option>Not sure (route me)</option>
     </select>
 
-    <div class="label">Contribution Track</div>
+    <!-- Track -->
+    <label class="label">Contribution track</label>
     <select name="contribution_track" required>
-      <option value="">Select...</option>
-      <option value="builder_operator">Builder / Operator (execute builds, ops, delivery)</option>
-      <option value="sales_growth">Sales / Growth (subs + pipeline)</option>
-      <option value="ecosystem_staff">Ecosystem Staff (intake / ops / support)</option>
+      <option value="">Select…</option>
+      <option value="sales_growth">Sales / Growth</option>
+      <option value="ecosystem_staff">Ecosystem Staff (Intake/Ops/Client Success)</option>
+      <option value="builder_operator">Builder / Operator</option>
       <option value="partner_vendor">Partner / Vendor</option>
-      <option value="hardware_supply">Hardware Supply</option>
+      <option value="hardware_supply">Hardware / Supply</option>
       <option value="capital_sponsor">Capital / Sponsor</option>
       <option value="advisor_specialist">Advisor / Specialist</option>
       <option value="not_sure">Not sure</option>
     </select>
 
-    <div class="label">Position Interest (optional)</div>
-    <input name="position_interest" placeholder="Sales Rep, Appointment Setter, Closer, Intake Specialist, Ops Coordinator..." />
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Position interest (optional)</label>
+        <input name="position_interest" placeholder="Sales staff, intake operator, builder, etc." />
+      </div>
+      <div>
+        <label class="label">Comp plan (optional)</label>
+        <input name="comp_plan" placeholder="residual, commission, hourly, revshare, etc." />
+      </div>
+    </div>
 
-    <div class="label">Comp Plan Preference (optional)</div>
-    <select name="comp_plan">
-      <option value="">Select...</option>
-      <option value="commission">Commission</option>
-      <option value="residual">Residual / Override</option>
-      <option value="hourly">Hourly</option>
-      <option value="revshare">Rev-share / Equity-style</option>
-      <option value="not_sure">Not sure</option>
-    </select>
+    <label class="label">Director owner (default Duece)</label>
+    <input name="director_owner" value="Duece" />
 
-    <input type="hidden" name="director_owner" value="Duece" />
+    <!-- Assets + Regions -->
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Assets / Skills / Tools (optional)</label>
+        <textarea name="assets" placeholder="List skills, tools, network, hardware, or advantages you bring…"></textarea>
+      </div>
+      <div>
+        <label class="label">Regions (optional)</label>
+        <textarea name="regions" placeholder="DMV, East Coast, remote, etc."></textarea>
+      </div>
+    </div>
 
-    <div class="label">Assets (optional)</div>
-    <textarea name="assets" placeholder="Inventory, warehouses, trucks, crews, tech stack, IP, relationships..."></textarea>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Capacity (optional)</label>
+        <input name="capacity" placeholder="hours/week, availability, timeline" />
+      </div>
+      <div>
+        <label class="label">Alignment (optional)</label>
+        <input name="alignment" placeholder="why this mission fits you" />
+      </div>
+    </div>
 
-    <div class="label">Regions (optional)</div>
-    <input name="regions" placeholder="DMV, Mid-Atlantic, Northeast, Nationwide..." />
+    <label class="label">Message (optional)</label>
+    <textarea name="message" placeholder="Anything we should know?"></textarea>
 
-    <div class="label">Capacity (optional)</div>
-    <textarea name="capacity" placeholder="Volume per month, lead times, constraints, crew size, install capacity..."></textarea>
+    <!-- FIT EXTRACT (6–8 questions) -->
+    <details class="dropdown" open>
+      <summary>Fit Extract (6–8 questions)</summary>
+      <div class="dropdown-body">
+        <label class="label">1) What access do you bring?</label>
+        <select name="fit_access">
+          <option value="">Select…</option>
+          <option>Network / Community</option>
+          <option>Enterprise contacts</option>
+          <option>Hardware supply</option>
+          <option>Execution capacity</option>
+          <option>Capital / funding</option>
+          <option>Skills only (no access)</option>
+        </select>
 
-    <div class="label">Alignment (optional)</div>
-    <input name="alignment" placeholder="What mission/outcome are you aligned with?" />
+        <label class="label">2) What do you want to build or grow?</label>
+        <textarea name="fit_build_goal" placeholder="Be specific: subs, partnerships, a module, a region…"></textarea>
 
-    <div class="label">Message (optional)</div>
-    <textarea name="message" placeholder="What should we know?"></textarea>
+        <label class="label">3) What opportunity are you looking for?</label>
+        <select name="fit_opportunity">
+          <option value="">Select…</option>
+          <option>Sales role</option>
+          <option>Staff role</option>
+          <option>Build/operator role</option>
+          <option>Vendor partnership</option>
+          <option>Sponsorship deal</option>
+          <option>Not sure</option>
+        </select>
+
+        <label class="label">4) Authority level (decision power)</label>
+        <select name="fit_authority">
+          <option value="">Select…</option>
+          <option value="owner_exec">Owner / Exec (final decision)</option>
+          <option value="manager_influence">Manager / influence</option>
+          <option value="partial">Partial</option>
+          <option>None</option>
+        </select>
+
+        <label class="label">5) Preferred lane</label>
+        <select name="fit_lane">
+          <option value="">Select…</option>
+          <option>Sales</option>
+          <option>Staff/Ops</option>
+          <option>Hardware</option>
+          <option>Finance</option>
+          <option>Build</option>
+          <option>Security</option>
+          <option>Product</option>
+        </select>
+
+        <label class="label">6) Non-negotiables / conditions</label>
+        <textarea name="fit_no_conditions" placeholder="Schedule constraints, pay expectations, role boundaries…"></textarea>
+
+        <label class="label">7) Visibility preference</label>
+        <select name="fit_visibility">
+          <option value="">Select…</option>
+          <option>Front-facing</option>
+          <option>Behind-the-scenes</option>
+          <option>Either</option>
+        </select>
+
+        <label class="label">8) Why you?</label>
+        <textarea name="fit_why_you" placeholder="What makes you the right fit for this rail?"></textarea>
+      </div>
+    </details>
 
     <details class="dropdown">
-      <summary>
-        Fit Extract (optional) — 6–8 quick questions
-        <span class="badge">Improves routing</span>
-      </summary>
-
+      <summary>Risk flags (instant)</summary>
       <div class="dropdown-body">
-        <div class="label">Access level</div>
-        <select name="fit_access">
-          <option value="">Select...</option>
-          <option value="direct_access">I can directly introduce / move decisions</option>
-          <option value="warm_access">I can get you in front of decision makers</option>
-          <option value="limited_access">Limited access</option>
-        </select>
-
-        <div class="label">Build goal</div>
-        <input name="fit_build_goal" placeholder="What are you trying to build with us?" />
-
-        <div class="label">Opportunity type</div>
-        <select name="fit_opportunity">
-          <option value="">Select...</option>
-          <option value="revenue_now">Revenue now</option>
-          <option value="infrastructure">Infrastructure / buildout</option>
-          <option value="partnership">Partnership / integration</option>
-          <option value="long_term">Long-term strategic</option>
-        </select>
-
-        <div class="label">Authority level</div>
-        <select name="fit_authority">
-          <option value="">Select...</option>
-          <option value="owner_exec">Owner / Exec</option>
-          <option value="manager_influence">Manager / Strong influence</option>
-          <option value="partial">Partial influence</option>
-          <option value="none">No authority</option>
-        </select>
-
-        <div class="label">Lane</div>
-        <select name="fit_lane">
-          <option value="">Select...</option>
-          <option value="sales">Sales</option>
-          <option value="ops">Ops</option>
-          <option value="hardware">Hardware</option>
-          <option value="venue">Venue / Stadium</option>
-          <option value="realestate">Real Estate</option>
-          <option value="finance">Finance / Capital</option>
-          <option value="software">Software</option>
-          <option value="legal">Legal / Compliance</option>
-        </select>
-
-        <div class="label">Any conditions?</div>
-        <select name="fit_no_conditions">
-          <option value="">Select...</option>
-          <option value="no">No conditions</option>
-          <option value="some">Some conditions</option>
-          <option value="many">Many conditions</option>
-        </select>
-
-        <div class="label">Visibility preference</div>
-        <select name="fit_visibility">
-          <option value="">Select...</option>
-          <option value="public">Public-facing</option>
-          <option value="private">Private / behind the scenes</option>
-          <option value="either">Either</option>
-        </select>
-
-        <div class="label">Why you?</div>
-        <input name="fit_why_you" placeholder="What makes you the right person for this lane?" />
+        <div id="contribFlags" class="muted">Select track + authority to see flags.</div>
       </div>
     </details>
 
     <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit Contributor Intake</button>
-      <a class="btn" href="/">Back Home</a>
+      <button class="btn btn-primary" type="submit">Submit Contributor</button>
+      <a class="btn" href="/services">See Services</a>
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const track = document.querySelector('select[name="contribution_track"]');
+  const auth  = document.querySelector('select[name="fit_authority"]');
+  const cap   = document.querySelector('input[name="capacity"]');
+  const flagsBox = document.getElementById('contribFlags');
+
+  function flags(){
+    const f = [];
+    const t = (track.value || "");
+    const a = (auth.value || "");
+    const c = (cap.value || "");
+
+    if(!t) f.push("⚑ Track not chosen (routing uncertainty).");
+    if(a === "owner_exec") f.push("✓ Decision authority = high leverage.");
+    if(a === "partial") f.push("⚑ Partial authority (may need additional stakeholder).");
+    if(!c) f.push("⚑ Capacity not stated (timelines unclear).");
+    if(t === "sales_growth") f.push("⚑ Sales rail requires consistent follow-up + pipeline reporting.");
+    if(t === "hardware_supply") f.push("⚑ Hardware supply rail requires region + lead time clarity.");
+    if(t === "capital_sponsor") f.push("⚑ Capital rail requires term alignment + verification path.");
+    flagsBox.innerHTML = f.length ? f.map(x => `<div>${x}</div>`).join("") : "No flags yet.";
+  }
+
+  track.addEventListener("change", flags);
+  auth.addEventListener("change", flags);
+  cap.addEventListener("input", flags);
+  flags();
+</script>
 {% endblock %}
