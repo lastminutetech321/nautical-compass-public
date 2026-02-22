@@ -1,44 +1,80 @@
+<!-- templates/lead_intake.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Lead Intake • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">General Inquiry</h1>
-  <p class="h-sub">Public lead intake. Clean details = faster routing.</p>
-</section>
-{% endblock %}
-
 {% block content %}
 <div class="card">
-  {% if submitted %}
-  <div class="alert ok">
-    <strong>Submitted.</strong> Your inquiry has been received.
-  </div>
-  {% endif %}
+  <h2>Lead Intake</h2>
+  <p class="muted">Public. Fast. Clean. We’ll route you to the right lane.</p>
 
-  <form method="post" action="/lead">
-    <div class="label">Name</div>
+  <form class="form" method="post" action="/lead">
+    <label class="label">Name</label>
     <input name="name" required />
 
-    <div class="label">Email</div>
+    <label class="label">Email</label>
     <input name="email" type="email" required />
 
-    <div class="label">Interest</div>
-    <input name="interest" required placeholder="What are you trying to solve?" />
+    <label class="label">Interest</label>
+    <select name="interest">
+      <option value="">Select…</option>
+      <option>Legal Intake Strategy</option>
+      <option>Contract Review</option>
+      <option>Demand Letter</option>
+      <option>Arbitration Package</option>
+      <option>Billing/Payments Dispute</option>
+      <option>Platform/Marketplace Dispute</option>
+      <option>Records Request</option>
+      <option>Not sure — route me</option>
+    </select>
 
-    <div class="label">Phone (optional)</div>
+    <label class="label">Phone (optional)</label>
     <input name="phone" />
 
-    <div class="label">Company (optional)</div>
+    <label class="label">Company (optional)</label>
     <input name="company" />
 
-    <div class="label">Message (optional)</div>
-    <textarea name="message" placeholder="Key facts, timeline, goal…"></textarea>
+    <label class="label">Message (optional)</label>
+    <textarea name="message" placeholder="Briefly describe what happened + any deadlines."></textarea>
+
+    <details class="dropdown">
+      <summary>Risk flags (instant)</summary>
+      <div class="dropdown-body">
+        <div id="leadFlags" class="muted">Answer a few fields to see flags.</div>
+      </div>
+    </details>
 
     <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/">Back Home</a>
+      <button class="btn btn-primary" type="submit">Submit Lead</button>
+      <a class="btn" href="/services">View Services</a>
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Simple UI-only risk flags (no backend changes)
+  const interest = document.querySelector('select[name="interest"]');
+  const message = document.querySelector('textarea[name="message"]');
+  const flagsBox = document.getElementById('leadFlags');
+
+  function flags(){
+    const f = [];
+    const i = (interest.value || "").toLowerCase();
+    const m = (message.value || "");
+
+    if (!interest.value) f.push("⚑ Undefined scope risk (pick an interest).");
+    if (m.length > 900) f.push("⚑ High complexity narrative (recommend timeline + evidence index).");
+    if (i.includes("arbitration")) f.push("⚑ Deadline + fee exposure (arbitration lanes need structure).");
+    if (i.includes("contract")) f.push("⚑ Contract leverage depends on exact clause language.");
+    if (i.includes("billing") || i.includes("payments")) f.push("⚑ Payment trace required (invoices, stubs, receipts).");
+    if (i.includes("platform")) f.push("⚑ Policy + account actions must be documented chronologically.");
+
+    flagsBox.innerHTML = f.length ? f.map(x => `<div>${x}</div>`).join("") : "No flags yet.";
+  }
+
+  interest.addEventListener("change", flags);
+  message.addEventListener("input", flags);
+  flags();
+</script>
 {% endblock %}
