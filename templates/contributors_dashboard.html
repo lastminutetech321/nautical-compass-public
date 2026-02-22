@@ -1,208 +1,84 @@
-{# templates/contributors_dashboard.html #}
+<!-- templates/contributors_dashboard.html — FULL SCRIPT (admin view) -->
 {% extends "base.html" %}
 {% block title %}Contributors Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-    <div>
-      <h2 style="margin:0 0 6px;">Contributors Dashboard</h2>
-      <p class="muted" style="margin:0;">
-        Filter by rail / track / score. Update status inline. This is your routing control room.
-      </p>
+  <h2>Contributors Dashboard</h2>
+  <p class="muted">
+    Filter by rail / score / track. (Protected by admin key in the URL: <code>?key=...</code>)
+  </p>
+
+  <form class="form" method="get" action="/admin/contributors-dashboard">
+    <input type="hidden" name="key" value="{{ request.query_params.get('key','') }}"/>
+
+    <div class="grid grid-3">
+      <div>
+        <label class="label">Rail</label>
+        <input name="rail" value="{{ rail or '' }}" placeholder="sales_priority, staff_pool, etc." />
+      </div>
+      <div>
+        <label class="label">Min score</label>
+        <input name="min_score" value="{{ min_score if min_score is not none else '' }}" placeholder="45" />
+      </div>
+      <div>
+        <label class="label">Track</label>
+        <input name="track" value="{{ track or '' }}" placeholder="sales_growth, ecosystem_staff..." />
+      </div>
     </div>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn" href="/contributor">Contributor Intake</a>
-      <a class="btn btn-primary" href="/services">Services</a>
-    </div>
-  </div>
-
-  <div class="alert" style="margin-top:14px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
-      <div>
-        <span class="badge">Total: {{ contributors|length }}</span>
-        {% if rail %}<span class="badge">Rail: {{ rail }}</span>{% endif %}
-        {% if track %}<span class="badge">Track: {{ track }}</span>{% endif %}
-        {% if min_score is not none %}<span class="badge">Min Score: {{ min_score }}</span>{% endif %}
-      </div>
-      <div class="muted">
-        Tip: click a badge in filters to narrow down quickly.
-      </div>
-    </div>
-  </div>
-
-  <form class="form" method="get" action="/admin/contributors-dashboard" style="margin-top:16px;">
-    <div class="grid grid-2">
-      <div>
-        <div class="label">Rail</div>
-        <select name="rail">
-          <option value="" {% if not rail %}selected{% endif %}>All rails</option>
-          {% set rails = [
-            "priority","sales_priority","staff_priority","hardware_supply","capital",
-            "review","sales_pool","staff_pool","bd_followup","triage"
-          ] %}
-          {% for r in rails %}
-            <option value="{{ r }}" {% if rail==r %}selected{% endif %}>{{ r }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <div class="label">Contribution Track</div>
-        <select name="track">
-          <option value="" {% if not track %}selected{% endif %}>All tracks</option>
-          {% set tracks = [
-            "ecosystem_staff","sales_growth","builder_operator","hardware_supply",
-            "partner_vendor","capital_sponsor","advisor_specialist","not_sure"
-          ] %}
-          {% for t in tracks %}
-            <option value="{{ t }}" {% if track==t %}selected{% endif %}>{{ t }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <div class="label">Min Score</div>
-        <input name="min_score" type="number" min="0" max="100"
-               value="{% if min_score is not none %}{{ min_score }}{% endif %}"
-               placeholder="e.g., 45" />
-      </div>
-
-      <div style="display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" type="submit">Apply Filters</button>
-        <a class="btn" href="/admin/contributors-dashboard">Reset</a>
-      </div>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Apply Filters</button>
+      <a class="btn" href="/admin/contributors-dashboard?key={{ request.query_params.get('key','') }}">Clear</a>
     </div>
   </form>
 </div>
 
-<div class="card" style="margin-top:16px;">
-  <h3 style="margin:0 0 10px;">Results</h3>
+<div class="card" style="margin-top:18px;">
+  <h3>Contributors</h3>
+  <p class="muted">Showing {{ contributors|length }} results.</p>
 
-  {% if contributors|length == 0 %}
-    <div class="alert bad">
-      No contributors match these filters.
-    </div>
-  {% else %}
-
-  <div style="overflow:auto; border:1px solid var(--line); border-radius: var(--radius);">
-    <table style="width:100%; border-collapse:collapse; min-width: 980px;">
+  <div style="overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:14px;">
+    <table style="width:100%; border-collapse:collapse; min-width:950px;">
       <thead>
-        <tr style="background: rgba(255,255,255,.04);">
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Name</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Email</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Role</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Track</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Rail</th>
-          <th style="text-align:right; padding:12px; border-bottom:1px solid var(--line);">Score</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Regions</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Director</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Status</th>
-          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Action</th>
+        <tr style="background:rgba(255,255,255,.04);">
+          <th style="text-align:left; padding:10px;">ID</th>
+          <th style="text-align:left; padding:10px;">Name</th>
+          <th style="text-align:left; padding:10px;">Email</th>
+          <th style="text-align:left; padding:10px;">Track</th>
+          <th style="text-align:left; padding:10px;">Rail</th>
+          <th style="text-align:left; padding:10px;">Score</th>
+          <th style="text-align:left; padding:10px;">Status</th>
+          <th style="text-align:left; padding:10px;">Update</th>
         </tr>
       </thead>
-
       <tbody>
         {% for c in contributors %}
-          <tr>
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <div style="font-weight:800;">{{ c.get("name","") }}</div>
-              <div class="muted" style="font-size:12px;">
-                {% if c.get("company") %}{{ c.get("company") }}{% else %}—{% endif %}
-              </div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <div style="font-weight:700;">{{ c.get("email","") }}</div>
-              <div class="muted" style="font-size:12px;">
-                {% if c.get("phone") %}{{ c.get("phone") }}{% else %}—{% endif %}
-              </div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <span class="badge">{{ c.get("primary_role","") or "—" }}</span>
-              <div class="muted" style="font-size:12px; margin-top:6px;">
-                {% if c.get("position_interest") %}{{ c.get("position_interest") }}{% else %}—{% endif %}
-              </div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <div style="font-weight:700;">{{ c.get("contribution_track","") }}</div>
-              <div class="muted" style="font-size:12px; margin-top:6px;">
-                {% if c.get("comp_plan") %}{{ c.get("comp_plan") }}{% else %}—{% endif %}
-              </div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <span class="badge">{{ c.get("rail","") }}</span>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line); text-align:right;">
-              <div style="font-weight:900; font-size:16px;">{{ c.get("score",0) }}</div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <div style="font-weight:700;">
-                {% if c.get("regions") %}{{ c.get("regions") }}{% else %}—{% endif %}
-              </div>
-              <div class="muted" style="font-size:12px; margin-top:6px;">
-                {% if c.get("capacity") %}{{ c.get("capacity") }}{% else %}—{% endif %}
-              </div>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <span class="badge">
-                {% if c.get("director_owner") %}{{ c.get("director_owner") }}{% else %}Duece{% endif %}
-              </span>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <span class="badge">{{ c.get("status","new") }}</span>
-            </td>
-
-            <td style="padding:12px; border-bottom:1px solid var(--line);">
-              <form method="post" action="/admin/contributor-status" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="hidden" name="id" value="{{ c.get('id') }}" />
-                <select name="status" required>
-                  {% set st = c.get("status","new") %}
-                  <option value="new" {% if st=="new" %}selected{% endif %}>new</option>
-                  <option value="contacted" {% if st=="contacted" %}selected{% endif %}>contacted</option>
-                  <option value="scheduled" {% if st=="scheduled" %}selected{% endif %}>scheduled</option>
-                  <option value="qualified" {% if st=="qualified" %}selected{% endif %}>qualified</option>
-                  <option value="onboarded" {% if st=="onboarded" %}selected{% endif %}>onboarded</option>
-                  <option value="hold" {% if st=="hold" %}selected{% endif %}>hold</option>
-                  <option value="declined" {% if st=="declined" %}selected{% endif %}>declined</option>
-                </select>
-                <button class="btn btn-primary" type="submit">Save</button>
-              </form>
-
-              {% if c.get("assets") or c.get("message") %}
-                <details class="dropdown" style="margin-top:10px;">
-                  <summary>Details</summary>
-                  <div class="dropdown-body">
-                    {% if c.get("assets") %}
-                      <div class="label" style="margin-top:0;">Assets</div>
-                      <div style="white-space:pre-wrap;">{{ c.get("assets") }}</div>
-                    {% endif %}
-                    {% if c.get("message") %}
-                      <div class="label">Message</div>
-                      <div style="white-space:pre-wrap;">{{ c.get("message") }}</div>
-                    {% endif %}
-                    {% if c.get("alignment") %}
-                      <div class="label">Alignment</div>
-                      <div style="white-space:pre-wrap;">{{ c.get("alignment") }}</div>
-                    {% endif %}
-                  </div>
-                </details>
-              {% endif %}
-            </td>
-          </tr>
+        <tr style="border-top:1px solid rgba(255,255,255,.08);">
+          <td style="padding:10px;">{{ c.id }}</td>
+          <td style="padding:10px;">{{ c.name }}</td>
+          <td style="padding:10px;">{{ c.email }}</td>
+          <td style="padding:10px;">{{ c.contribution_track }}</td>
+          <td style="padding:10px;"><span class="badge">{{ c.rail }}</span></td>
+          <td style="padding:10px;">{{ c.score }}</td>
+          <td style="padding:10px;">{{ c.status }}</td>
+          <td style="padding:10px;">
+            <form method="post" action="/admin/contributor-status?key={{ request.query_params.get('key','') }}">
+              <input type="hidden" name="id" value="{{ c.id }}"/>
+              <select name="status">
+                <option {% if c.status == "new" %}selected{% endif %}>new</option>
+                <option {% if c.status == "contacted" %}selected{% endif %}>contacted</option>
+                <option {% if c.status == "invited" %}selected{% endif %}>invited</option>
+                <option {% if c.status == "active" %}selected{% endif %}>active</option>
+                <option {% if c.status == "archived" %}selected{% endif %}>archived</option>
+              </select>
+              <button class="btn" type="submit" style="padding:8px 12px;">Save</button>
+            </form>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
-  {% endif %}
 </div>
 {% endblock %}
