@@ -1,104 +1,54 @@
-{# templates/dashboard.html #}
+<!-- templates/dashboard.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-    <div>
-      <h2 style="margin:0 0 6px;">Subscriber Dashboard</h2>
-      <p class="muted" style="margin:0;">
-        Access granted for: <strong>{{ email }}</strong>
-      </p>
-    </div>
+  <h2>Dashboard</h2>
+  <p class="muted">Authorized email: <strong>{{ email }}</strong></p>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn" href="/services">Services</a>
-      <a class="btn" href="/contributor">Contributor Intake</a>
-      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Subscriber Intake</a>
-    </div>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/intake-form?token={{ token }}">Subscriber Intake</a>
+    <a class="btn" href="/services">Services</a>
+    <a class="btn" href="/contributor">Contributor Intake</a>
   </div>
 
-  <div class="alert" style="margin-top:14px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-        <span class="badge">Active</span>
-        <span class="badge">Lane Owner: Duece</span>
-        <span class="badge">Token Session</span>
-      </div>
-      <div class="muted" style="font-size:12px;">
-        Keep your link private. If it expires, request a fresh access link.
-      </div>
-    </div>
-  </div>
-
-  <div class="grid grid-2" style="margin-top:16px;">
-    <div class="card" style="margin:0;">
-      <h3 style="margin:0 0 6px;">Start Here</h3>
-      <p class="muted" style="margin:0 0 12px;">
-        Use the subscriber intake to route your issue into the correct rail.
-      </p>
-      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
-    </div>
-
-    <div class="card" style="margin:0;">
-      <h3 style="margin:0 0 6px;">Your Access</h3>
-      <p class="muted" style="margin:0 0 12px;">
-        This dashboard is unlocked by your active subscription. Your next step is always intake.
-      </p>
-      <a class="btn" href="/services">View Full Service Catalog</a>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px;">
-    <h3 style="margin:0 0 10px;">Quick Links</h3>
-
-    <div class="grid grid-2">
-      <div>
-        <div class="label">Subscriber Intake</div>
-        <a class="btn" href="/intake-form?token={{ token }}">/intake-form?token=…</a>
-      </div>
-
-      <div>
-        <div class="label">Contributor Intake</div>
-        <a class="btn" href="/contributor">/contributor</a>
-      </div>
-
-      <div>
-        <div class="label">Lead Intake (public)</div>
-        <a class="btn" href="/lead">/lead</a>
-      </div>
-
-      <div>
-        <div class="label">Partner Intake (public)</div>
-        <a class="btn" href="/partner">/partner</a>
-      </div>
-    </div>
-
-    <details class="dropdown" style="margin-top:14px;">
-      <summary>Admin / Internal Links (for you + Duece)</summary>
-      <div class="dropdown-body">
-        <p class="muted" style="margin-top:0;">
-          These are not protected yet. Don’t broadcast them publicly. We can add admin gating next.
-        </p>
-        <div class="grid">
-          <div>
-            <div class="label">Contributors Dashboard</div>
-            <a class="btn" href="/admin/contributors-dashboard">/admin/contributors-dashboard</a>
-          </div>
-          <div>
-            <div class="label">Intake JSON (latest 50)</div>
-            <a class="btn" href="/admin/intake">/admin/intake</a>
-          </div>
+  <details class="dropdown" style="margin-top:16px;">
+    <summary>Your access rail</summary>
+    <div class="dropdown-body">
+      <div class="muted">Use this tokenized access for subscriber-only pages:</div>
+      <div style="margin-top:10px;">
+        <div class="badge">Dashboard</div>
+        <div style="margin-top:6px; word-break:break-all;">
+          /dashboard?token={{ token }}
         </div>
       </div>
-    </details>
+      <div style="margin-top:10px;">
+        <div class="badge">Intake</div>
+        <div style="margin-top:6px; word-break:break-all;">
+          /intake-form?token={{ token }}
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
+  <div class="card">
+    <h3>Need a public starting point?</h3>
+    <p class="muted">Use Lead Intake for fast routing without subscriber rail.</p>
+    <div class="btnrow">
+      <a class="btn" href="/lead">Lead Intake</a>
+      <a class="btn" href="/partner">Partner Intake</a>
+    </div>
   </div>
 
-  <div class="footer" style="padding:0; margin-top:18px;">
-    <div class="muted">
-      If your link expires, you’ll need a new access token. (We can wire “request new link” later.)
-    </div>
+  <div class="card">
+    <h3>What happens next?</h3>
+    <p class="muted">
+      Intake → structured timeline → risk flags → recommended lane → output packet.
+    </p>
+    <span class="badge">Execution-first</span>
   </div>
 </div>
 {% endblock %}
