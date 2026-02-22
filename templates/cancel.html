@@ -1,19 +1,16 @@
+<!-- templates/cancel.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Canceled • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">Subscription Canceled</h1>
-  <p class="h-sub">Your subscription process was not completed.</p>
-</section>
-{% endblock %}
-
 {% block content %}
 <div class="card">
+  <h2>Checkout Canceled</h2>
+  <p class="muted">No charge was completed. You can retry anytime.</p>
+
   <div class="btnrow">
-    <a class="btn btn-primary" href="/checkout">Try Again</a>
-    <a class="btn" href="/services">Return to Services</a>
-    <a class="btn" href="/">Home</a>
+    <a class="btn btn-primary" href="/checkout">Retry Checkout</a>
+    <a class="btn" href="/services">View Services</a>
+    <a class="btn" href="/lead">Lead Intake</a>
   </div>
 </div>
 {% endblock %}
