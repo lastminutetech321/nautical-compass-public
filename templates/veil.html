@@ -1,0 +1,225 @@
+<!-- templates/veil_check.html  (FULL SCRIPT) -->
+{% extends "base.html" %}
+{% block title %}Veil Check • Nautical Compass{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="container">
+    <h1 class="h-title">Veil Check</h1>
+    <p class="h-sub">Fast gate → routing core → optional contributor path.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-2">
+
+  <!-- Level 1 -->
+  <div class="card">
+    <h2>Level 1 — Fast Gate</h2>
+    <p class="muted">60–90 seconds.</p>
+
+    <form class="form" method="post" action="/veil/intake/l1{% if k %}?k={{ k }}{% endif %}">
+      <label class="label">Email</label>
+      <input name="email" type="email" required placeholder="you@example.com"/>
+
+      <label class="label">Intent</label>
+      <select name="intent" required>
+        <option>Learn</option>
+        <option>Build</option>
+        <option>Join Team</option>
+        <option>Hire</option>
+        <option>Invest</option>
+      </select>
+
+      <label class="label">Experience level</label>
+      <select name="experience_level" required>
+        <option>New</option>
+        <option>Some</option>
+        <option>Pro</option>
+      </select>
+
+      <div class="btnrow" style="margin-top:14px;">
+        <button class="btn btn-primary" type="submit">Continue → Level 2</button>
+      </div>
+    </form>
+
+    {% if lead_id %}
+      <div class="alert ok">
+        Lead created. ID: <span class="badge">{{ lead_id }}</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Level 2 -->
+  <div class="card">
+    <h2>Level 2 — Routing Core</h2>
+    <p class="muted">5–7 minutes. Assigns Track + Role.</p>
+
+    {% if not lead_id %}
+      <div class="alert">Complete Level 1 first. Level 2 will unlock automatically.</div>
+    {% else %}
+      <form class="form" method="post" action="/veil/intake/l2{% if k %}?k={{ k }}{% endif %}">
+        <input type="hidden" name="lead_id" value="{{ lead_id }}"/>
+
+        <label class="label">Tools (select any)</label>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px;">
+          {% for t in ["GitHub","Docker","Python","JS/TS","SQL","Cloud","Linux","CI/CD","APIs"] %}
+            <label style="display:flex; gap:10px; align-items:center;">
+              <input type="checkbox" name="tools" value="{{ t }}"/>
+              <span>{{ t }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <label class="label">Availability (hrs/week)</label>
+        <select name="availability" required>
+          <option>0–2</option>
+          <option>3–5</option>
+          <option>6–10</option>
+          <option>10+</option>
+        </select>
+
+        <label class="label">Pain points (pick up to 3)</label>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px;">
+          {% for p in ["performance","bugs","messy requirements","deployment","security","data integrity","design/UX"] %}
+            <label style="display:flex; gap:10px; align-items:center;">
+              <input type="checkbox" name="pain_points" value="{{ p }}"/>
+              <span>{{ p }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <label class="label">Strength style (pick up to 2)</label>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px;">
+          {% for s in ["Builder","Debugger","Organizer","Communicator","Protector","Optimizer"] %}
+            <label style="display:flex; gap:10px; align-items:center;">
+              <input type="checkbox" name="strength_style" value="{{ s }}"/>
+              <span>{{ s }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <label class="label">Preference (pick 1)</label>
+        <select name="preference" required>
+          <option>I like visuals</option>
+          <option>I like logic</option>
+          <option>I like data</option>
+          <option selected>I like systems</option>
+          <option>I like security</option>
+          <option>I like product/people</option>
+        </select>
+
+        <div class="btnrow" style="margin-top:14px;">
+          <button class="btn btn-primary" type="submit">Generate Guild Passport</button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+
+</div>
+
+{% if show == "passport" and lead %}
+  <div class="card" style="margin-top:18px;">
+    <h2>Guild Passport</h2>
+    <p class="muted">Your Track + Role are assigned. Next mission is lightweight.</p>
+
+    <div class="grid grid-2" style="margin-top:12px;">
+      <div>
+        <div class="badge">Track</div>
+        <h3 style="margin:8px 0 0;">{{ lead.track|default("unknown")|upper }}</h3>
+      </div>
+      <div>
+        <div class="badge">Role</div>
+        <h3 style="margin:8px 0 0;">{{ lead.primary_role|default("Code") }}</h3>
+      </div>
+    </div>
+
+    <div class="alert" style="margin-top:14px;">
+      <strong>First mission (5–10 min):</strong>
+      {% if lead.track == "security" %}
+        Identify 3 risks in a subscription + token system and list mitigations.
+      {% elif lead.track == "devops" %}
+        Draft a rollback-safe deploy checklist for a FastAPI app.
+      {% elif lead.track == "data" %}
+        Propose 1 schema improvement + 3 queries you’d want for reporting.
+      {% elif lead.track == "frontend" %}
+        Suggest 2 UI improvements for clarity + 1 component idea.
+      {% elif lead.track == "product" %}
+        Write a 1-paragraph problem statement + 3 acceptance criteria for a feature.
+      {% else %}
+        Outline 1 endpoint + validation rules for a clean intake workflow.
+      {% endif %}
+    </div>
+
+    <details class="dropdown">
+      <summary>
+        Go deeper (Contributor Path) — Level 3 (optional)
+        <span class="badge">{{ arkitech if arkitech else "Arkitech" }}</span>
+      </summary>
+      <div class="dropdown-body">
+        <form class="form" method="post" action="/veil/intake/l3{% if k %}?k={{ k }}{% endif %}">
+          <input type="hidden" name="lead_id" value="{{ lead.id }}"/>
+
+          <label class="label">Portfolio links (optional) — one per line</label>
+          <textarea name="portfolio_links" placeholder="https://github.com/...\nhttps://..."></textarea>
+
+          <label class="label">Ecosystem interest</label>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">
+            {% for e in ["NC","JE","AVPT","LMT321"] %}
+              <label style="display:flex; gap:10px; align-items:center;">
+                <input type="checkbox" name="ecosystem_interest" value="{{ e }}"/>
+                <span>{{ e }}</span>
+              </label>
+            {% endfor %}
+          </div>
+
+          <label class="label">Communication preference</label>
+          <select name="comm_preference">
+            <option>Email</option>
+            <option>Slack</option>
+            <option>Discord</option>
+          </select>
+
+          <label class="label">Contribution type (optional)</label>
+          <select name="contribution_type">
+            <option value="">Select…</option>
+            <option>Volunteer</option>
+            <option>Paid</option>
+            <option>RevShare</option>
+            <option>Hybrid</option>
+          </select>
+
+          <label style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+            <input type="checkbox" name="nda_ack" value="on"/>
+            <span>I acknowledge NDA requirements if selected.</span>
+          </label>
+
+          <label class="label" style="margin-top:12px;">Choose ONE challenge</label>
+          <select name="challenge_choice" required>
+            <option value="">Select…</option>
+            <option>Frontend: Build a 1-page UI mock or simple component</option>
+            <option>Backend: Design an endpoint + validation rules</option>
+            <option>Data: Model a small schema + 3 queries</option>
+            <option>DevOps: Draft a safe deploy plan with rollback</option>
+            <option>Security: Threat model 3 risks + mitigations</option>
+            <option>Product: Write a 1-page PRD for a feature</option>
+          </select>
+
+          <label class="label">Challenge response (text or URL)</label>
+          <textarea name="challenge_response" required placeholder="Paste URL or write response..."></textarea>
+
+          <div class="btnrow" style="margin-top:14px;">
+            <button class="btn btn-primary" type="submit">Submit to Arkitech Review Queue</button>
+          </div>
+
+          <p class="muted" style="margin-top:10px;">CVCS interactive experience inspired by The Veil.</p>
+        </form>
+      </div>
+    </details>
+
+  </div>
+{% endif %}
+
+{% endblock %}
