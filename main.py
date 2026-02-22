@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 import stripe
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -50,6 +50,12 @@ def _require_valid_url(name: str, url: str) -> str:
         raise ValueError(f"{name} is not a valid URL (must start with http:// or https://)")
     return url
 
+def now_iso() -> str:
+    return datetime.utcnow().isoformat()
+
+def sha256(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
 # --------------------
 # Stripe Config
 # --------------------
@@ -71,10 +77,79 @@ if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
 
 # --------------------
-# Email (optional)
+# Admin Key (protect admin pages)
+# --------------------
+ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))
+
+def require_admin(request: Request) -> Optional[JSONResponse]:
+    """
+    Accepts admin key via:
+      - ?key=...
+      - header: X-Admin-Key: ...
+    """
+    if not ADMIN_KEY:
+        return JSONResponse({"error": "ADMIN_KEY not set"}, status_code=500)
+
+    qk = _clean(request.query_params.get("key", ""))
+    hk = _clean(request.headers.get("x-admin-key", ""))
+
+    if qk == ADMIN_KEY or hk == ADMIN_KEY:
+        return None
+
+    return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+# --------------------
+# Email (optional) + SMTP (Gmail or Mailgun)
 # --------------------
 EMAIL_USER = _clean(os.getenv("EMAIL_USER", ""))
 EMAIL_PASS = _clean(os.getenv("EMAIL_PASS", ""))
+
+SMTP_HOST = _clean(os.getenv("SMTP_HOST", "")) or "smtp.gmail.com"
+SMTP_PORT = int(_clean(os.getenv("SMTP_PORT", "")) or "465")
+SMTP_USE_SSL = _clean(os.getenv("SMTP_USE_SSL", "true")).lower() in ("1", "true", "yes")
+SMTP_USE_STARTTLS = _clean(os.getenv("SMTP_USE_STARTTLS", "")).lower() in ("1", "true", "yes")
+
+def send_email(to_email: str, subject: str, body: str):
+    """
+    Works with:
+      - Gmail: SMTP_HOST=smtp.gmail.com, SMTP_PORT=465, SMTP_USE_SSL=true
+      - Mailgun: SMTP_HOST=smtp.mailgun.org, SMTP_PORT=587, SMTP_USE_STARTTLS=true
+    Uses EMAIL_USER / EMAIL_PASS to login.
+    """
+    if not (EMAIL_USER and EMAIL_PASS):
+        return
+
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = EMAIL_USER
+        msg["To"] = to_email
+        msg.set_content(body)
+
+        # If you explicitly set STARTTLS, use it (common for Mailgun 587)
+        if SMTP_USE_STARTTLS or (SMTP_PORT == 587 and not SMTP_USE_SSL):
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.ehlo()
+                smtp.login(EMAIL_USER, EMAIL_PASS)
+                smtp.send_message(msg)
+            return
+
+        # Default SSL (common for Gmail 465)
+        if SMTP_USE_SSL or SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
+                smtp.login(EMAIL_USER, EMAIL_PASS)
+                smtp.send_message(msg)
+            return
+
+        # Plain SMTP fallback
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
+            smtp.login(EMAIL_USER, EMAIL_PASS)
+            smtp.send_message(msg)
+
+    except Exception as e:
+        print("Email failed:", e)
 
 # --------------------
 # DB
@@ -83,12 +158,6 @@ def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-def now_iso():
-    return datetime.utcnow().isoformat()
-
-def sha256(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 # --------------------
 # Tables
@@ -276,73 +345,24 @@ def require_subscriber_token(token: str | None):
     return email, None
 
 # --------------------
-# Email helper
+# Models (used internally)
 # --------------------
-def send_email(to_email: str, subject: str, body: str):
-    if not (EMAIL_USER and EMAIL_PASS):
-        return
-
-    try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_USER
-        msg["To"] = to_email
-        msg.set_content(body)
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(EMAIL_USER, EMAIL_PASS)
-            smtp.send_message(msg)
-    except Exception as e:
-        print("Email failed:", e)
-
-# --------------------
-# Models
-# --------------------
-class IntakeForm(BaseModel):
-    name: str
-    email: str
-    service_requested: str
-    notes: str | None = None
-
-class LeadForm(BaseModel):
-    name: str
-    email: str
-    interest: str = ""
-    phone: str = ""
-    company: str = ""
-    message: str = ""
-
-class PartnerForm(BaseModel):
-    name: str
-    email: str
-    company: str = ""
-    role: str = ""
-    product_type: str = ""
-    website: str = ""
-    regions: str = ""
-    message: str = ""
-
 class ContributorForm(BaseModel):
     name: str
     email: EmailStr
     phone: str = ""
     company: str = ""
     website: str = ""
-
     primary_role: str
     contribution_track: str
     position_interest: str = ""
     comp_plan: str = ""
-
-    # ✅ Your requested spelling
-    director_owner: str = "Duece"
-
+    director_owner: str = "Duece"  # ✅ your requested spelling
     assets: str = ""
     regions: str = ""
     capacity: str = ""
     alignment: str = ""
     message: str = ""
-
     fit_access: str = ""
     fit_build_goal: str = ""
     fit_opportunity: str = ""
@@ -433,7 +453,7 @@ def _assign_rail(f: ContributorForm, score: int) -> str:
     return "triage"
 
 # --------------------
-# Pages
+# Pages (Public)
 # --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -448,13 +468,20 @@ def lead_page(request: Request):
     return templates.TemplateResponse("lead_intake.html", {"request": request, "year": datetime.utcnow().year})
 
 @app.post("/lead")
-def lead_submit(form: LeadForm):
+def lead_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    interest: str = Form(""),
+    phone: str = Form(""),
+    company: str = Form(""),
+    message: str = Form(""),
+):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO leads (name, email, phone, company, interest, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.phone, form.company, form.interest, form.message, now_iso()))
+    """, (name, email, phone, company, interest, message, now_iso()))
     conn.commit()
     conn.close()
     return {"status": "Lead received"}
@@ -464,30 +491,48 @@ def partner_page(request: Request):
     return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
 
 @app.post("/partner")
-def partner_submit(form: PartnerForm):
+def partner_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    company: str = Form(""),
+    role: str = Form(""),
+    product_type: str = Form(""),
+    website: str = Form(""),
+    regions: str = Form(""),
+    message: str = Form(""),
+):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.company, form.role, form.product_type, form.website, form.regions, form.message, now_iso()))
+    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
     conn.commit()
     conn.close()
     return {"status": "Partner submission received"}
 
 # --------------------
-# Subscriber Intake
+# Subscriber Intake (Token-protected)
 # --------------------
 @app.get("/intake-form", response_class=HTMLResponse)
 def intake_form(request: Request, token: str):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
+    return templates.TemplateResponse(
+        "intake_form.html",
+        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
+    )
 
 @app.post("/intake")
-def submit_intake(form: IntakeForm, token: str):
-    email, err = require_subscriber_token(token)
+def submit_intake(
+    token: str,
+    name: str = Form(...),
+    email: str = Form(...),
+    service_requested: str = Form(...),
+    notes: str = Form(""),
+):
+    sub_email, err = require_subscriber_token(token)
     if err:
         return err
 
@@ -496,7 +541,7 @@ def submit_intake(form: IntakeForm, token: str):
     cur.execute("""
         INSERT INTO intake (name, email, service_requested, notes, created_at)
         VALUES (?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.service_requested, form.notes or "", now_iso()))
+    """, (name, email, service_requested, notes, now_iso()))
     conn.commit()
     conn.close()
 
@@ -504,13 +549,17 @@ def submit_intake(form: IntakeForm, token: str):
         send_email(
             EMAIL_USER,
             "New Subscriber Intake Submission",
-            f"Subscriber: {email}\n\nName: {form.name}\nEmail: {form.email}\nService: {form.service_requested}\nNotes: {form.notes}"
+            f"Subscriber: {sub_email}\n\nName: {name}\nEmail: {email}\nService: {service_requested}\nNotes: {notes}"
         )
 
     return {"status": "Intake stored successfully"}
 
 @app.get("/admin/intake")
-def admin_intake_json(limit: int = 50):
+def admin_intake_json(request: Request, limit: int = 50):
+    guard = require_admin(request)
+    if guard:
+        return guard
+
     conn = db()
     cur = conn.cursor()
     cur.execute("SELECT * FROM intake ORDER BY id DESC LIMIT ?", (limit,))
@@ -522,13 +571,18 @@ def admin_intake_json(limit: int = 50):
 # Stripe Checkout
 # --------------------
 def require_env():
-    missing = []
     if STARTUP_URL_ERROR:
-        return JSONResponse({"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."}, status_code=500)
+        return JSONResponse(
+            {"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."},
+            status_code=500,
+        )
+    missing = []
     if not STRIPE_SECRET_KEY:
         missing.append("STRIPE_SECRET_KEY")
     if not STRIPE_PRICE_ID:
         missing.append("STRIPE_PRICE_ID")
+    if not STRIPE_WEBHOOK_SECRET:
+        missing.append("STRIPE_WEBHOOK_SECRET")
     if not SUCCESS_URL:
         missing.append("SUCCESS_URL")
     if not CANCEL_URL:
@@ -587,7 +641,7 @@ def success(request: Request, session_id: str | None = None):
 
     return templates.TemplateResponse(
         "success.html",
-        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year}
+        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year},
     )
 
 @app.get("/cancel", response_class=HTMLResponse)
@@ -618,8 +672,8 @@ async def stripe_webhook(request: Request):
 
         if customer_email:
             upsert_subscriber_active(customer_email, customer_id, subscription_id)
-
             token = issue_magic_link(customer_email, hours=24)
+
             base = str(request.base_url).rstrip("/")
             link = f"{base}/dashboard?token={token}"
 
@@ -651,14 +705,17 @@ async def stripe_webhook_alias(request: Request):
     return await stripe_webhook(request)
 
 # --------------------
-# Dashboard
+# Dashboard (Token-protected)
 # --------------------
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, token: str):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
+    )
 
 # --------------------
 # Contributor Intake + Admin
@@ -668,7 +725,60 @@ def contributor_page(request: Request):
     return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
 
 @app.post("/contributor")
-def submit_contributor(form: ContributorForm):
+def submit_contributor(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    company: str = Form(""),
+    website: str = Form(""),
+
+    primary_role: str = Form(...),
+    contribution_track: str = Form(...),
+    position_interest: str = Form(""),
+    comp_plan: str = Form(""),
+    director_owner: str = Form("Duece"),
+
+    assets: str = Form(""),
+    regions: str = Form(""),
+    capacity: str = Form(""),
+    alignment: str = Form(""),
+    message: str = Form(""),
+
+    fit_access: str = Form(""),
+    fit_build_goal: str = Form(""),
+    fit_opportunity: str = Form(""),
+    fit_authority: str = Form(""),
+    fit_lane: str = Form(""),
+    fit_no_conditions: str = Form(""),
+    fit_visibility: str = Form(""),
+    fit_why_you: str = Form(""),
+):
+    form = ContributorForm(
+        name=name,
+        email=email,
+        phone=phone,
+        company=company,
+        website=website,
+        primary_role=primary_role,
+        contribution_track=contribution_track,
+        position_interest=position_interest,
+        comp_plan=comp_plan,
+        director_owner=director_owner,
+        assets=assets,
+        regions=regions,
+        capacity=capacity,
+        alignment=alignment,
+        message=message,
+        fit_access=fit_access,
+        fit_build_goal=fit_build_goal,
+        fit_opportunity=fit_opportunity,
+        fit_authority=fit_authority,
+        fit_lane=fit_lane,
+        fit_no_conditions=fit_no_conditions,
+        fit_visibility=fit_visibility,
+        fit_why_you=fit_why_you,
+    )
+
     score = _score_contributor(form)
     rail = _assign_rail(form, score)
 
@@ -712,6 +822,10 @@ def contributors_dashboard(
     min_score: Optional[int] = None,
     track: Optional[str] = None,
 ):
+    guard = require_admin(request)
+    if guard:
+        return guard
+
     conn = db()
     cur = conn.cursor()
 
@@ -738,11 +852,22 @@ def contributors_dashboard(
 
     return templates.TemplateResponse(
         "contributors_dashboard.html",
-        {"request": request, "contributors": rows, "rail": rail, "min_score": min_score, "track": track, "year": datetime.utcnow().year},
+        {
+            "request": request,
+            "contributors": rows,
+            "rail": rail,
+            "min_score": min_score,
+            "track": track,
+            "year": datetime.utcnow().year,
+        },
     )
 
 @app.post("/admin/contributor-status")
-def update_contributor_status(id: int, status: str):
+def update_contributor_status(request: Request, id: int = Form(...), status: str = Form(...)):
+    guard = require_admin(request)
+    if guard:
+        return guard
+
     conn = db()
     cur = conn.cursor()
     cur.execute("UPDATE contributors SET status = ? WHERE id = ?", (status, id))
@@ -751,13 +876,13 @@ def update_contributor_status(id: int, status: str):
     return {"ok": True}
 
 # --------------------
-# Dev Token Route
+# Dev Token Route (env-gated)
 # --------------------
 DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
 DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
 
 @app.get("/dev/generate-token")
-def dev_generate_token(email: str, key: str, request: Request):
+def dev_generate_token(request: Request, email: str, key: str):
     if not DEV_TOKEN_ENABLED:
         return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
 
@@ -771,6 +896,7 @@ def dev_generate_token(email: str, key: str, request: Request):
     if not email or "@" not in email:
         return JSONResponse({"error": "Invalid email"}, status_code=400)
 
+    # Mark subscriber active so token works immediately
     upsert_subscriber_active(email, "", "")
     token = issue_magic_link(email, hours=24)
 
