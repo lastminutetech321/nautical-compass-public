@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Contributor Dashboard{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <h1 class="h-title">Contributor Dashboard</h1>
+  <p class="h-sub">Filter, score, assign, activate.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <form method="get" action="/admin/contributors-dashboard">
+    <div class="grid grid-2">
+
+      <div>
+        <div class="label">Rail</div>
+        <select name="rail">
+          <option value="">All</option>
+          <option value="priority">Priority</option>
+          <option value="sales_priority">Sales Priority</option>
+          <option value="staff_priority">Staff Priority</option>
+          <option value="hardware_supply">Hardware</option>
+          <option value="capital">Capital</option>
+          <option value="sales_pool">Sales Pool</option>
+          <option value="staff_pool">Staff Pool</option>
+          <option value="review">Review</option>
+          <option value="triage">Triage</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="label">Minimum Score</div>
+        <input type="number" name="min_score" placeholder="e.g. 50">
+      </div>
+
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary">Filter</button>
+      <a class="btn" href="/admin/contributors-dashboard">Reset</a>
+    </div>
+  </form>
+</div>
+
+{% for c in contributors %}
+<div class="card" style="margin-top:16px;">
+
+  <div style="display:flex; justify-content:space-between;">
+    <strong>{{ c.name }}</strong>
+    <span class="badge">Score: {{ c.score }}</span>
+  </div>
+
+  <div class="muted" style="margin-top:6px;">
+    {{ c.email }} · {{ c.primary_role }}
+  </div>
+
+  <div style="margin-top:8px;">
+    <span class="badge">{{ c.rail }}</span>
+    <span class="badge">{{ c.contribution_track }}</span>
+    <span class="badge">{{ c.status }}</span>
+  </div>
+
+  <div style="margin-top:12px;">
+    <form method="post" action="/admin/contributor-status">
+      <input type="hidden" name="id" value="{{ c.id }}">
+      <select name="status">
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="onboarded">Onboarded</option>
+        <option value="active">Active</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button class="btn">Update</button>
+    </form>
+  </div>
+
+</div>
+{% endfor %}
+
+{% endblock %}
