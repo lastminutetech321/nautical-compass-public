@@ -1,82 +1,208 @@
+{# templates/contributors_dashboard.html #}
 {% extends "base.html" %}
-{% block title %}Contributor Dashboard{% endblock %}
-
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">Contributor Dashboard</h1>
-  <p class="h-sub">Filter, score, assign, activate.</p>
-</section>
-{% endblock %}
+{% block title %}Contributors Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
-
 <div class="card">
-  <form method="get" action="/admin/contributors-dashboard">
-    <div class="grid grid-2">
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <div>
+      <h2 style="margin:0 0 6px;">Contributors Dashboard</h2>
+      <p class="muted" style="margin:0;">
+        Filter by rail / track / score. Update status inline. This is your routing control room.
+      </p>
+    </div>
 
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn" href="/contributor">Contributor Intake</a>
+      <a class="btn btn-primary" href="/services">Services</a>
+    </div>
+  </div>
+
+  <div class="alert" style="margin-top:14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+      <div>
+        <span class="badge">Total: {{ contributors|length }}</span>
+        {% if rail %}<span class="badge">Rail: {{ rail }}</span>{% endif %}
+        {% if track %}<span class="badge">Track: {{ track }}</span>{% endif %}
+        {% if min_score is not none %}<span class="badge">Min Score: {{ min_score }}</span>{% endif %}
+      </div>
+      <div class="muted">
+        Tip: click a badge in filters to narrow down quickly.
+      </div>
+    </div>
+  </div>
+
+  <form class="form" method="get" action="/admin/contributors-dashboard" style="margin-top:16px;">
+    <div class="grid grid-2">
       <div>
         <div class="label">Rail</div>
         <select name="rail">
-          <option value="">All</option>
-          <option value="priority">Priority</option>
-          <option value="sales_priority">Sales Priority</option>
-          <option value="staff_priority">Staff Priority</option>
-          <option value="hardware_supply">Hardware</option>
-          <option value="capital">Capital</option>
-          <option value="sales_pool">Sales Pool</option>
-          <option value="staff_pool">Staff Pool</option>
-          <option value="review">Review</option>
-          <option value="triage">Triage</option>
+          <option value="" {% if not rail %}selected{% endif %}>All rails</option>
+          {% set rails = [
+            "priority","sales_priority","staff_priority","hardware_supply","capital",
+            "review","sales_pool","staff_pool","bd_followup","triage"
+          ] %}
+          {% for r in rails %}
+            <option value="{{ r }}" {% if rail==r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
         </select>
       </div>
 
       <div>
-        <div class="label">Minimum Score</div>
-        <input type="number" name="min_score" placeholder="e.g. 50">
+        <div class="label">Contribution Track</div>
+        <select name="track">
+          <option value="" {% if not track %}selected{% endif %}>All tracks</option>
+          {% set tracks = [
+            "ecosystem_staff","sales_growth","builder_operator","hardware_supply",
+            "partner_vendor","capital_sponsor","advisor_specialist","not_sure"
+          ] %}
+          {% for t in tracks %}
+            <option value="{{ t }}" {% if track==t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
       </div>
 
-    </div>
+      <div>
+        <div class="label">Min Score</div>
+        <input name="min_score" type="number" min="0" max="100"
+               value="{% if min_score is not none %}{{ min_score }}{% endif %}"
+               placeholder="e.g., 45" />
+      </div>
 
-    <div class="btnrow">
-      <button class="btn btn-primary">Filter</button>
-      <a class="btn" href="/admin/contributors-dashboard">Reset</a>
+      <div style="display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" type="submit">Apply Filters</button>
+        <a class="btn" href="/admin/contributors-dashboard">Reset</a>
+      </div>
     </div>
   </form>
 </div>
 
-{% for c in contributors %}
 <div class="card" style="margin-top:16px;">
+  <h3 style="margin:0 0 10px;">Results</h3>
 
-  <div style="display:flex; justify-content:space-between;">
-    <strong>{{ c.name }}</strong>
-    <span class="badge">Score: {{ c.score }}</span>
+  {% if contributors|length == 0 %}
+    <div class="alert bad">
+      No contributors match these filters.
+    </div>
+  {% else %}
+
+  <div style="overflow:auto; border:1px solid var(--line); border-radius: var(--radius);">
+    <table style="width:100%; border-collapse:collapse; min-width: 980px;">
+      <thead>
+        <tr style="background: rgba(255,255,255,.04);">
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Name</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Email</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Role</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Track</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Rail</th>
+          <th style="text-align:right; padding:12px; border-bottom:1px solid var(--line);">Score</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Regions</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Director</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Status</th>
+          <th style="text-align:left; padding:12px; border-bottom:1px solid var(--line);">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for c in contributors %}
+          <tr>
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <div style="font-weight:800;">{{ c.get("name","") }}</div>
+              <div class="muted" style="font-size:12px;">
+                {% if c.get("company") %}{{ c.get("company") }}{% else %}—{% endif %}
+              </div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <div style="font-weight:700;">{{ c.get("email","") }}</div>
+              <div class="muted" style="font-size:12px;">
+                {% if c.get("phone") %}{{ c.get("phone") }}{% else %}—{% endif %}
+              </div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <span class="badge">{{ c.get("primary_role","") or "—" }}</span>
+              <div class="muted" style="font-size:12px; margin-top:6px;">
+                {% if c.get("position_interest") %}{{ c.get("position_interest") }}{% else %}—{% endif %}
+              </div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <div style="font-weight:700;">{{ c.get("contribution_track","") }}</div>
+              <div class="muted" style="font-size:12px; margin-top:6px;">
+                {% if c.get("comp_plan") %}{{ c.get("comp_plan") }}{% else %}—{% endif %}
+              </div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <span class="badge">{{ c.get("rail","") }}</span>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line); text-align:right;">
+              <div style="font-weight:900; font-size:16px;">{{ c.get("score",0) }}</div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <div style="font-weight:700;">
+                {% if c.get("regions") %}{{ c.get("regions") }}{% else %}—{% endif %}
+              </div>
+              <div class="muted" style="font-size:12px; margin-top:6px;">
+                {% if c.get("capacity") %}{{ c.get("capacity") }}{% else %}—{% endif %}
+              </div>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <span class="badge">
+                {% if c.get("director_owner") %}{{ c.get("director_owner") }}{% else %}Duece{% endif %}
+              </span>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <span class="badge">{{ c.get("status","new") }}</span>
+            </td>
+
+            <td style="padding:12px; border-bottom:1px solid var(--line);">
+              <form method="post" action="/admin/contributor-status" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="hidden" name="id" value="{{ c.get('id') }}" />
+                <select name="status" required>
+                  {% set st = c.get("status","new") %}
+                  <option value="new" {% if st=="new" %}selected{% endif %}>new</option>
+                  <option value="contacted" {% if st=="contacted" %}selected{% endif %}>contacted</option>
+                  <option value="scheduled" {% if st=="scheduled" %}selected{% endif %}>scheduled</option>
+                  <option value="qualified" {% if st=="qualified" %}selected{% endif %}>qualified</option>
+                  <option value="onboarded" {% if st=="onboarded" %}selected{% endif %}>onboarded</option>
+                  <option value="hold" {% if st=="hold" %}selected{% endif %}>hold</option>
+                  <option value="declined" {% if st=="declined" %}selected{% endif %}>declined</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Save</button>
+              </form>
+
+              {% if c.get("assets") or c.get("message") %}
+                <details class="dropdown" style="margin-top:10px;">
+                  <summary>Details</summary>
+                  <div class="dropdown-body">
+                    {% if c.get("assets") %}
+                      <div class="label" style="margin-top:0;">Assets</div>
+                      <div style="white-space:pre-wrap;">{{ c.get("assets") }}</div>
+                    {% endif %}
+                    {% if c.get("message") %}
+                      <div class="label">Message</div>
+                      <div style="white-space:pre-wrap;">{{ c.get("message") }}</div>
+                    {% endif %}
+                    {% if c.get("alignment") %}
+                      <div class="label">Alignment</div>
+                      <div style="white-space:pre-wrap;">{{ c.get("alignment") }}</div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
-  <div class="muted" style="margin-top:6px;">
-    {{ c.email }} · {{ c.primary_role }}
-  </div>
-
-  <div style="margin-top:8px;">
-    <span class="badge">{{ c.rail }}</span>
-    <span class="badge">{{ c.contribution_track }}</span>
-    <span class="badge">{{ c.status }}</span>
-  </div>
-
-  <div style="margin-top:12px;">
-    <form method="post" action="/admin/contributor-status">
-      <input type="hidden" name="id" value="{{ c.id }}">
-      <select name="status">
-        <option value="new">New</option>
-        <option value="contacted">Contacted</option>
-        <option value="onboarded">Onboarded</option>
-        <option value="active">Active</option>
-        <option value="rejected">Rejected</option>
-      </select>
-      <button class="btn">Update</button>
-    </form>
-  </div>
-
+  {% endif %}
 </div>
-{% endfor %}
-
 {% endblock %}
