@@ -1,49 +1,69 @@
+<!-- templates/partner_intake.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Partner Intake • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">Manufacturer / Sponsor Intake</h1>
-  <p class="h-sub">For vendors, integrators, and sponsor-grade partners.</p>
-</section>
-{% endblock %}
-
 {% block content %}
 <div class="card">
-  {% if submitted %}
-  <div class="alert ok">
-    <strong>Submitted.</strong> Partner intake received.
-  </div>
-  {% endif %}
+  <h2>Partner Intake</h2>
+  <p class="muted">
+    Manufacturers, sponsors, vendors, capital partners. Public intake → routed internally.
+  </p>
 
-  <form method="post" action="/partner">
-    <div class="label">Name</div>
+  <form class="form" method="post" action="/partner">
+    <label class="label">Name</label>
     <input name="name" required />
 
-    <div class="label">Email</div>
+    <label class="label">Email</label>
     <input name="email" type="email" required />
 
-    <div class="label">Company</div>
-    <input name="company" required />
+    <label class="label">Company</label>
+    <input name="company" />
 
-    <div class="label">Role</div>
-    <input name="role" required placeholder="Manufacturer / Rep / Integrator / Sponsor…" />
+    <label class="label">Role</label>
+    <select name="role">
+      <option value="">Select…</option>
+      <option>Regional Sales</option>
+      <option>Manufacturer</option>
+      <option>Distributor</option>
+      <option>Integrator</option>
+      <option>Sponsor / Capital</option>
+      <option>Service Vendor</option>
+      <option>Other</option>
+    </select>
 
-    <div class="label">Product Type</div>
-    <input name="product_type" required placeholder="LED / Audio / Lighting / Rigging / Services…" />
+    <label class="label">Product type</label>
+    <select name="product_type">
+      <option value="">Select…</option>
+      <option>LED Walls / Panels</option>
+      <option>Digital Signage</option>
+      <option>Audio Systems</option>
+      <option>Control Systems</option>
+      <option>Rigging / Staging</option>
+      <option>Logistics / Warehousing</option>
+      <option>Software / Platform</option>
+      <option>Capital / Funding</option>
+      <option>Other</option>
+    </select>
 
-    <div class="label">Website (optional)</div>
-    <input name="website" />
+    <label class="label">Website (optional)</label>
+    <input name="website" placeholder="https://"/>
 
-    <div class="label">Regions (optional)</div>
-    <input name="regions" placeholder="DMV, Mid-Atlantic, Nationwide…" />
+    <label class="label">Regions (optional)</label>
+    <input name="regions" placeholder="DMV, East Coast, USA, etc." />
 
-    <div class="label">Message (optional)</div>
-    <textarea name="message" placeholder="Capabilities, MOQ, lead time, territory, support…"></textarea>
+    <label class="label">Message (optional)</label>
+    <textarea name="message" placeholder="What are you offering + what do you want access to?"></textarea>
+
+    <details class="dropdown">
+      <summary>Partner routing notes</summary>
+      <div class="dropdown-body muted">
+        We route partners by region + product type + intended collaboration: supply, sponsorship, integration, or co-marketing.
+      </div>
+    </details>
 
     <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/">Back Home</a>
+      <button class="btn btn-primary" type="submit">Submit Partner</button>
+      <a class="btn" href="/services">See Services</a>
     </div>
   </form>
 </div>
