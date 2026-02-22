@@ -1,43 +1,36 @@
+<!-- templates/success.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Success • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">Success</h1>
-  <p class="h-sub">Payment confirmed. Your access link is ready.</p>
-</section>
-{% endblock %}
-
 {% block content %}
 <div class="card">
-  {% if email and dashboard_link %}
+  <h2>Subscription Success</h2>
+  <p class="muted">You’re in. Your access rail is ready.</p>
+
+  {% if dashboard_link %}
     <div class="alert ok">
-      <strong>Active subscription created.</strong>
-      <div class="muted" style="margin-top:6px;">Subscriber: <strong>{{ email }}</strong></div>
-    </div>
-
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="{{ dashboard_link }}">Continue to Dashboard</a>
-      <a class="btn" href="{{ intake_link }}">Open Intake Form</a>
-      <a class="btn" href="/services">Services</a>
-    </div>
-
-    <div class="alert" style="margin-top:14px;">
-      <div class="muted">
-        Your link is token-based and expires. If you need a fresh link, contact support.
+      <div><strong>Access link generated:</strong></div>
+      <div style="margin-top:8px; word-break:break-all;">
+        <a href="{{ dashboard_link }}">{{ dashboard_link }}</a>
       </div>
+      <div class="muted" style="margin-top:8px;">
+        This link is time-limited. Save it.
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <a class="btn btn-primary" href="{{ dashboard_link }}">Go to Dashboard</a>
+      <a class="btn" href="/services">View Services</a>
     </div>
   {% else %}
-    <div class="alert bad">
-      <strong>Success page loaded.</strong>
-      <div class="muted" style="margin-top:6px;">
-        We didn’t receive session details here. If you just paid, refresh once — or check your email.
-      </div>
+    <div class="alert">
+      Checkout completed, but access link could not be generated automatically.
+      If this persists, retry from the dashboard or contact support.
     </div>
 
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="/checkout">Retry Checkout</a>
-      <a class="btn" href="/services">Back to Services</a>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/services">Continue</a>
+      <a class="btn" href="/">Home</a>
     </div>
   {% endif %}
 </div>
