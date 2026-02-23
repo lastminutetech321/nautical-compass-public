@@ -1,4 +1,3 @@
-<!-- templates/services.html — FULL SCRIPT (curated list + FULL catalog dropdown 63+) -->
 {% extends "base.html" %}
 {% block title %}Services • Nautical Compass{% endblock %}
 
@@ -7,160 +6,181 @@
   <div class="wrap">
     <div class="hero-card">
       <h1 class="h-title">Services</h1>
-      <p class="h-sub">Curated execution rails + a full catalog that makes people say: “Wait… you do ALL that?”</p>
+      <p class="h-sub">
+        Curated “most-used” services up front, with a full catalog below for psychology + discovery.
+      </p>
+
       <div class="hero-actions">
         <a class="btn btn-primary" href="/checkout">Subscribe</a>
         <a class="btn btn-ghost" href="/lead">Lead Intake</a>
+        <a class="btn" href="/partner">Partner Intake</a>
       </div>
-      <p class="micro">Psychology: curated “top picks” + full catalog dropdown = credibility + curiosity.</p>
+
+      <p class="micro">
+        Subscribers unlock prioritized intake rails. Partners and manufacturers have dedicated routing lanes.
+      </p>
     </div>
   </div>
 </section>
 {% endblock %}
 
 {% block content %}
+<div class="grid grid-2">
 
-<div class="grid grid-3">
+  <!-- Curated Core -->
   <div class="card">
-    <h2>Legal Intake Strategy</h2>
-    <p class="muted">Turn a messy situation into: issues, facts, timeline, evidence list, next moves.</p>
-    <span class="badge">Output: structured plan</span>
+    <h2>Core (Most Requested)</h2>
+    <p class="muted">These are the fastest “day-1 usable” rails.</p>
+
+    <div class="grid" style="gap:12px;">
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Standing + Capacity Analysis</h3>
+        <div class="muted">Who can sue, who to sue, and in what capacity — framed to survive dismissal.</div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Demand Letter Drafting</h3>
+        <div class="muted">Structured demands, timelines, and evidence mapping — ready for negotiation or filing.</div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Contract Review + Risk Map</h3>
+        <div class="muted">Key clauses, choke points, exit triggers, and leverage summary.</div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Arbitration Package Assembly</h3>
+        <div class="muted">AAA/consumer packet style organization: claims, exhibits, narrative, and relief requested.</div>
+      </div>
+
+      <div class="btnrow" style="margin-top:10px;">
+        <a class="btn btn-primary" href="/checkout">Subscribe to Unlock Intake</a>
+        <a class="btn" href="/lead">Public Lead Intake</a>
+      </div>
+    </div>
   </div>
 
+  <!-- Manufacturers / Sponsors -->
   <div class="card">
-    <h2>Contract Review & Risk Map</h2>
-    <p class="muted">Pinpoint liabilities, missing terms, exit clauses, pricing traps, enforcement lanes.</p>
-    <span class="badge">Output: risk flags + edits</span>
-  </div>
+    <h2>Manufacturers + Sponsors</h2>
+    <p class="muted">
+      Dedicated routing for vendors/manufacturers (LED, AV, signage) and sponsor partners.
+    </p>
 
-  <div class="card">
-    <h2>Demand Letter Drafting</h2>
-    <p class="muted">Clean narrative, timeline, loss summary, and relief requested.</p>
-    <span class="badge">Output: ready-to-send</span>
-  </div>
+    <div class="grid" style="gap:12px;">
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Partner Routing Lane</h3>
+        <div class="muted">Regions + product type + lead-time captured in intake → routed into the correct rail.</div>
+      </div>
 
-  <div class="card">
-    <h2>Arbitration Package Assembly</h2>
-    <p class="muted">Organize exhibits + claims + chronology so arbitration doesn’t eat you alive.</p>
-    <span class="badge">Output: filing-ready bundle</span>
-  </div>
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 6px;">Sponsor Access (Monthly)</h3>
+        <div class="muted">Preferred placement + territory priority + routed introductions + reporting.</div>
+      </div>
 
-  <div class="card">
-    <h2>Dispute Timeline & Evidence</h2>
-    <p class="muted">Screenshots, invoices, chat logs, call logs — indexed and labeled.</p>
-    <span class="badge">Output: exhibit index</span>
-  </div>
+      <div class="btnrow" style="margin-top:10px;">
+        <a class="btn" href="/partner">Partner Intake</a>
+        <a class="btn btn-primary" href="/sponsor">Sponsor Access</a>
+      </div>
 
-  <div class="card">
-    <h2>Complaint Framing</h2>
-    <p class="muted">Clarify who did what, what rule was violated, harm, and what fixes it.</p>
-    <span class="badge">Output: complaint outline</span>
-  </div>
-
-  <div class="card">
-    <h2>Billing / Payments Dispute</h2>
-    <p class="muted">Charge disputes, missing pay, misrouting, fee breakdown, and escalation path.</p>
-    <span class="badge">Output: dispute packet</span>
-  </div>
-
-  <div class="card">
-    <h2>Platform / Marketplace Dispute</h2>
-    <p class="muted">Suspensions, deplatforming, algorithmic harm, policy misapplication.</p>
-    <span class="badge">Output: appeal + record</span>
-  </div>
-
-  <div class="card">
-    <h2>Record Requests</h2>
-    <p class="muted">Public records / FOIA-style request drafting + tracking plan.</p>
-    <span class="badge">Output: request packet</span>
+      <div class="alert" style="margin-top:10px;">
+        <strong>Note:</strong> Partner intake comes first so category/region placement is correct before sponsor activation.
+      </div>
+    </div>
   </div>
 </div>
 
-<details class="dropdown">
-  <summary>
-    Full Catalog (63+)
-    <span class="badge">Open</span>
-  </summary>
+<!-- FULL CATALOG DROPDOWN (Psychology win) -->
+<div class="card" style="margin-top:18px;">
+  <h2>Full Service Catalog</h2>
+  <p class="muted">
+    This catalog shows the platform’s breadth. You don’t need all of it today — you just need the right rail for your situation.
+  </p>
 
-  <div class="dropdown-body">
-    <p class="muted" style="margin-top:0;">
-      These are available rails. Even if some are “in build,” listing them increases perceived capability and future retention.
-    </p>
+  <details class="dropdown" open>
+    <summary>
+      Browse Full Catalog (Grouped)
+      <span class="badge">63+ rails</span>
+    </summary>
 
-    <div class="catalog-grid">
-      <!-- LEGAL / DISPUTE -->
-      <div class="catalog-item"><strong>Standing + Capacity Analysis</strong><span>Clarify who can sue, who to name, and what relief is viable.</span></div>
-      <div class="catalog-item"><strong>Injury / Damages Storyboard</strong><span>Translate harm into clear categories + proof checklist.</span></div>
-      <div class="catalog-item"><strong>Evidence Binder Build</strong><span>Exhibits labeled, indexed, and grouped for filing.</span></div>
-      <div class="catalog-item"><strong>Demand + Notice Ladder</strong><span>Escalation sequence: informal → formal → regulatory → filing.</span></div>
-      <div class="catalog-item"><strong>Small Claims Pack</strong><span>Complaint outline + exhibits + hearing prep list.</span></div>
-      <div class="catalog-item"><strong>Regulatory Complaint Draft</strong><span>Consumer agency complaint with timeline + request.</span></div>
-      <div class="catalog-item"><strong>Settlement Term Sheet</strong><span>Clean deal points + non-monetary terms.</span></div>
-      <div class="catalog-item"><strong>Negotiation Script Kit</strong><span>Call/email scripts that move outcomes without emotion.</span></div>
-      <div class="catalog-item"><strong>Cease & Desist</strong><span>Stop-harm letter with documentation demand.</span></div>
-      <div class="catalog-item"><strong>Defamation / Reputation Packet</strong><span>Content logs + take-down requests + evidence map.</span></div>
+    <div class="dropdown-body">
+      <div class="grid">
 
-      <!-- CONTRACTS / BUSINESS -->
-      <div class="catalog-item"><strong>Vendor Contract Cleanup</strong><span>Scope, deliverables, acceptance criteria, dispute terms.</span></div>
-      <div class="catalog-item"><strong>Independent Contractor Terms</strong><span>Payment, schedule, liability, IP, termination.</span></div>
-      <div class="catalog-item"><strong>Invoice + Collections Pack</strong><span>Invoice language, reminders, late fee ladder.</span></div>
-      <div class="catalog-item"><strong>SOW / Statement of Work Builder</strong><span>Turn a conversation into enforceable scope.</span></div>
-      <div class="catalog-item"><strong>Risk Flags Report</strong><span>Red flags from intake answers (single-customer, unclear scope, etc.).</span></div>
-      <div class="catalog-item"><strong>Business Formation Checklist</strong><span>Formation, compliance, banking binder, ops rails.</span></div>
-      <div class="catalog-item"><strong>Internal Policy Pack</strong><span>Refunds, cancellations, disputes, privacy baseline.</span></div>
-      <div class="catalog-item"><strong>Partner / Sponsor Agreement Draft</strong><span>Deliverables, territory, exclusivity, payment triggers.</span></div>
-      <div class="catalog-item"><strong>NCNDA / Confidentiality Draft</strong><span>Keep collaboration clean.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Standing + Capacity</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Article III Standing (Lujan test)</li>
+            <li>Injury / Causation / Redressability framing</li>
+            <li>Individual vs Official Capacity (1983 / immunity)</li>
+            <li>Proper Defendant selection</li>
+            <li>Ex parte Young injunctive route</li>
+            <li>Dismissal-risk audit (Rule 12)</li>
+          </ul>
+        </div>
 
-      <!-- PAY / WORK / PLATFORM -->
-      <div class="catalog-item"><strong>Missing Pay Packet</strong><span>Times, rates, invoices, contacts, demand language.</span></div>
-      <div class="catalog-item"><strong>Union Pay Reconciliation</strong><span>Compare stubs vs hours vs rate tables.</span></div>
-      <div class="catalog-item"><strong>Misclassification Triage</strong><span>1099 vs W2 markers, risk and remedies map.</span></div>
-      <div class="catalog-item"><strong>App Platform Account Recovery</strong><span>Documented escalation path + logs checklist.</span></div>
-      <div class="catalog-item"><strong>Subscription System Audit</strong><span>Identify leakage, churn triggers, pricing gaps.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Disputes + Enforcement</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Demand letter + exhibits</li>
+            <li>Billing/payment dispute package</li>
+            <li>Platform dispute (marketplace routing / bans)</li>
+            <li>Chargeback strategy packet</li>
+            <li>Settlement posture + leverage mapping</li>
+            <li>Arbitration packet (consumer)</li>
+          </ul>
+        </div>
 
-      <!-- TECH / PRODUCT -->
-      <div class="catalog-item"><strong>Deployment Rescue Plan</strong><span>Ports, env vars, run commands, rollback safety.</span></div>
-      <div class="catalog-item"><strong>Infrastructure Checklist</strong><span>DB, caching, logs, backups, alert policies.</span></div>
-      <div class="catalog-item"><strong>Security Baseline</strong><span>Key handling, env hygiene, webhook validation.</span></div>
-      <div class="catalog-item"><strong>Data Model Review</strong><span>Schema sanity check + future scaling plan.</span></div>
-      <div class="catalog-item"><strong>API Contract Draft</strong><span>Endpoints + validation + error shapes.</span></div>
-      <div class="catalog-item"><strong>UI/UX Cleanup Pass</strong><span>Make it feel “enterprise” without bloat.</span></div>
-      <div class="catalog-item"><strong>Feature Roadmap</strong><span>Quarter plan: must-have vs nice-to-have.</span></div>
-      <div class="catalog-item"><strong>Pricing Tier Psychology</strong><span>Offer positioning for conversion.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Records + Evidence</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Timeline build + fact indexing</li>
+            <li>Evidence binder (exhibit list + labels)</li>
+            <li>FOIA/records request packet (style)</li>
+            <li>Witness statement capture plan</li>
+            <li>Damages log + incident ledger</li>
+          </ul>
+        </div>
 
-      <!-- AV / TRADE / EVENTS -->
-      <div class="catalog-item"><strong>AV Crew Role Mapping</strong><span>Roles, pay bands, certifications, routing.</span></div>
-      <div class="catalog-item"><strong>Dispatcher / Labor Coordinator Rail</strong><span>Ops workflow that scales crew builds.</span></div>
-      <div class="catalog-item"><strong>Venue / Event Ops Packet</strong><span>Pre-event, chaos, post-event SOP.</span></div>
-      <div class="catalog-item"><strong>LED / Hardware Vendor Intake</strong><span>Product type, regions, pricing, delivery constraints.</span></div>
-      <div class="catalog-item"><strong>Warehouse + Logistics Plan</strong><span>Drivers, staging, inventory, dispatch lanes.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Contracts</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Contract review + risk map</li>
+            <li>Scope-of-work rewrite</li>
+            <li>Payment terms / milestones</li>
+            <li>Termination triggers</li>
+            <li>Indemnity + limitation review</li>
+          </ul>
+        </div>
 
-      <!-- MARKETING / SALES -->
-      <div class="catalog-item"><strong>Director + Staff Sales System</strong><span>Commission rails, referral codes, tracking.</span></div>
-      <div class="catalog-item"><strong>Pitch Pack Builder</strong><span>One-pager + proof + offer positioning.</span></div>
-      <div class="catalog-item"><strong>Outbound Script Kit</strong><span>Group-chat friendly pitch without spam energy.</span></div>
-      <div class="catalog-item"><strong>Lead Qualification Ladder</strong><span>Who to prioritize + what to ask next.</span></div>
-      <div class="catalog-item"><strong>Partner Funnel</strong><span>Manufacturers/sponsors pipeline with routing.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Business + Ops</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Onboarding/intake automation</li>
+            <li>Sales rails + referral codes</li>
+            <li>Partner routing + sponsor lane</li>
+            <li>Contributor scoring + assignment rails</li>
+            <li>Regional clustering (hardware / vendors)</li>
+          </ul>
+        </div>
 
-      <!-- COMPLIANCE / ADMIN -->
-      <div class="catalog-item"><strong>Annual Filing Review</strong><span>Keep entities in good standing.</span></div>
-      <div class="catalog-item"><strong>UCC Renewal Reminder System</strong><span>Renew before expiration (ops rails).</span></div>
-      <div class="catalog-item"><strong>Document Retention Pack</strong><span>What to keep, where, and why.</span></div>
-      <div class="catalog-item"><strong>Admin Dashboard Setup</strong><span>View leads, contributors, intake with filters.</span></div>
+        <div>
+          <h3 style="margin:0 0 8px;">Specialized Modules (Preview)</h3>
+          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
+            <li>Risk flags (intake-driven)</li>
+            <li>Role/rail assignment engine</li>
+            <li>Director/staff comp routing (future)</li>
+            <li>Vendor sponsor dashboard (future)</li>
+            <li>Private portal expansions (future)</li>
+          </ul>
+        </div>
 
-      <!-- “MYSTERY” / FUTURE -->
-      <div class="catalog-item"><strong>Strategic Rail Assignment</strong><span>Route a person into the best lane based on intent + fit.</span></div>
-      <div class="catalog-item"><strong>Risk Flag Engine (UI)</strong><span>Instant flags based on intake answers (no email required).</span></div>
-      <div class="catalog-item"><strong>Contributor Scoring Engine</strong><span>Auto-rail assignment for operators/builders.</span></div>
-      <div class="catalog-item"><strong>Hardware / Region Clustering</strong><span>Match suppliers to regions + demand zones.</span></div>
-      <div class="catalog-item"><strong>Private Contributor Portal</strong><span>Invite-only access, missions, and tasks.</span></div>
+      </div>
+
+      <div class="alert" style="margin-top:14px;">
+        <strong>How it works:</strong> You pick one rail → system builds a structured packet → you execute with less error and faster momentum.
+      </div>
     </div>
-
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="/checkout">Subscribe</a>
-      <a class="btn" href="/lead">Start as Lead</a>
-    </div>
-  </div>
-</details>
+  </details>
+</div>
 
 {% endblock %}
