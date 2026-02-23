@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}People • Admin • Nautical Compass{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-card">
+      <h1 class="h-title">Admin • People</h1>
+      <p class="h-sub">Owner/Director + Operators. Operators automatically route under Duece.</p>
+      <p class="micro">Admin key required. Keep this link private.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Create Operator</h2>
+    <p class="muted">Creates an Operator under Duece with a unique referral code.</p>
+
+    <form class="form" id="opForm">
+      <label class="label">Name</label>
+      <input name="name" required />
+
+      <label class="label">Email</label>
+      <input name="email" type="email" required />
+
+      <div class="btnrow">
+        <button class="btn btn-primary" type="submit">Create Operator</button>
+      </div>
+    </form>
+
+    <div id="opResult" class="alert" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <h2>Duece (Owner/Director)</h2>
+    <p class="muted">
+      Referral code: <strong>{{ duece_ref }}</strong><br/>
+      Direct link: <code>/checkout?ref={{ duece_ref }}</code>
+    </p>
+
+    <details class="dropdown">
+      <summary>Why this matters</summary>
+      <div class="dropdown-body muted">
+        Operators build residual portfolios. Duece receives a 10% override on Operator MRR,
+        and 30% on his direct lane.
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <h2>People ({{ people|length }})</h2>
+  <p class="muted">Operator links are the only thing they need to start building MRR.</p>
+
+  <div style="overflow:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:900px;">
+      <thead>
+        <tr style="text-align:left;">
+          <th style="padding:10px; border-bottom:1px solid var(--line);">ID</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Name</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Role</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Email</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Ref Code</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Checkout Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in people %}
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.id }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><strong>{{ p.name }}</strong></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.role }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.email }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><code>{{ p.ref_code }}</code></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);">
+            <code>/checkout?ref={{ p.ref_code }}</code>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const opForm = document.getElementById("opForm");
+const opResult = document.getElementById("opResult");
+
+opForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  opResult.style.display = "none";
+
+  const fd = new FormData(opForm);
+  const payload = Object.fromEntries(fd.entries());
+
+  const url = `/admin/create-operator?k={{ k }}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  opResult.style.display = "block";
+
+  if(res.ok){
+    opResult.className = "alert ok";
+    opResult.innerText =
+      `✔ Operator created\nRef: ${data.ref_code}\nLink: ${data.operator_link}`;
+  } else {
+    opResult.className = "alert bad";
+    opResult.innerText = `⚠ ${data.error || "Failed"}`;
+  }
+});
+</script>
+{% endblock %}
