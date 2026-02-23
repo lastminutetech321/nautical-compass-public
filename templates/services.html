@@ -1,186 +1,158 @@
 {% extends "base.html" %}
 {% block title %}Services • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <div class="wrap">
-    <div class="hero-card">
-      <h1 class="h-title">Services</h1>
-      <p class="h-sub">
-        Curated “most-used” services up front, with a full catalog below for psychology + discovery.
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/checkout">Subscribe</a>
-        <a class="btn btn-ghost" href="/lead">Lead Intake</a>
-        <a class="btn" href="/partner">Partner Intake</a>
-      </div>
-
-      <p class="micro">
-        Subscribers unlock prioritized intake rails. Partners and manufacturers have dedicated routing lanes.
-      </p>
-    </div>
-  </div>
-</section>
-{% endblock %}
-
 {% block content %}
-<div class="grid grid-2">
+<div class="card">
+  <span class="badge">Service Catalog</span>
+  <h2 style="margin-top:12px;">What Nautical Compass Can Do</h2>
+  <p class="muted" style="line-height:1.6;">
+    Start with a curated set (fastest wins). Then open the full catalog to see the deeper rails.
+    Subscribers unlock member intake + execution routing.
+  </p>
 
-  <!-- Curated Core -->
+  <div class="btnrow" style="margin-top:14px;">
+    <a class="btn btn-primary" href="/checkout{% if request.query_params.get('ref') %}?ref={{ request.query_params.get('ref') }}{% endif %}">
+      Subscribe (Low Friction)
+    </a>
+    <a class="btn" href="/lead">Lead Intake</a>
+    <a class="btn" href="/partner">Partner Intake</a>
+    <a class="btn" href="/contributor">Contributor Intake</a>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
   <div class="card">
-    <h2>Core (Most Requested)</h2>
-    <p class="muted">These are the fastest “day-1 usable” rails.</p>
+    <h3>Curated — Fastest Wins</h3>
+    <p class="muted">These are the highest-frequency pain points. Clean, direct, actionable output.</p>
 
-    <div class="grid" style="gap:12px;">
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Standing + Capacity Analysis</h3>
-        <div class="muted">Who can sue, who to sue, and in what capacity — framed to survive dismissal.</div>
-      </div>
+    <ul class="muted" style="line-height:1.9; margin:10px 0 0 18px;">
+      <li><strong>Legal Intake Strategy</strong> (standing + capacity framing)</li>
+      <li><strong>Demand Letter Drafting</strong> (facts → claims → relief)</li>
+      <li><strong>Contract Review & Risk Map</strong> (redlines + risk flags)</li>
+      <li><strong>Arbitration Package Assembly</strong> (AAA/JAMS-ready structure)</li>
+      <li><strong>Dispute Timeline & Evidence Organization</strong></li>
+      <li><strong>Record Request Packet</strong> (FOIA/records-style builds)</li>
+      <li><strong>Platform / Marketplace Dispute Structuring</strong></li>
+      <li><strong>Billing / Payments Dispute Structuring</strong></li>
+    </ul>
 
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Demand Letter Drafting</h3>
-        <div class="muted">Structured demands, timelines, and evidence mapping — ready for negotiation or filing.</div>
-      </div>
-
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Contract Review + Risk Map</h3>
-        <div class="muted">Key clauses, choke points, exit triggers, and leverage summary.</div>
-      </div>
-
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Arbitration Package Assembly</h3>
-        <div class="muted">AAA/consumer packet style organization: claims, exhibits, narrative, and relief requested.</div>
-      </div>
-
-      <div class="btnrow" style="margin-top:10px;">
-        <a class="btn btn-primary" href="/checkout">Subscribe to Unlock Intake</a>
-        <a class="btn" href="/lead">Public Lead Intake</a>
-      </div>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="/checkout{% if request.query_params.get('ref') %}?ref={{ request.query_params.get('ref') }}{% endif %}">
+        Subscribe & Unlock Intake
+      </a>
+      <a class="btn" href="/lead">Not ready? Lead Intake</a>
     </div>
   </div>
 
-  <!-- Manufacturers / Sponsors -->
   <div class="card">
-    <h2>Manufacturers + Sponsors</h2>
-    <p class="muted">
-      Dedicated routing for vendors/manufacturers (LED, AV, signage) and sponsor partners.
+    <h3>How It Works</h3>
+    <p class="muted" style="line-height:1.7;">
+      1) Pick a lane (Subscriber / Lead / Partner / Contributor)<br/>
+      2) Submit intake (simple + guided)<br/>
+      3) The system routes your request to the correct rail<br/>
+      4) You receive structured output designed to reduce human error
     </p>
 
-    <div class="grid" style="gap:12px;">
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Partner Routing Lane</h3>
-        <div class="muted">Regions + product type + lead-time captured in intake → routed into the correct rail.</div>
-      </div>
+    <div class="alert" style="margin-top:14px;">
+      <strong>Pro UX rule:</strong> Every page has one main action. No confusion under pressure.
+    </div>
 
-      <div class="card" style="padding:14px;">
-        <h3 style="margin:0 0 6px;">Sponsor Access (Monthly)</h3>
-        <div class="muted">Preferred placement + territory priority + routed introductions + reporting.</div>
-      </div>
-
-      <div class="btnrow" style="margin-top:10px;">
-        <a class="btn" href="/partner">Partner Intake</a>
-        <a class="btn btn-primary" href="/sponsor">Sponsor Access</a>
-      </div>
-
-      <div class="alert" style="margin-top:10px;">
-        <strong>Note:</strong> Partner intake comes first so category/region placement is correct before sponsor activation.
-      </div>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn" href="/contributor">Contributor Path</a>
+      <a class="btn" href="/partner">Manufacturer / Sponsor Path</a>
     </div>
   </div>
 </div>
 
-<!-- FULL CATALOG DROPDOWN (Psychology win) -->
 <div class="card" style="margin-top:18px;">
-  <h2>Full Service Catalog</h2>
-  <p class="muted">
-    This catalog shows the platform’s breadth. You don’t need all of it today — you just need the right rail for your situation.
-  </p>
-
-  <details class="dropdown" open>
+  <details class="dropdown">
     <summary>
-      Browse Full Catalog (Grouped)
-      <span class="badge">63+ rails</span>
+      <span>Full Service Catalog (63+ Rails)</span>
+      <span class="hint">Open the full system map</span>
     </summary>
 
     <div class="dropdown-body">
+      <p class="muted" style="margin-top:0; line-height:1.6;">
+        This is the long-range catalog designed to trigger “I might need that.”
+        Some rails are active now, others are staged for expansion.
+      </p>
+
       <div class="grid">
-
         <div>
-          <h3 style="margin:0 0 8px;">Standing + Capacity</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Article III Standing (Lujan test)</li>
-            <li>Injury / Causation / Redressability framing</li>
-            <li>Individual vs Official Capacity (1983 / immunity)</li>
-            <li>Proper Defendant selection</li>
-            <li>Ex parte Young injunctive route</li>
-            <li>Dismissal-risk audit (Rule 12)</li>
+          <span class="badge">Standing + Capacity</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>Standing analysis (Lujan elements)</li>
+            <li>Injury/cause/redress mapping</li>
+            <li>Individual vs official capacity strategy</li>
+            <li>Ex parte Young injunctive path</li>
+            <li>Qualified immunity framing (where applicable)</li>
           </ul>
         </div>
 
         <div>
-          <h3 style="margin:0 0 8px;">Disputes + Enforcement</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Demand letter + exhibits</li>
-            <li>Billing/payment dispute package</li>
-            <li>Platform dispute (marketplace routing / bans)</li>
-            <li>Chargeback strategy packet</li>
-            <li>Settlement posture + leverage mapping</li>
-            <li>Arbitration packet (consumer)</li>
+          <span class="badge">Disputes + Consumer</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>FCRA/FDCPA/TILA/EFTA dispute structuring</li>
+            <li>Chargebacks + payment reversals packets</li>
+            <li>Debt validation + response rails</li>
+            <li>Credit reporting correction packets</li>
+            <li>Evidence + timeline + exhibits binder</li>
           </ul>
         </div>
 
         <div>
-          <h3 style="margin:0 0 8px;">Records + Evidence</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Timeline build + fact indexing</li>
-            <li>Evidence binder (exhibit list + labels)</li>
-            <li>FOIA/records request packet (style)</li>
-            <li>Witness statement capture plan</li>
-            <li>Damages log + incident ledger</li>
+          <span class="badge">Litigation Build</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>Complaint framing + claim stacking</li>
+            <li>Motion response scaffolds</li>
+            <li>Exhibit indexing + declarations</li>
+            <li>Settlement demand packaging</li>
+            <li>Venue/jurisdiction routing checklist</li>
           </ul>
         </div>
 
         <div>
-          <h3 style="margin:0 0 8px;">Contracts</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Contract review + risk map</li>
-            <li>Scope-of-work rewrite</li>
-            <li>Payment terms / milestones</li>
-            <li>Termination triggers</li>
-            <li>Indemnity + limitation review</li>
+          <span class="badge">Business + Contracts</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>Contract risk maps + redline notes</li>
+            <li>Vendor/sponsor agreements</li>
+            <li>Policy + terms drafting rails</li>
+            <li>Invoice/footer compliance standards</li>
+            <li>Role/operations playbooks</li>
           </ul>
         </div>
 
         <div>
-          <h3 style="margin:0 0 8px;">Business + Ops</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Onboarding/intake automation</li>
-            <li>Sales rails + referral codes</li>
-            <li>Partner routing + sponsor lane</li>
-            <li>Contributor scoring + assignment rails</li>
-            <li>Regional clustering (hardware / vendors)</li>
+          <span class="badge">Operations + Automation</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>Intake-to-output automation</li>
+            <li>Risk flags + decision rails</li>
+            <li>Contributor routing + score rails</li>
+            <li>Partner/manufacturer intake routing</li>
+            <li>Director/operator referral tracking</li>
           </ul>
         </div>
 
         <div>
-          <h3 style="margin:0 0 8px;">Specialized Modules (Preview)</h3>
-          <ul class="muted" style="margin:0; padding-left:18px; line-height:1.7;">
-            <li>Risk flags (intake-driven)</li>
-            <li>Role/rail assignment engine</li>
-            <li>Director/staff comp routing (future)</li>
-            <li>Vendor sponsor dashboard (future)</li>
-            <li>Private portal expansions (future)</li>
+          <span class="badge">Special Projects</span>
+          <ul class="muted" style="line-height:1.85; margin:10px 0 0 18px;">
+            <li>Private sponsor access lanes</li>
+            <li>Manufacturer marketplace rails</li>
+            <li>Event-center / hardware ecosystem build</li>
+            <li>High-trust contributor portal</li>
+            <li>The Veil (dormant recruitment portal)</li>
           </ul>
         </div>
-
       </div>
 
-      <div class="alert" style="margin-top:14px;">
-        <strong>How it works:</strong> You pick one rail → system builds a structured packet → you execute with less error and faster momentum.
+      <div class="btnrow" style="margin-top:16px;">
+        <a class="btn btn-primary" href="/checkout{% if request.query_params.get('ref') %}?ref={{ request.query_params.get('ref') }}{% endif %}">
+          Subscribe & Unlock Member Intake
+        </a>
+        <a class="btn" href="/lead">Lead Intake</a>
+        <a class="btn" href="/partner">Partner Intake</a>
       </div>
     </div>
   </details>
 </div>
-
 {% endblock %}
