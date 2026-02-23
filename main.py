@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 import stripe
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -49,6 +49,17 @@ def _require_valid_url(name: str, url: str) -> str:
     if not (url.startswith("http://") or url.startswith("https://")):
         raise ValueError(f"{name} is not a valid URL (must start with http:// or https://)")
     return url
+
+# --------------------
+# Admin key (simple gate)
+# --------------------
+ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))
+
+def require_admin(k: Optional[str]):
+    if not ADMIN_KEY:
+        raise HTTPException(status_code=500, detail="ADMIN_KEY not set")
+    if not k or _clean(k) != ADMIN_KEY:
+        raise HTTPException(status_code=401, detail="Bad admin key")
 
 # --------------------
 # Stripe Config
@@ -115,7 +126,7 @@ def init_db():
             email TEXT NOT NULL,
             phone TEXT,
             company TEXT,
-            interest TEXT NOT NULL,
+            interest TEXT,
             message TEXT,
             created_at TEXT NOT NULL
         )
@@ -126,9 +137,9 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT NOT NULL,
-            company TEXT NOT NULL,
-            role TEXT NOT NULL,
-            product_type TEXT NOT NULL,
+            company TEXT,
+            role TEXT,
+            product_type TEXT,
             website TEXT,
             regions TEXT,
             message TEXT,
@@ -298,30 +309,6 @@ def send_email(to_email: str, subject: str, body: str):
 # --------------------
 # Models
 # --------------------
-class IntakeForm(BaseModel):
-    name: str
-    email: str
-    service_requested: str
-    notes: str | None = None
-
-class LeadForm(BaseModel):
-    name: str
-    email: str
-    interest: str = ""
-    phone: str = ""
-    company: str = ""
-    message: str = ""
-
-class PartnerForm(BaseModel):
-    name: str
-    email: str
-    company: str = ""
-    role: str = ""
-    product_type: str = ""
-    website: str = ""
-    regions: str = ""
-    message: str = ""
-
 class ContributorForm(BaseModel):
     name: str
     email: EmailStr
@@ -333,7 +320,6 @@ class ContributorForm(BaseModel):
     contribution_track: str
     position_interest: str = ""
     comp_plan: str = ""
-
     director_owner: str = "Duece"
 
     assets: str = ""
@@ -442,42 +428,61 @@ def home(request: Request):
 def services(request: Request):
     return templates.TemplateResponse("services.html", {"request": request, "year": datetime.utcnow().year})
 
-@app.get("/towed", response_class=HTMLResponse)
-def towed_fast_response(request: Request):
-    # Public emergency guide (no login)
-    return templates.TemplateResponse("towed.html", {"request": request, "year": datetime.utcnow().year})
-
 @app.get("/lead", response_class=HTMLResponse)
 def lead_page(request: Request):
     return templates.TemplateResponse("lead_intake.html", {"request": request, "year": datetime.utcnow().year})
 
+@app.get("/lead/thanks", response_class=HTMLResponse)
+def lead_thanks(request: Request):
+    return templates.TemplateResponse("lead_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
 @app.post("/lead")
-def lead_submit(form: LeadForm):
+def lead_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    interest: str = Form(""),
+    phone: str = Form(""),
+    company: str = Form(""),
+    message: str = Form(""),
+):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO leads (name, email, phone, company, interest, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.phone, form.company, form.interest, form.message, now_iso()))
+    """, (name, email, phone, company, interest, message, now_iso()))
     conn.commit()
     conn.close()
-    return {"status": "Lead received"}
+    return RedirectResponse(url="/lead/thanks", status_code=303)
 
 @app.get("/partner", response_class=HTMLResponse)
 def partner_page(request: Request):
     return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
 
+@app.get("/partner/thanks", response_class=HTMLResponse)
+def partner_thanks(request: Request):
+    return templates.TemplateResponse("partner_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
 @app.post("/partner")
-def partner_submit(form: PartnerForm):
+def partner_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    company: str = Form(""),
+    role: str = Form(""),
+    product_type: str = Form(""),
+    website: str = Form(""),
+    regions: str = Form(""),
+    message: str = Form(""),
+):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.company, form.role, form.product_type, form.website, form.regions, form.message, now_iso()))
+    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
     conn.commit()
     conn.close()
-    return {"status": "Partner submission received"}
+    return RedirectResponse(url="/partner/thanks", status_code=303)
 
 # --------------------
 # Subscriber Intake
@@ -487,11 +492,20 @@ def intake_form(request: Request, token: str):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
+    return templates.TemplateResponse(
+        "intake_form.html",
+        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
+    )
 
 @app.post("/intake")
-def submit_intake(form: IntakeForm, token: str):
-    email, err = require_subscriber_token(token)
+def submit_intake(
+    token: str,
+    name: str = Form(...),
+    email: str = Form(...),
+    service_requested: str = Form(...),
+    notes: str = Form(""),
+):
+    subscriber_email, err = require_subscriber_token(token)
     if err:
         return err
 
@@ -500,7 +514,7 @@ def submit_intake(form: IntakeForm, token: str):
     cur.execute("""
         INSERT INTO intake (name, email, service_requested, notes, created_at)
         VALUES (?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.service_requested, form.notes or "", now_iso()))
+    """, (name, email, service_requested, notes, now_iso()))
     conn.commit()
     conn.close()
 
@@ -508,10 +522,10 @@ def submit_intake(form: IntakeForm, token: str):
         send_email(
             EMAIL_USER,
             "New Subscriber Intake Submission",
-            f"Subscriber: {email}\n\nName: {form.name}\nEmail: {form.email}\nService: {form.service_requested}\nNotes: {form.notes}"
+            f"Subscriber: {subscriber_email}\n\nName: {name}\nEmail: {email}\nService: {service_requested}\nNotes: {notes}"
         )
 
-    return {"status": "Intake stored successfully"}
+    return JSONResponse({"ok": True})
 
 @app.get("/admin/intake")
 def admin_intake_json(limit: int = 50):
@@ -521,6 +535,25 @@ def admin_intake_json(limit: int = 50):
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return {"entries": rows}
+
+# --------------------
+# Admin: Leads dashboard
+# --------------------
+@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
+def leads_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
+    k = k or key
+    require_admin(k)
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leads ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return templates.TemplateResponse(
+        "admin_leads.html",
+        {"request": request, "leads": rows, "k": k, "year": datetime.utcnow().year},
+    )
 
 # --------------------
 # Stripe Checkout
@@ -672,9 +705,59 @@ def contributor_page(request: Request):
     return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
 
 @app.post("/contributor")
-def submit_contributor(form: ContributorForm):
-    score = _score_contributor(form)
-    rail = _assign_rail(form, score)
+def submit_contributor(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    company: str = Form(""),
+    website: str = Form(""),
+    primary_role: str = Form(...),
+    contribution_track: str = Form(...),
+    position_interest: str = Form(""),
+    comp_plan: str = Form(""),
+    director_owner: str = Form("Duece"),
+    assets: str = Form(""),
+    regions: str = Form(""),
+    capacity: str = Form(""),
+    alignment: str = Form(""),
+    message: str = Form(""),
+    fit_access: str = Form(""),
+    fit_build_goal: str = Form(""),
+    fit_opportunity: str = Form(""),
+    fit_authority: str = Form(""),
+    fit_lane: str = Form(""),
+    fit_no_conditions: str = Form(""),
+    fit_visibility: str = Form(""),
+    fit_why_you: str = Form(""),
+):
+    f = ContributorForm(
+        name=name,
+        email=email,
+        phone=phone,
+        company=company,
+        website=website,
+        primary_role=primary_role,
+        contribution_track=contribution_track,
+        position_interest=position_interest,
+        comp_plan=comp_plan,
+        director_owner=director_owner,
+        assets=assets,
+        regions=regions,
+        capacity=capacity,
+        alignment=alignment,
+        message=message,
+        fit_access=fit_access,
+        fit_build_goal=fit_build_goal,
+        fit_opportunity=fit_opportunity,
+        fit_authority=fit_authority,
+        fit_lane=fit_lane,
+        fit_no_conditions=fit_no_conditions,
+        fit_visibility=fit_visibility,
+        fit_why_you=fit_why_you,
+    )
+
+    score = _score_contributor(f)
+    rail = _assign_rail(f, score)
 
     conn = db()
     cur = conn.cursor()
@@ -696,95 +779,18 @@ def submit_contributor(form: ContributorForm):
                 ?, ?, ?, ?,
                 ?, ?, ?, ?)
     """, (
-        form.name, str(form.email), form.phone, form.company, form.website,
-        form.primary_role,
-        form.contribution_track, form.position_interest, form.comp_plan, form.director_owner,
-        form.assets, form.regions, form.capacity, form.alignment, form.message,
-        form.fit_access, form.fit_build_goal, form.fit_opportunity, form.fit_authority,
-        form.fit_lane, form.fit_no_conditions, form.fit_visibility, form.fit_why_you,
+        f.name, str(f.email), f.phone, f.company, f.website,
+        f.primary_role,
+        f.contribution_track, f.position_interest, f.comp_plan, f.director_owner,
+        f.assets, f.regions, f.capacity, f.alignment, f.message,
+        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
+        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you,
         score, rail, "new", now_iso()
     ))
     conn.commit()
     conn.close()
 
     return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
-
-@app.get("/admin/contributors-dashboard", response_class=HTMLResponse)
-def contributors_dashboard(
-    request: Request,
-    rail: Optional[str] = None,
-    min_score: Optional[int] = None,
-    track: Optional[str] = None,
-):
-    conn = db()
-    cur = conn.cursor()
-
-    query = "SELECT * FROM contributors WHERE 1=1"
-    params = []
-
-    if rail:
-        query += " AND rail = ?"
-        params.append(rail)
-
-    if min_score is not None:
-        query += " AND score >= ?"
-        params.append(min_score)
-
-    if track:
-        query += " AND contribution_track = ?"
-        params.append(track)
-
-    query += " ORDER BY score DESC"
-
-    cur.execute(query, params)
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return templates.TemplateResponse(
-        "contributors_dashboard.html",
-        {"request": request, "contributors": rows, "rail": rail, "min_score": min_score, "track": track, "year": datetime.utcnow().year},
-    )
-
-@app.post("/admin/contributor-status")
-def update_contributor_status(id: int, status: str):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("UPDATE contributors SET status = ? WHERE id = ?", (status, id))
-    conn.commit()
-    conn.close()
-    return {"ok": True}
-
-# --------------------
-# Dev Token Route
-# --------------------
-DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
-DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
-
-@app.get("/dev/generate-token")
-def dev_generate_token(email: str, key: str, request: Request):
-    if not DEV_TOKEN_ENABLED:
-        return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
-
-    if not DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
-
-    if _clean(key) != DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Bad key"}, status_code=401)
-
-    email = _clean(email).lower()
-    if not email or "@" not in email:
-        return JSONResponse({"error": "Invalid email"}, status_code=400)
-
-    upsert_subscriber_active(email, "", "")
-    token = issue_magic_link(email, hours=24)
-
-    base = str(request.base_url).rstrip("/")
-    return {
-        "email": email,
-        "token": token,
-        "dashboard": f"{base}/dashboard?token={token}",
-        "intake_form": f"{base}/intake-form?token={token}",
-    }
 
 # --------------------
 # Favicon
