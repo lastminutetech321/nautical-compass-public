@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Milestones • Admin • Nautical Compass{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-card">
+      <h1 class="h-title">Admin • Milestone Honors</h1>
+      <p class="h-sub">Earned MRR milestones (sustained) → approve → fulfill.</p>
+      <div class="hero-actions">
+        <a class="btn" href="/admin/people-dashboard?k={{ k }}">People</a>
+        <a class="btn" href="/admin/partners-dashboard?k={{ k }}">Partners</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Milestone Definitions</h2>
+  <p class="muted">Thresholds below are based on credited payout (not gross Stripe).</p>
+
+  <div style="overflow:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:850px;">
+      <thead>
+        <tr style="text-align:left;">
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Code</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Label</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Threshold ($)</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Sustain Days</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Reward</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in milestones %}
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><code>{{ m.code }}</code></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><strong>{{ m.label }}</strong></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">${{ (m.threshold_cents/100)|round(2) }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ m.sustain_days }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ m.reward_label }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <h2>Awards Queue</h2>
+  <p class="muted">Statuses: pending → earned → approved → fulfilled</p>
+
+  <div style="overflow:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:1050px;">
+      <thead>
+        <tr style="text-align:left;">
+          <th style="padding:10px; border-bottom:1px solid var(--line);">ID</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Person</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Role</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Milestone</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Status</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Hit</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Earned</th>
+          <th style="padding:10px; border-bottom:1px solid var(--line);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in awards %}
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ a.id }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><strong>{{ a.person_name }}</strong></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ a.person_role }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);"><code>{{ a.milestone_code }}</code></td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ a.status }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ a.hit_at }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ a.earned_at or "" }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line);">
+            <button class="btn" onclick="doAction({{ a.id }}, 'approve')">Approve</button>
+            <button class="btn btn-primary" onclick="doAction({{ a.id }}, 'fulfill')">Fulfill</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="msg" class="alert" style="display:none;"></div>
+</div>
+
+<script>
+async function doAction(awardId, action){
+  const res = await fetch(`/admin/milestone-action?k={{ k }}`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({award_id: awardId, action: action, note: ""})
+  });
+  const data = await res.json();
+  const msg = document.getElementById("msg");
+  msg.style.display = "block";
+  if(res.ok){
+    msg.className = "alert ok";
+    msg.innerText = "✔ Updated. Refresh to see changes.";
+  } else {
+    msg.className = "alert bad";
+    msg.innerText = "⚠ " + (data.error || "Failed");
+  }
+}
+</script>
+{% endblock %}
