@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Leads Dashboard • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Leads Dashboard</h2>
+  <p class="muted">Newest first. Keep this link private.</p>
+
+  {% if leads and leads|length > 0 %}
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">ID</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Name</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Email</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Phone</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Interest</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Company</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Created</th>
+            <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in leads %}
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.id }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.name }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.email }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.phone }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.interest }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.company }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06);">{{ r.created_at }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.06); white-space:pre-wrap;">{{ r.message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert">No leads yet.</div>
+  {% endif %}
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn" href="/services">Back to Services</a>
+    <a class="btn" href="/lead">Open Lead Form</a>
+  </div>
+</div>
+{% endblock %}
