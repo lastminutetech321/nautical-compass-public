@@ -334,7 +334,6 @@ class ContributorForm(BaseModel):
     contribution_track: str
     position_interest: str = ""
     comp_plan: str = ""
-
     director_owner: str = "Duece"
 
     assets: str = ""
@@ -484,17 +483,14 @@ def sponsor_page(request: Request):
 
 @app.get("/sponsor/checkout")
 def sponsor_checkout():
-    err = None
     if STARTUP_URL_ERROR:
-        err = JSONResponse({"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL/CANCEL_URL env vars."}, status_code=500)
+        return JSONResponse({"error": STARTUP_URL_ERROR}, status_code=500)
     if not STRIPE_SECRET_KEY:
-        err = JSONResponse({"error": "Missing environment variables", "missing": ["STRIPE_SECRET_KEY"]}, status_code=500)
+        return JSONResponse({"error": "Missing STRIPE_SECRET_KEY"}, status_code=500)
     if not STRIPE_SPONSOR_PRICE_ID:
-        err = JSONResponse({"error": "Missing environment variables", "missing": ["STRIPE_SPONSOR_PRICE_ID"]}, status_code=500)
+        return JSONResponse({"error": "Missing STRIPE_SPONSOR_PRICE_ID"}, status_code=500)
     if not SUCCESS_URL or not CANCEL_URL:
-        err = JSONResponse({"error": "Missing environment variables", "missing": ["SUCCESS_URL", "CANCEL_URL"]}, status_code=500)
-    if err:
-        return err
+        return JSONResponse({"error": "Missing SUCCESS_URL or CANCEL_URL"}, status_code=500)
 
     try:
         session = stripe.checkout.Session.create(
@@ -551,12 +547,78 @@ def admin_intake_json(limit: int = 50):
     return {"entries": rows}
 
 # --------------------
+# Admin — Partners (C)
+# --------------------
+@app.get("/admin/partners")
+def admin_partners_json(limit: int = 200):
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM partners ORDER BY id DESC LIMIT ?", (limit,))
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {"partners": rows}
+
+@app.get("/admin/partners-dashboard", response_class=HTMLResponse)
+def partners_dashboard(request: Request, q: str = "", product: str = "", region: str = ""):
+    conn = db()
+    cur = conn.cursor()
+
+    query = "SELECT * FROM partners WHERE 1=1"
+    params = []
+
+    if q.strip():
+        query += " AND (name LIKE ? OR email LIKE ? OR company LIKE ? OR message LIKE ?)"
+        like = f"%{q.strip()}%"
+        params.extend([like, like, like, like])
+
+    if product.strip():
+        query += " AND product_type LIKE ?"
+        params.append(f"%{product.strip()}%")
+
+    if region.strip():
+        query += " AND regions LIKE ?"
+        params.append(f"%{region.strip()}%")
+
+    query += " ORDER BY id DESC"
+
+    cur.execute(query, params)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return templates.TemplateResponse(
+        "partners_dashboard.html",
+        {"request": request, "partners": rows, "q": q, "product": product, "region": region, "year": datetime.utcnow().year},
+    )
+
+@app.get("/admin/partners-export.csv")
+def partners_export_csv():
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM partners ORDER BY id DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    headers = ["id","name","email","company","role","product_type","website","regions","message","created_at"]
+    lines = [",".join(headers)]
+    for r in rows:
+        line = []
+        for h in headers:
+            v = str(r.get(h, "")).replace('"', '""')
+            if "," in v or "\n" in v:
+                v = f"\"{v}\""
+            line.append(v)
+        lines.append(",".join(line))
+
+    csv = "\n".join(lines)
+    return HTMLResponse(csv, media_type="text/csv")
+
+# --------------------
 # Stripe Checkout ($25/mo)
 # --------------------
 def require_env():
     missing = []
     if STARTUP_URL_ERROR:
-        return JSONResponse({"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."}, status_code=500)
+        return JSONResponse({"error": STARTUP_URL_ERROR}, status_code=500)
     if not STRIPE_SECRET_KEY:
         missing.append("STRIPE_SECRET_KEY")
     if not STRIPE_PRICE_ID:
