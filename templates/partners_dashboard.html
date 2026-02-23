@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Partners Dashboard • Nautical Compass{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-card">
+      <h1 class="h-title">Partners Dashboard</h1>
+      <p class="h-sub">Search + filter partner submissions (manufacturers, vendors, sponsors, capital).</p>
+      <div class="hero-actions">
+        <a class="btn" href="/partner">Open Partner Intake</a>
+        <a class="btn btn-primary" href="/admin/partners-export.csv">Export CSV</a>
+      </div>
+      <p class="micro">Tip: add filters for LED, region, and a keyword like “inventory” or “lead time”.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Filter</h2>
+  <form method="get" action="/admin/partners-dashboard" class="form">
+    <label class="label">Keyword (name/email/company/message)</label>
+    <input name="q" value="{{ q }}" placeholder="Laura / LED / inventory / pricing / etc."/>
+
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Product type contains</label>
+        <input name="product" value="{{ product }}" placeholder="LED Walls / Panels"/>
+      </div>
+      <div>
+        <label class="label">Region contains</label>
+        <input name="region" value="{{ region }}" placeholder="DMV / East Coast / etc."/>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Apply Filters</button>
+      <a class="btn" href="/admin/partners-dashboard">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <h2>Submissions ({{ partners|length }})</h2>
+
+  {% if partners|length == 0 %}
+    <p class="muted">No submissions yet.</p>
+  {% else %}
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse: collapse; min-width: 900px;">
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Date</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Name</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Company</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Email</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Role</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Product</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Regions</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Website</th>
+            <th style="padding:10px; border-bottom:1px solid var(--line);">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in partners %}
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.created_at }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);"><strong>{{ p.name }}</strong></td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);">{{ p.company }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);">{{ p.email }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.role }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.product_type }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.regions }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.website }}</td>
+            <td style="padding:10px; border-bottom:1px solid var(--line);" class="muted">{{ p.message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
