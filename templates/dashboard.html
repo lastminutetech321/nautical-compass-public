@@ -1,54 +1,21 @@
-<!-- templates/dashboard.html — FULL SCRIPT -->
 {% extends "base.html" %}
 {% block title %}Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Dashboard</h2>
+  <h2>Welcome</h2>
   <p class="muted">Authorized email: <strong>{{ email }}</strong></p>
 
-  <div class="btnrow">
+  <div class="btnrow" style="margin-top:12px;">
     <a class="btn btn-primary" href="/intake-form?token={{ token }}">Subscriber Intake</a>
     <a class="btn" href="/services">Services</a>
-    <a class="btn" href="/contributor">Contributor Intake</a>
   </div>
 
-  <details class="dropdown" style="margin-top:16px;">
-    <summary>Your access rail</summary>
-    <div class="dropdown-body">
-      <div class="muted">Use this tokenized access for subscriber-only pages:</div>
-      <div style="margin-top:10px;">
-        <div class="badge">Dashboard</div>
-        <div style="margin-top:6px; word-break:break-all;">
-          /dashboard?token={{ token }}
-        </div>
-      </div>
-      <div style="margin-top:10px;">
-        <div class="badge">Intake</div>
-        <div style="margin-top:6px; word-break:break-all;">
-          /intake-form?token={{ token }}
-        </div>
-      </div>
+  <details class="dropdown">
+    <summary>How access works</summary>
+    <div class="dropdown-body muted">
+      Your subscription grants access via a secure token link. If your token expires, you can generate a new access link after checkout or by contacting support.
     </div>
   </details>
-</div>
-
-<div class="grid grid-2" style="margin-top:18px;">
-  <div class="card">
-    <h3>Need a public starting point?</h3>
-    <p class="muted">Use Lead Intake for fast routing without subscriber rail.</p>
-    <div class="btnrow">
-      <a class="btn" href="/lead">Lead Intake</a>
-      <a class="btn" href="/partner">Partner Intake</a>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>What happens next?</h3>
-    <p class="muted">
-      Intake → structured timeline → risk flags → recommended lane → output packet.
-    </p>
-    <span class="badge">Execution-first</span>
-  </div>
 </div>
 {% endblock %}
