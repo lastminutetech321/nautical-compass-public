@@ -250,6 +250,46 @@ def validate_magic_link(token: str) -> str | None:
 
     return row["email"]
 
+# --------------------
+# Dev Token Route (ONLY FOR TESTING)
+# --------------------
+DEV_TOKEN_ENABLED = (os.getenv("DEV_TOKEN_ENABLED", "false") or "").strip().lower() in ("1", "true", "yes")
+DEV_TOKEN_KEY = (os.getenv("DEV_TOKEN_KEY", "") or "").strip()
+
+@app.get("/dev/generate-token")
+def dev_generate_token(email: str, key: str, request: Request):
+    """
+    Usage:
+      /dev/generate-token?email=you@example.com&key=DEV_TOKEN_KEY
+    Returns JSON with token + dashboard + intake links.
+    """
+
+    if not DEV_TOKEN_ENABLED:
+        return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
+
+    if not DEV_TOKEN_KEY:
+        return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
+
+    if (key or "").strip() != DEV_TOKEN_KEY:
+        return JSONResponse({"error": "Bad key"}, status_code=401)
+
+    email = (email or "").strip().lower()
+    if not email or "@" not in email:
+        return JSONResponse({"error": "Invalid email"}, status_code=400)
+
+    # Make them active so token passes subscriber gate
+    upsert_subscriber_active(email, "", "")
+
+    # Mint fresh token (24h)
+    token = issue_magic_link(email, hours=24)
+
+    base = str(request.base_url).rstrip("/")
+    return {
+        "email": email,
+        "token": token,
+        "dashboard": f"{base}/dashboard?token={token}",
+        "intake_form": f"{base}/intake-form?token={token}",
+    }
 def is_active_subscriber(email: str) -> bool:
     conn = db()
     cur = conn.cursor()
