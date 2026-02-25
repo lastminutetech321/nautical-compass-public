@@ -396,6 +396,7 @@ input:focus, textarea:focus, select:focus{
 textarea{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
 .alert.bad{
   border-color: rgba(239,68,68,.6);
 }
