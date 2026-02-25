@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Thread #{{ thread.id }} • Operator Console{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="btnrow" style="justify-content:space-between;align-items:center;">
+    <div>
+      <h2 style="margin:0;">Thread #{{ thread.id }} — {{ thread.title }}</h2>
+      <div class="muted">
+        <span class="badge">{{ thread.thread_type }}</span>
+        <span class="badge">{{ thread.status }}</span>
+        <span class="badge">{{ thread.priority }}</span>
+      </div>
+      <div class="muted" style="margin-top:6px;">
+        Contact: <strong>{{ thread.contact_name or "-" }}</strong>
+        {% if thread.contact_email %} · {{ thread.contact_email }}{% endif %}
+        {% if thread.contact_phone %} · {{ thread.contact_phone }}{% endif %}
+      </div>
+    </div>
+    <div class="btnrow">
+      <a class="btn" href="/ops/inbox?k={{ k }}">Inbox</a>
+    </div>
+  </div>
+
+  <hr style="margin:16px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3 style="margin:0 0 10px;">Conversation Log</h3>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    {% for m in messages %}
+      <div class="card" style="padding:14px;background:rgba(0,0,0,.18);">
+        <div class="muted" style="font-size:12px;">
+          <strong>{{ m.direction }}</strong> · {{ m.author }} · {{ m.created_at }}
+          {% if m.risk_flags %}
+            <span class="badge" style="margin-left:8px;border-color:rgba(239,68,68,.6);">risk</span>
+          {% endif %}
+        </div>
+        <div style="white-space:pre-wrap;margin-top:6px;">{{ m.body }}</div>
+
+        {% if m.direction == "outbound_draft" %}
+          <div class="alert" style="margin-top:10px;">
+            <div style="font-weight:800;margin-bottom:6px;">Paste-ready outbound message</div>
+            <textarea id="copyBox{{ m.id }}" style="min-height:120px;">{{ m.body }}</textarea>
+            <div class="btnrow" style="margin-top:10px;">
+              <button class="btn btn-primary" type="button" onclick="copyText('copyBox{{ m.id }}', 'copyStatus{{ m.id }}')">Copy</button>
+              <span id="copyStatus{{ m.id }}" class="muted"></span>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if m.risk_flags %}
+          <div class="alert bad" style="margin-top:10px;">
+            <strong>Risk Flags:</strong> {{ m.risk_flags }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    {% if messages|length == 0 %}
+      <div class="muted">No messages yet. Add your first internal note below.</div>
+    {% endif %}
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <div class="grid grid-2">
+    <div class="card" style="padding:16px;">
+      <h3 style="margin-top:0;">Add Message</h3>
+
+      <form id="msgForm">
+        <div class="label">Direction</div>
+        <select name="direction">
+          <option value="internal">internal (notes)</option>
+          <option value="inbound">inbound (what they said)</option>
+          <option value="outbound_sent">outbound_sent (what you actually sent)</option>
+        </select>
+
+        <div class="label">Author</div>
+        <input name="author" value="operator"/>
+
+        <div class="label">Body</div>
+        <textarea name="body" placeholder="Type the note / inbound message / what you sent..."></textarea>
+
+        <div class="btnrow" style="margin-top:12px;">
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
+
+        <div id="msgResult" class="alert" style="display:none;"></div>
+      </form>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <h3 style="margin-top:0;">Generate Safe Outbound Draft</h3>
+      <p class="muted">
+        Write your intent in plain language. The system returns a paste-ready message designed to avoid guarantee/threat language.
+      </p>
+
+      <form id="draftForm">
+        <div class="label">Operator Name</div>
+        <input name="operator_name" value="Operator"/>
+
+        <div class="label">Your intent (raw)</div>
+        <textarea name="raw" placeholder="Example: Ask for the contract PDF and the timeline; reassure them we can structure their packet and next steps."></textarea>
+
+        <div class="btnrow" style="margin-top:12px;">
+          <button class="btn btn-primary" type="submit">Create Draft</button>
+        </div>
+
+        <div id="draftResult" class="alert" style="display:none;"></div>
+      </form>
+
+      <div class="alert" style="margin-top:12px;">
+        <strong>Operator rule:</strong> you can paste the draft into SMS/FB/email, but the thread remains the source of truth.
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <div class="btnrow">
+    <button class="btn" type="button" onclick="setThreadStatus('open')">Set Open</button>
+    <button class="btn" type="button" onclick="setThreadStatus('waiting')">Set Waiting</button>
+    <button class="btn" type="button" onclick="setThreadStatus('closed')">Close</button>
+    <span id="statusResult" class="muted"></span>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+async function copyText(boxId, statusId){
+  const el = document.getElementById(boxId);
+  const status = document.getElementById(statusId);
+  el.select();
+  el.setSelectionRange(0, 999999);
+  try{
+    await navigator.clipboard.writeText(el.value);
+    status.textContent = "Copied.";
+    setTimeout(()=>status.textContent="", 1200);
+  }catch(e){
+    status.textContent = "Copy failed (tap + hold to copy).";
+  }
+}
+
+const msgForm = document.getElementById("msgForm");
+const msgResult = document.getElementById("msgResult");
+msgForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(msgForm).entries());
+
+  const resp = await fetch("/ops/thread/{{ thread.id }}/message?k={{ k }}", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+  const j = await resp.json();
+
+  msgResult.style.display = "block";
+  msgResult.className = "alert " + (resp.ok ? "ok":"bad");
+  msgResult.textContent = resp.ok
+    ? (j.risk_flags && j.risk_flags.length ? ("Saved. Risk flags: " + j.risk_flags.join(", ")) : "Saved.")
+    : ("Error: " + (j.error || JSON.stringify(j)));
+
+  if(resp.ok) setTimeout(()=>location.reload(), 450);
+});
+
+const draftForm = document.getElementById("draftForm");
+const draftResult = document.getElementById("draftResult");
+draftForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(draftForm);
+  const raw = fd.get("raw") || "";
+  const operator_name = fd.get("operator_name") || "Operator";
+
+  const params = new URLSearchParams();
+  params.set("raw", raw);
+  params.set("operator_name", operator_name);
+
+  const resp = await fetch("/ops/thread/{{ thread.id }}/safe-draft?k={{ k }}&" + params.toString(), {
+    method:"POST"
+  });
+
+  const j = await resp.json();
+  draftResult.style.display = "block";
+  draftResult.className = "alert " + (resp.ok ? "ok":"bad");
+
+  if(resp.ok){
+    draftResult.textContent = "Draft created. Scroll up to copy it (it appears as outbound_draft).";
+    setTimeout(()=>location.reload(), 450);
+  } else {
+    draftResult.textContent = "Error: " + (j.error || JSON.stringify(j));
+  }
+});
+
+async function setThreadStatus(status){
+  const res = document.getElementById("statusResult");
+  const params = new URLSearchParams();
+  params.set("status", status);
+
+  const resp = await fetch("/ops/thread/{{ thread.id }}/status?k={{ k }}&" + params.toString(), {
+    method:"POST"
+  });
+  const j = await resp.json();
+  res.textContent = resp.ok ? ("Status set: " + j.status) : ("Error: " + (j.error || JSON.stringify(j)));
+  if(resp.ok) setTimeout(()=>location.reload(), 350);
+}
+</script>
+{% endblock %}
+{% endblock %}
