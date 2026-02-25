@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}New Thread • Operator Console{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>New Thread</h2>
+  <p class="muted">Create a case thread for any situation (lead, partner, sponsor, tow emergency, subscriber issue). This is the system of record.</p>
+
+  <form class="form" id="newThreadForm">
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Thread Type</div>
+        <select name="thread_type">
+          <option value="general">general</option>
+          <option value="lead">lead</option>
+          <option value="partner">partner</option>
+          <option value="intake">intake</option>
+          <option value="sponsor">sponsor</option>
+          <option value="tow">tow</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Priority</div>
+        <select name="priority">
+          <option value="normal">normal</option>
+          <option value="high">high</option>
+          <option value="low">low</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="label">Title</div>
+    <input name="title" placeholder="Short description (e.g., 'Laura — LED Manufacturer Sponsor Access')" required>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Contact Name</div>
+        <input name="contact_name" placeholder="Optional">
+      </div>
+      <div>
+        <div class="label">Contact Email</div>
+        <input name="contact_email" type="email" placeholder="Optional">
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Contact Phone</div>
+        <input name="contact_phone" placeholder="Optional">
+      </div>
+      <div>
+        <div class="label">Ref Code (optional)</div>
+        <input name="ref_code" placeholder="e.g., OPXXXX or DUECE ref">
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Assigned To (optional)</div>
+        <input name="assigned_to" placeholder="Operator name/email">
+      </div>
+      <div>
+        <div class="label">Created By</div>
+        <input name="created_by" value="system">
+      </div>
+    </div>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Create Thread</button>
+      <a class="btn" href="/ops/inbox?k={{ k }}">Back</a>
+    </div>
+
+    <div id="result" class="alert" style="display:none;"></div>
+  </form>
+</div>
+
+{% block scripts %}
+<script>
+  const form = document.getElementById("newThreadForm");
+  const result = document.getElementById("result");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    const resp = await fetch("/ops/new?k={{ k }}", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(data)
+    });
+
+    const j = await resp.json();
+    result.style.display = "block";
+    result.className = "alert " + (resp.ok ? "ok" : "bad");
+
+    if(resp.ok){
+      result.innerHTML = `✅ Thread created. <a href="${j.thread_url}">Open thread</a>`;
+    } else {
+      result.textContent = "⚠ " + (j.error || JSON.stringify(j));
+    }
+  });
+</script>
+{% endblock %}
+{% endblock %}
