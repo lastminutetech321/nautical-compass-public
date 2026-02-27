@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Get Access • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Get Access</h2>
+  <p class="muted">
+    Access is unlocked through subscription (consumer/legal side). Public lead + partner + contributor portals remain open.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Subscriber Access</h3>
+      <p class="muted">Unlock member-only intake and dashboard rails.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/checkout">Start Subscription</a>
+      </div>
+      <p class="micro">After checkout you’ll land on Success with your dashboard link.</p>
+    </div>
+
+    <div class="card">
+      <h3>Public Portals</h3>
+      <ul>
+        <li><a href="/lead">Lead Intake</a></li>
+        <li><a href="/partner">Partner Intake</a></li>
+        <li><a href="/contributor">Contributor Intake</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
