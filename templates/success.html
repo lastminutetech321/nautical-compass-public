@@ -3,48 +3,49 @@
 
 {% block content %}
 <div class="card">
-  <span class="badge">Payment Confirmed</span>
-  <h2 style="margin-top:12px;">You’re in.</h2>
-  <p class="muted" style="line-height:1.6;">
-    Your subscription is active. Your access link is generated below.
-    If you’re on a phone, keep this tab open while you enter the dashboard.
+  <h2>Subscription Confirmed</h2>
+  <p class="muted">
+    You’re in. Your access is now active.
   </p>
 
-  {% if email %}
+  {% if dashboard_link %}
     <div class="alert ok">
-      <strong>Authorized email:</strong> {{ email }}
-    </div>
-  {% endif %}
-
-  {% if token %}
-    <div class="btnrow" style="margin-top:16px;">
-      <a class="btn btn-primary" href="/dashboard?token={{ token }}">Open Dashboard</a>
-      <a class="btn" href="/intake-form?token={{ token }}">Submit Subscriber Intake</a>
-      <a class="btn" href="/services">Browse Services</a>
+      <strong>Next step:</strong> open your dashboard and continue.
     </div>
 
-    <div class="alert" style="margin-top:16px;">
-      <div class="muted" style="margin-bottom:6px;"><strong>Backup links (copy if needed):</strong></div>
-      <div class="muted" style="word-break:break-all;">
-        Dashboard: <span class="content"><a href="/dashboard?token={{ token }}">/dashboard?token={{ token }}</a></span><br/>
-        Intake: <span class="content"><a href="/intake-form?token={{ token }}">/intake-form?token={{ token }}</a></span>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="{{ dashboard_link }}">Open Dashboard</a>
+      <a class="btn" href="/services">View Services</a>
+    </div>
+
+    <details class="dropdown" style="margin-top:16px;">
+      <summary>What happens next <span class="chev">▾</span></summary>
+      <div class="dropdown-body">
+        <ul class="list">
+          <li><strong>Dashboard:</strong> your private hub + access rails</li>
+          <li><strong>Subscriber Intake:</strong> a structured intake that reduces human error</li>
+          <li><strong>Risk Flags:</strong> the system highlights what could hurt your position before you act</li>
+          <li><strong>Outputs:</strong> letters, timelines, packets, next-step plans</li>
+        </ul>
       </div>
-    </div>
-
-    <p class="micro" style="margin-top:12px;">
-      If your link expires, you can re-enter by completing checkout again or contacting support.
-    </p>
+    </details>
   {% else %}
     <div class="alert bad">
-      <strong>Access link not generated yet.</strong><br/>
-      This usually means Stripe didn’t pass a session_id into the page.
-      Go back to checkout and complete the flow again.
+      <strong>Almost done:</strong> we didn’t receive a valid Stripe session ID on this page.
+      If you just paid, refresh this page from the Stripe “Return” button, or contact support.
     </div>
 
-    <div class="btnrow" style="margin-top:16px;">
-      <a class="btn btn-primary" href="/checkout">Try Checkout Again</a>
-      <a class="btn" href="/services">Browse Services</a>
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="/services">View Services</a>
+      <a class="btn" href="/lead">Contact / Public Inquiry</a>
     </div>
   {% endif %}
+
+  <hr class="sep">
+
+  <p class="muted">
+    This platform is built to create clarity, reduce mistakes, and keep your process organized.
+    No confusion. No guessing. Just structure.
+  </p>
 </div>
 {% endblock %}
