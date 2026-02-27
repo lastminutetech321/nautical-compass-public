@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Director / Operator Dashboard{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Director / Operator Dashboard</h2>
+  <p class="muted">Internal oversight: rails, people, scoreboards, routing.</p>
+  <ul>
+    <li>Contributor dashboard (admin)</li>
+    <li>Partner dashboard (admin)</li>
+    <li>People dashboard (operators / staff)</li>
+  </ul>
+
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/admin/contributors-dashboard?k={{ admin_key }}">Contributors Admin</a>
+    <a class="btn" href="/admin/partners-dashboard?k={{ admin_key }}">Partners Admin</a>
+    <a class="btn" href="/admin/people-dashboard?k={{ admin_key }}">People Admin</a>
+  </div>
+
+  <p class="micro">Note: this page expects you to load it with ?k=ADMIN_KEY in the URL for admin links.</p>
+</div>
+{% endblock %}
