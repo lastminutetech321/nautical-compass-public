@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Tech Dashboard • Crew Profile{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Tech / Crew Dashboard</h2>
+  <p class="muted">
+    This is how techs declare availability, roles, rates, and constraints—so booking is fast and clean.
+  </p>
+
+  <form class="form" method="post" action="/request-service">
+    <input type="hidden" name="dashboard_type" value="tech">
+    <input type="hidden" name="service_key" value="tech_availability_profile">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="requester_name" required>
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="requester_email" type="email" required>
+      </div>
+      <div>
+        <div class="label">Phone</div>
+        <input name="requester_phone" placeholder="For day-of calls">
+      </div>
+      <div>
+        <div class="label">Company (optional)</div>
+        <input name="requester_company" placeholder="LLC / brand">
+      </div>
+    </div>
+
+    <div class="label">Title</div>
+    <input name="title" required placeholder="Ex: ‘A2 + LED Tech — Available weekends’">
+
+    <div class="label">Primary Roles</div>
+    <textarea name="description" required placeholder="Ex: A2, A1, V1, LED Tech, Playback, Stagehand, Rigger..."></textarea>
+
+    <details class="dropdown" open>
+      <summary>Rates / Availability / Constraints</summary>
+      <div class="dropdown-body">
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Rates</div>
+            <textarea name="budget_json" placeholder='{"day_rate":650,"half_day":400,"hourly":75,"overtime":"after 10"}'></textarea>
+          </div>
+          <div>
+            <div class="label">Availability</div>
+            <textarea name="details_json" placeholder='{"region":"DMV","days":"Fri-Sun","blackout_dates":["2026-03-12"],"travel":true}'></textarea>
+          </div>
+        </div>
+
+        <div class="label">Certifications / Gear / Notes</div>
+        <textarea name="constraints_json" placeholder='{"certs":["OSHA10","ETCP"],"gear":["laptop","RF scanner"],"limits":"no overnights"}'></textarea>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Tech Profile</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
