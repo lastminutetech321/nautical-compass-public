@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}How It Works • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>How It Works (Simple)</h2>
+  <p class="muted">
+    Think of the app like a control room: the intake captures facts, the system routes the request, and the dashboard shows the next move.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Step 1 — Choose a dashboard</h3>
+      <p class="muted">Each role has its own view. No one sees a messy “everything page.”</p>
+      <ul>
+        <li>Techs see gigs, rates, expectations.</li>
+        <li>Companies see requests, compliance, staffing.</li>
+        <li>Directors see rails, operators, scoreboards.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Step 2 — Intake captures facts</h3>
+      <p class="muted">Intake removes human error and makes the next step obvious.</p>
+      <ul>
+        <li>What happened?</li>
+        <li>What’s needed?</li>
+        <li>Deadline?</li>
+        <li>What outcome do you want?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>Step 3 — System routes you</h3>
+    <p class="muted">Routing rails decide what happens next (example outputs):</p>
+    <ul>
+      <li>Send the user to the correct form / next page.</li>
+      <li>Generate a checklist.</li>
+      <li>Flag risks (ex: single customer concentration, missing contract, payment exposure).</li>
+      <li>Queue follow-up for staff/operator.</li>
+    </ul>
+  </div>
+
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/dashboards">Pick Your Dashboard</a>
+    <a class="btn" href="/get-access">Get Access</a>
+  </div>
+</div>
+{% endblock %}
