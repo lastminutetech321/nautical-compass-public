@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ role_title }} Intake{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>{{ role_title }} Intake</h2>
+  <p class="muted">{{ role_desc }}</p>
+
+  <form class="form" method="post" action="/intake/avpt?role={{ role_key }}">
+    <div>
+      <div class="label">Name</div>
+      <input name="name" required />
+    </div>
+
+    <div>
+      <div class="label">Email</div>
+      <input name="email" type="email" required />
+    </div>
+
+    <div>
+      <div class="label">Company (optional)</div>
+      <input name="company" />
+    </div>
+
+    <div>
+      <div class="label">What are you trying to accomplish?</div>
+      <textarea name="goal" required placeholder="Describe the objective and the outcome you want…"></textarea>
+    </div>
+
+    <div>
+      <div class="label">Timeline / urgency</div>
+      <select name="urgency" required>
+        <option value="">Select…</option>
+        <option>Emergency (same day)</option>
+        <option>High (24-48 hours)</option>
+        <option>Normal (this week)</option>
+        <option>Planned (future)</option>
+      </select>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit Intake</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
