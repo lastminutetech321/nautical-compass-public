@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Public Dashboard • Ecosystem Intake{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Public / Consumer Dashboard</h2>
+  <p class="muted">
+    This is for people outside AV who need structured help. The system routes your request into the right lane automatically.
+  </p>
+
+  <form class="form" method="post" action="/request-service">
+    <input type="hidden" name="dashboard_type" value="consumer">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="requester_name" required placeholder="Full name">
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="requester_email" type="email" required placeholder="name@email.com">
+      </div>
+      <div>
+        <div class="label">Phone (optional)</div>
+        <input name="requester_phone" placeholder="(###) ###-####">
+      </div>
+      <div>
+        <div class="label">Company (optional)</div>
+        <input name="requester_company" placeholder="If applicable">
+      </div>
+    </div>
+
+    <div class="label">Request Type</div>
+    <select name="service_key" required>
+      <option value="">Select…</option>
+      <option value="general_help">General Help / Guidance</option>
+      <option value="document_pack">Document Packet Build</option>
+      <option value="records_request">Records Request / FOIA-style</option>
+      <option value="billing_dispute">Billing / Payment Dispute</option>
+      <option value="platform_dispute">Platform / Marketplace Dispute</option>
+      <option value="custom_triage">Custom Situation Triage</option>
+    </select>
+
+    <div class="label">Priority</div>
+    <select name="priority">
+      <option value="normal" selected>Normal</option>
+      <option value="urgent">Urgent (deadline / time-sensitive)</option>
+      <option value="low">Low</option>
+    </select>
+
+    <div class="label">Title</div>
+    <input name="title" required placeholder="Short summary (ex: “Chargeback dispute + timeline”)">
+
+    <div class="label">What happened?</div>
+    <textarea name="description" placeholder="Explain it in plain English. Include dates, amounts, names, deadlines…"></textarea>
+
+    <details class="dropdown">
+      <summary>Optional Details (makes routing faster)</summary>
+      <div class="dropdown-body">
+        <div class="label">Details (paste as notes)</div>
+        <textarea name="details_json" placeholder='Example: {"deadline":"2026-03-02","amount":"$250","docs":"email screenshots"}'></textarea>
+
+        <div class="label">Constraints</div>
+        <textarea name="constraints_json" placeholder='Example: {"needs_notary":false,"must_file_by":"date","jurisdiction":"DC"}'></textarea>
+
+        <div class="label">Budget / Preferences</div>
+        <textarea name="budget_json" placeholder='Example: {"budget":"$0-$200","preferred_contact":"text"}'></textarea>
+
+        <div class="label">Location (if relevant)</div>
+        <textarea name="location_json" placeholder='Example: {"city":"Washington DC","venue":"n/a"}'></textarea>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Request</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+
+  <div class="alert" style="margin-top:16px;">
+    <strong>What happens next:</strong>
+    <div class="muted">
+      Your request enters the routing board → assigned → status updates tracked. This is designed to be hard to mess up.
+    </div>
+  </div>
+</div>
+{% endblock %}
