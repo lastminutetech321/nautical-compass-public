@@ -19,6 +19,19 @@
   --max:1100px;
 
   --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+  /* Link color toned down (not neon) */
+  --link:#c9d7ff;
+  --link-hover:#ffffff;
+}
+
+/* Optional AVPT/LMT skin (same layout, different accent)
+   Use by adding <body class="theme-avpt"> in a template later if you want. */
+body.theme-avpt{
+  --accent:#2aa7b8;        /* teal */
+  --accent-light:#56d2e0;
+  --accent-soft:rgba(42,167,184,.22);
+  --link:#bfeff5;
 }
 
 *{box-sizing:border-box}
@@ -34,18 +47,17 @@ body{
     linear-gradient(180deg, var(--bg), #050914);
 }
 
-/* ---------- LINKS ---------- */
-a{
-  color: rgba(231,238,252,.92);
-  text-decoration:none;
-}
-a:hover{
-  color: var(--accent-light);
-  text-decoration:none;
-}
+a{color:var(--link);text-decoration:none}
+a:hover{color:var(--link-hover);text-decoration:underline}
 
-/* ---------- NAV ---------- */
-.topbar, .nav{
+.wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+.main{padding:18px 20px 0}
+.muted{color:var(--muted)}
+
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+/* ---------------- TOP BAR ---------------- */
+.topbar{
   position:sticky;
   top:0;
   z-index:20;
@@ -53,134 +65,82 @@ a:hover{
   background: rgba(5,9,20,.85);
   border-bottom:1px solid var(--line);
 }
-
-.wrap{
-  max-width:var(--max);
-  margin:0 auto;
-  padding:14px 20px;
-}
-
-.topbar-inner, .nav-inner{
+.topbar-inner{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
+  padding:14px 0;
 }
-
 .brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:900;
-  letter-spacing:.4px;
+  display:flex;align-items:center;gap:10px;
+  font-weight:900;letter-spacing:.4px
 }
-
-.brand-mark, .brand-badge{
-  width:36px;
-  height:36px;
-  border-radius:10px;
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  display:grid;
-  place-items:center;
-  font-weight:900;
-  color:#0b1220;
+  display:grid;place-items:center;
+  font-weight:1000;color:#0b1220;
 }
+.brand-text{font-weight:900}
 
-.brand-text{
-  font-weight:900;
-}
-
-.nav-links, .nav{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  align-items:center;
-  font-weight:800;
-}
-
-.nav a, .nav-links a{
+.nav{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.nav a{
   padding:8px 12px;
   border-radius:10px;
-  transition:.2s ease;
-  color: rgba(231,238,252,.88); /* FIX: no bright neon blue */
-}
-
-.nav a:hover, .nav-links a:hover{
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-}
-
-/* ---------- HERO ---------- */
-.hero{
-  padding:40px 20px 10px;
-  max-width:var(--max);
-  margin:0 auto;
-}
-
-.h-title{
-  font-size:36px;
-  margin:0 0 10px;
-}
-
-.h-sub{
-  margin:0;
   color:var(--muted);
-  line-height:1.6;
+  font-weight:800;
+  transition:.2s ease;
+}
+.nav a:hover{
+  background: rgba(255,255,255,.06);
+  color:var(--text);
+  text-decoration:none;
 }
 
-/* ---------- LAYOUT ---------- */
-.container, main.wrap.main{
-  max-width:var(--max);
-  margin:0 auto;
-  padding:20px;
+/* ---------------- HERO ---------------- */
+.hero{padding:34px 0 10px}
+.hero-card{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:26px;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  box-shadow:var(--shadow);
 }
+.h-title{font-size:36px;margin:0 0 10px}
+.h-sub{margin:0;color:var(--muted);line-height:1.6}
 
-.grid{
-  display:grid;
-  gap:18px;
-}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.micro{margin-top:12px;color:var(--muted);font-size:13px}
 
-.grid-2{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
+/* ---------------- GRID / CARDS ---------------- */
+.grid{display:grid;gap:18px}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:900px){
-  .grid-2{grid-template-columns:1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
 }
 
-/* ---------- CARDS ---------- */
 .card{
   background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
   border:1px solid var(--line);
   border-radius:var(--radius);
   padding:22px;
   box-shadow:var(--shadow);
-
   transition: transform .2s ease, box-shadow .2s ease;
 }
-
 .card:hover{
   transform: translateY(-4px);
   box-shadow: 0 22px 50px rgba(0,0,0,.45);
 }
 
-.card.mini{
-  padding:16px;
-}
+.card h2, .card h3{margin-top:0}
 
-.sep{
-  margin:18px 0;
-  border:0;
-  border-top:1px solid rgba(255,255,255,.10);
-}
-
-/* ---------- BUTTONS ---------- */
-.btnrow{display:flex;gap:12px;flex-wrap:wrap}
-
+/* ---------------- BUTTONS ---------------- */
+.btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
 .btn{
   display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  align-items:center;justify-content:center;
   gap:10px;
   padding:12px 16px;
   border-radius:var(--radius-sm);
@@ -191,34 +151,22 @@ a:hover{
   cursor:pointer;
   transition:.2s ease;
 }
-
-.btn:hover{
-  background: rgba(255,255,255,.09);
-}
-
+.btn:hover{background: rgba(255,255,255,.09);text-decoration:none}
 .btn-primary{
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
   border:none;
   color:#0b1220;
 }
+.btn-primary:hover{filter:brightness(1.05)}
 
-.btn-primary:hover{
-  filter:brightness(1.05);
-}
-
-/* ---------- TEXT ---------- */
-.muted{color:var(--muted)}
-.list{margin:10px 0 0; padding-left:18px}
-.list li{margin:6px 0}
-
-/* ---------- FORMS ---------- */
+/* ---------------- FORMS ---------------- */
+.form{display:grid;gap:12px}
 .label{
   color:var(--muted);
   font-weight:800;
   font-size:13px;
-  margin:14px 0 6px;
+  margin:8px 0 6px;
 }
-
 input, textarea, select{
   width:100%;
   padding:12px 14px;
@@ -229,19 +177,17 @@ input, textarea, select{
   outline:none;
   transition:.2s ease;
 }
-
 textarea{
   min-height:120px;
   resize:vertical;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
-
 input:focus, textarea:focus, select:focus{
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(184,138,42,.25);
 }
 
-/* ---------- BADGES / ALERTS ---------- */
+/* ---------------- BADGES / ALERTS ---------------- */
 .badge{
   display:inline-flex;
   padding:6px 10px;
@@ -249,22 +195,9 @@ input:focus, textarea:focus, select:focus{
   border:1px solid var(--line);
   color:var(--muted);
   background: rgba(255,255,255,.05);
-  font-weight:800;
+  font-weight:900;
   font-size:12px;
 }
-
-.pill{
-  display:inline-flex;
-  padding:3px 9px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.20);
-  color: rgba(231,238,252,.78);
-  font-weight:800;
-  font-size:12px;
-  margin-left:6px;
-}
-
 .alert{
   padding:14px;
   border-radius:var(--radius-sm);
@@ -272,19 +205,16 @@ input:focus, textarea:focus, select:focus{
   background: rgba(255,255,255,.05);
   margin-top:14px;
 }
+.alert.ok{border-color: rgba(34,197,94,.6)}
+.alert.bad{border-color: rgba(239,68,68,.6)}
 
-.alert.ok{border-color: rgba(34,197,94,.6);}
-.alert.bad{border-color: rgba(239,68,68,.6);}
-
-/* ---------- DROPDOWN (details/summary) ---------- */
+/* Dropdown (details/summary) */
 .dropdown{
   margin-top: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(0,0,0,.12);
-  overflow:hidden;
 }
-
 .dropdown > summary{
   list-style:none;
   cursor:pointer;
@@ -293,59 +223,27 @@ input:focus, textarea:focus, select:focus{
   align-items:center;
   justify-content:space-between;
   font-weight:900;
-  color: rgba(231,238,252,.92);
 }
-
 .dropdown > summary::-webkit-details-marker{display:none}
-
 .dropdown .dropdown-body{
   padding: 14px;
   border-top: 1px solid var(--line);
 }
-
-.chev{opacity:.8}
-
-/* Catalog layout */
-.catalog{
+.dropdown .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px 18px;
 }
 
-.cat{
-  padding:12px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  background: rgba(0,0,0,.12);
-}
-
-.cat-title{
-  font-weight:900;
-  margin-bottom:8px;
-  color: rgba(231,238,252,.95);
-}
-
-.cat-item{
-  margin:8px 0;
-  color: rgba(231,238,252,.86);
-  line-height:1.45;
-}
-
-/* Services cards */
-.service{
-  padding:14px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  background: rgba(0,0,0,.12);
-}
-.service-title{font-weight:900}
-.service-desc{color:var(--muted); margin-top:6px; line-height:1.55}
-
-/* ---------- FOOTER ---------- */
+/* ---------------- FOOTER ---------------- */
 .footer{
   max-width:var(--max);
   margin:30px auto 40px;
   padding:0 20px;
   color:var(--muted);
   font-size:13px;
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
 }
