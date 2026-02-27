@@ -1,128 +1,229 @@
+{# templates/services.html #}
 {% extends "base.html" %}
 {% block title %}Services • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Services</h2>
-  <p class="muted">A focused menu + a full catalog that signals depth without overwhelming people.</p>
-
-  <h3>Curated (Most Requested)</h3>
-  <ul>
-    <li>Legal Intake Strategy</li>
-    <li>Contract Review &amp; Risk Mapping</li>
-    <li>Demand Letter Drafting</li>
-    <li>Arbitration Package Assembly</li>
-    <li>Regulatory / Administrative Process Guidance</li>
-    <li>Dispute Timeline &amp; Evidence Organization</li>
-    <li>Complaint Framing &amp; Narrative Structuring</li>
-    <li>Record Requests (CPRA / FOIA-style packets)</li>
-    <li>Payment &amp; Billing Dispute Structuring</li>
-    <li>Platform / Marketplace Dispute Structuring</li>
-  </ul>
-
-  <details class="dropdown">
-    <summary>Full Catalog (expand)</summary>
-    <div class="dropdown-body">
-      <p class="muted" style="margin-top:0">
-        This catalog shows range. The intake will route and prioritize based on urgency, evidence quality, and risk flags.
+  <div class="page-head">
+    <div>
+      <h2 class="page-title">Services</h2>
+      <p class="muted">
+        We’re not a lawyer directory. We’re a <strong>structured intake + risk flags + document strategy</strong> system.
+        You tell us what happened — we organize it into the next-step packet so your case doesn’t collapse from missing steps.
       </p>
+    </div>
+    <div class="page-cta">
+      <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
+      <a class="btn" href="/lead">General Inquiry (Public)</a>
+    </div>
+  </div>
 
-      <h4 style="margin:14px 0 8px;">Strategy &amp; Positioning</h4>
-      <div class="grid">
-        <div><span class="badge">Strategy</span> Standing + Capacity framing</div>
-        <div><span class="badge">Strategy</span> Risk flags + decision tree</div>
-        <div><span class="badge">Strategy</span> Claim map (elements, burdens, defenses)</div>
-        <div><span class="badge">Strategy</span> Remedy ladder (informal → formal)</div>
-        <div><span class="badge">Strategy</span> Timeline architecture + “what matters” filter</div>
-        <div><span class="badge">Strategy</span> Narrative structuring (facts → duty → breach → harm)</div>
-        <div><span class="badge">Strategy</span> Evidence strength scoring + gaps list</div>
-        <div><span class="badge">Strategy</span> “Fast wins” plan (48–72hr actions)</div>
-        <div><span class="badge">Strategy</span> Escalation plan (support → executive → regulator → counsel)</div>
-      </div>
+  <hr class="rule">
 
-      <h4 style="margin:16px 0 8px;">Contracts &amp; Agreements</h4>
-      <div class="grid">
-        <div><span class="badge">Contracts</span> Clause-by-clause redlines</div>
-        <div><span class="badge">Contracts</span> Risk map (termination, indemnity, arbitration, liability)</div>
-        <div><span class="badge">Contracts</span> Payment terms hardening (net terms, late fees, milestones)</div>
-        <div><span class="badge">Contracts</span> Scope clarity + change-order language</div>
-        <div><span class="badge">Contracts</span> Non-compete / NDA / confidentiality cleanup</div>
-        <div><span class="badge">Contracts</span> Vendor agreement review (SLA + uptime + support)</div>
-        <div><span class="badge">Contracts</span> Subscription terms + cancelation fairness review</div>
-        <div><span class="badge">Contracts</span> “Plain-English” summary for decision makers</div>
-      </div>
+  <h3 class="section-title">Choose Your Lane</h3>
+  <p class="muted">Pick the lane that matches your situation. Each lane routes you to the right next steps.</p>
 
-      <h4 style="margin:16px 0 8px;">Disputes, Billing &amp; Payments</h4>
-      <div class="grid">
-        <div><span class="badge">Disputes</span> Chargebacks + billing trails</div>
-        <div><span class="badge">Disputes</span> Payment timeline + proof pack</div>
-        <div><span class="badge">Disputes</span> Refund demand structure + attachments order</div>
-        <div><span class="badge">Disputes</span> Platform support escalation scripting</div>
-        <div><span class="badge">Disputes</span> Merchant dispute packet assembly</div>
-        <div><span class="badge">Disputes</span> Subscription cancellation disputes + proof set</div>
-        <div><span class="badge">Disputes</span> Unauthorized charge / account takeover response pack</div>
-        <div><span class="badge">Disputes</span> Service failure / non-delivery packet</div>
-      </div>
+  <div class="tiles">
+    <a class="tile" href="#lane-disputes">
+      <div class="tile-title">Disputes & Billing</div>
+      <div class="tile-sub">Chargebacks, refunds, billing trails, payment failures</div>
+      <div class="tile-tag">Most common</div>
+    </a>
 
-      <h4 style="margin:16px 0 8px;">Records &amp; Documentation</h4>
-      <div class="grid">
-        <div><span class="badge">Records</span> FOIA/records request pack</div>
-        <div><span class="badge">Records</span> Evidence packet build (chronological + indexed)</div>
-        <div><span class="badge">Records</span> Screenshot/metadata capture checklist</div>
-        <div><span class="badge">Records</span> Call log + email log organization</div>
-        <div><span class="badge">Records</span> Incident report drafting (clean facts, no fluff)</div>
-        <div><span class="badge">Ops</span> Documentation audit + cleanup</div>
-        <div><span class="badge">Ops</span> “One file” master packet build (print-ready)</div>
-        <div><span class="badge">Ops</span> Exhibit labeling + cross-reference map</div>
-      </div>
+    <a class="tile" href="#lane-contracts">
+      <div class="tile-title">Contracts</div>
+      <div class="tile-sub">Review, redlines, obligations, risk mapping, enforcement prep</div>
+      <div class="tile-tag">Business-ready</div>
+    </a>
 
-      <h4 style="margin:16px 0 8px;">Work / Contractor / Marketplace</h4>
-      <div class="grid">
-        <div><span class="badge">Work</span> Misclassification structuring</div>
-        <div><span class="badge">Work</span> Late pay / missing pay evidence build</div>
-        <div><span class="badge">Work</span> Schedule + hours reconstruction (proof pack)</div>
-        <div><span class="badge">Work</span> Deactivation appeal packet</div>
-        <div><span class="badge">Work</span> Ratings / defamation evidence organization</div>
-        <div><span class="badge">Work</span> Contractor agreement risk review</div>
-        <div><span class="badge">Work</span> Independent business positioning checklist</div>
-      </div>
+    <a class="tile" href="#lane-records">
+      <div class="tile-title">Records & Requests</div>
+      <div class="tile-sub">FOIA/records packets, documentation demands, proof trails</div>
+      <div class="tile-tag">Evidence</div>
+    </a>
 
-      <h4 style="margin:16px 0 8px;">Arbitration Prep (Structure Only)</h4>
-      <div class="grid">
-        <div><span class="badge">Arbitration</span> Demand package assembly (facts + exhibits + relief)</div>
-        <div><span class="badge">Arbitration</span> Chronology + issue framing</div>
-        <div><span class="badge">Arbitration</span> Evidence indexing + citation map</div>
-        <div><span class="badge">Arbitration</span> Settlement posture + negotiation script</div>
-        <div><span class="badge">Arbitration</span> Hearing prep checklist + witness outline</div>
-      </div>
+    <a class="tile" href="#lane-platform">
+      <div class="tile-title">Platform / Marketplace</div>
+      <div class="tile-sub">Account actions, payout disputes, policy conflicts, escalation prep</div>
+      <div class="tile-tag">Gig + apps</div>
+    </a>
 
-      <h4 style="margin:16px 0 8px;">Business / Compliance (Practical)</h4>
-      <div class="grid">
-        <div><span class="badge">Business</span> Intake-to-action workflow build</div>
-        <div><span class="badge">Business</span> SOP drafting (repeatable operations)</div>
-        <div><span class="badge">Business</span> Risk register + mitigation plan</div>
-        <div><span class="badge">Business</span> Vendor onboarding + compliance questions</div>
-        <div><span class="badge">Business</span> Documentation standards for teams</div>
-      </div>
+    <a class="tile" href="#lane-work">
+      <div class="tile-title">Workplace / 1099</div>
+      <div class="tile-sub">Misclassification structuring, timeline + documentation plan</div>
+      <div class="tile-tag">Contractors</div>
+    </a>
 
-      <h4 style="margin:16px 0 8px;">Custom</h4>
-      <div class="grid">
-        <div><span class="badge">Custom</span> Special situation triage</div>
-        <div><span class="badge">Custom</span> “I’m not sure what applies” routing + first steps</div>
-        <div><span class="badge">Custom</span> Priority escalation plan (time-sensitive)</div>
+    <a class="tile" href="#lane-emergency">
+      <div class="tile-title">Emergency Guides</div>
+      <div class="tile-sub">Fast-response pages built for stressful moments</div>
+      <div class="tile-tag">Fast</div>
+    </a>
+  </div>
+
+  <hr class="rule">
+
+  <h3 class="section-title">How It Works</h3>
+  <p class="muted">Same simple flow every time — so nobody feels lost.</p>
+
+  <div class="how">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-body">
+        <div class="how-title">Submit Intake</div>
+        <div class="muted">You provide facts, timeline, and what outcome you want.</div>
       </div>
     </div>
-  </details>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-body">
+        <div class="how-title">Risk Flags + Missing Info</div>
+        <div class="muted">We highlight gaps (deadlines, missing documents, weak proof chains).</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-body">
+        <div class="how-title">Build the Packet</div>
+        <div class="muted">You receive the next-step checklist + letter/packet structure.</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-body">
+        <div class="how-title">Escalate Cleanly (if needed)</div>
+        <div class="muted">If escalation is required, your file is already organized and ready.</div>
+      </div>
+    </div>
+  </div>
 
-  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+  <hr class="rule">
 
-  <h3>Emergency Guides</h3>
-  <p class="muted">Fast-response pages built for stressful moments.</p>
-  <ul>
+  <h3 id="lane-disputes" class="section-title">Disputes & Billing</h3>
+  <div class="svc">
+    <div class="svc-item">
+      <div class="svc-title">Payment & Billing Dispute Structuring</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A clean dispute package that organizes the billing story with proof and next steps.</div>
+        <div><span class="svc-k">Best for:</span> Incorrect charges, missing payouts, subscription issues, vendor billing conflicts.</div>
+        <div><span class="svc-k">Deliverable:</span> Timeline + evidence checklist + dispute letter structure.</div>
+      </div>
+    </div>
+
+    <div class="svc-item">
+      <div class="svc-title">Chargeback & Trail Builder</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A structured packet designed to support a chargeback or rebuttal with clean documentation.</div>
+        <div><span class="svc-k">Best for:</span> Card disputes, merchant conflicts, “service not delivered,” partial delivery arguments.</div>
+        <div><span class="svc-k">Deliverable:</span> Evidence map + recommended narrative + attachment list.</div>
+      </div>
+      <div class="svc-soon"><span class="badge">Coming soon</span> Deep automation + templates expansion</div>
+    </div>
+  </div>
+
+  <h3 id="lane-contracts" class="section-title">Contracts</h3>
+  <div class="svc">
+    <div class="svc-item">
+      <div class="svc-title">Contract Review & Risk Mapping</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> Clause-by-clause risk scan that shows what matters, what’s missing, and where you’re exposed.</div>
+        <div><span class="svc-k">Best for:</span> Production contracts, vendor terms, service agreements, partnerships, retainers.</div>
+        <div><span class="svc-k">Deliverable:</span> Risk summary + redline guidance + “must-fix” list.</div>
+      </div>
+    </div>
+
+    <div class="svc-item">
+      <div class="svc-title">Demand Letter Drafting</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A structured notice that states facts, requests remedy, and sets a deadline.</div>
+        <div><span class="svc-k">Best for:</span> Breach situations, refunds, non-payment, contract violations, performance failures.</div>
+        <div><span class="svc-k">Deliverable:</span> Ready-to-send letter + proof checklist.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="lane-records" class="section-title">Records & Requests</h3>
+  <div class="svc">
+    <div class="svc-item">
+      <div class="svc-title">Record Requests (FOIA / Records Packets)</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A properly formatted records request with the right scope and documentation plan.</div>
+        <div><span class="svc-k">Best for:</span> Proof gathering, decision records, administrative trails, internal communications evidence.</div>
+        <div><span class="svc-k">Deliverable:</span> Request letter + scope checklist + follow-up steps.</div>
+      </div>
+    </div>
+
+    <div class="svc-item">
+      <div class="svc-title">Dispute Timeline & Evidence Organization</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A timeline that turns scattered events into a sequence that makes sense to any reviewer.</div>
+        <div><span class="svc-k">Best for:</span> Any dispute where facts are messy, communications are scattered, or deadlines matter.</div>
+        <div><span class="svc-k">Deliverable:</span> Timeline + evidence map + missing proof flags.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="lane-platform" class="section-title">Platform / Marketplace</h3>
+  <div class="svc">
+    <div class="svc-item">
+      <div class="svc-title">Platform / Marketplace Dispute Structuring</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A structured escalation package designed for platform support systems and policy-based disputes.</div>
+        <div><span class="svc-k">Best for:</span> Account actions, payout holds, deactivations, “policy violation” disputes, appeal prep.</div>
+        <div><span class="svc-k">Deliverable:</span> Escalation narrative + evidence bundle plan + risk flags.</div>
+      </div>
+    </div>
+
+    <div class="svc-item">
+      <div class="svc-title">Complaint Framing & Narrative Structuring</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A clean “what happened + why it matters + what you want” structure that holds up under review.</div>
+        <div><span class="svc-k">Best for:</span> Any situation where the story gets dismissed because it’s unclear or emotional.</div>
+        <div><span class="svc-k">Deliverable:</span> Complaint narrative + attachments checklist + next action plan.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="lane-work" class="section-title">Workplace / 1099</h3>
+  <div class="svc">
+    <div class="svc-item">
+      <div class="svc-title">Misclassification & Work Dispute Structuring</div>
+      <div class="svc-lines">
+        <div><span class="svc-k">What it is:</span> A structured work-history and documentation packet to support a classification or pay dispute.</div>
+        <div><span class="svc-k">Best for:</span> Contractor disputes, withheld pay, role expectations mismatches, documentation gaps.</div>
+        <div><span class="svc-k">Deliverable:</span> Timeline + pay proof checklist + documentation map.</div>
+      </div>
+      <div class="svc-soon"><span class="badge">Coming soon</span> Tax dashboard integration + automated audit trail</div>
+    </div>
+  </div>
+
+  <h3 id="lane-emergency" class="section-title">Emergency Guides</h3>
+  <p class="muted">Fast-response pages built for stressful moments. Use these first — then submit intake if needed.</p>
+  <ul class="emergency">
     <li><a href="/towed">Towed Vehicle Fast Response</a></li>
   </ul>
 
-  <div class="btnrow" style="margin-top:16px;">
+  <details class="dropdown" style="margin-top:14px;">
+    <summary>Full Catalog (signals depth, without overwhelming)</summary>
+    <div class="dropdown-body">
+      <div class="grid">
+        <div><span class="badge">Strategy</span> Legal Intake Strategy (structured routing)</div>
+        <div><span class="badge">Strategy</span> Risk flags + missing-proof checklist</div>
+        <div><span class="badge">Arbitration</span> Arbitration Package Assembly</div>
+        <div><span class="badge">Records</span> Records request scope + follow-up ladder</div>
+        <div><span class="badge">Disputes</span> Billing trail reconstruction</div>
+        <div><span class="badge">Ops</span> Documentation audit + cleanup</div>
+        <div><span class="badge">Custom</span> Special situation triage</div>
+        <div><span class="badge">Premium</span> Priority routing + escalations</div>
+        <div><span class="badge">Premium</span> Repeat-client file continuity (planned)</div>
+      </div>
+      <p class="muted" style="margin-top:12px;">
+        If you don’t see your exact situation listed, choose the closest lane. The intake will route you correctly.
+      </p>
+    </div>
+  </details>
+
+  <div class="btnrow" style="margin-top:18px;">
     <a class="btn btn-primary" href="/checkout">Become a Subscriber</a>
     <a class="btn" href="/lead">General Inquiry (Public)</a>
   </div>
