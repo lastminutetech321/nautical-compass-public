@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Admin • Work Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Admin Routing Board</h2>
+  <p class="muted">This is where the ecosystem stays organized: triage → assign → complete.</p>
+
+  <form class="form" method="get" action="/admin/work-orders">
+    <input type="hidden" name="k" value="{{ k }}">
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Status</div>
+        <select name="status">
+          <option value="" {% if not status %}selected{% endif %}>All</option>
+          <option value="new" {% if status=='new' %}selected{% endif %}>new</option>
+          <option value="triage" {% if status=='triage' %}selected{% endif %}>triage</option>
+          <option value="in_progress" {% if status=='in_progress' %}selected{% endif %}>in_progress</option>
+          <option value="waiting" {% if status=='waiting' %}selected{% endif %}>waiting</option>
+          <option value="done" {% if status=='done' %}selected{% endif %}>done</option>
+          <option value="canceled" {% if status=='canceled' %}selected{% endif %}>canceled</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="label">Dashboard Type</div>
+        <select name="dashboard_type">
+          <option value="" {% if not dashboard_type %}selected{% endif %}>All</option>
+          <option value="consumer" {% if dashboard_type=='consumer' %}selected{% endif %}>consumer</option>
+          <option value="partner" {% if dashboard_type=='partner' %}selected{% endif %}>partner</option>
+          <option value="av_company" {% if dashboard_type=='av_company' %}selected{% endif %}>av_company</option>
+          <option value="tech" {% if dashboard_type=='tech' %}selected{% endif %}>tech</option>
+          <option value="logistics" {% if dashboard_type=='logistics' %}selected{% endif %}>logistics</option>
+          <option value="rentals" {% if dashboard_type=='rentals' %}selected{% endif %}>rentals</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="label">Priority</div>
+        <select name="priority">
+          <option value="" {% if not priority %}selected{% endif %}>All</option>
+          <option value="urgent" {% if priority=='urgent' %}selected{% endif %}>urgent</option>
+          <option value="normal" {% if priority=='normal' %}selected{% endif %}>normal</option>
+          <option value="low" {% if priority=='low' %}selected{% endif %}>low</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:flex-end;gap:10px;">
+        <button class="btn btn-primary" type="submit">Apply Filters</button>
+        <a class="btn" href="/admin/work-orders?k={{ k }}">Clear</a>
+      </div>
+    </div>
+  </form>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  {% if work_orders|length == 0 %}
+    <div class="alert">No work orders found.</div>
+  {% else %}
+    {% for w in work_orders %}
+      <div class="card" style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div class="badge">{{ w['dashboard_type'] }}</div>
+            <div class="badge">{{ w['service_key'] }}</div>
+            <div class="badge">{{ w['priority'] }}</div>
+            <div class="muted" style="margin-top:8px;">#{{ w['id'] }} • {{ w['created_at'] }}</div>
+          </div>
+          <div>
+            <div class="badge">status: {{ w['status'] }}</div>
+            {% if w['assigned_to'] %}
+              <div class="badge">assigned: {{ w['assigned_to'] }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px;">{{ w['title'] }}</h3>
+        <div class="muted">
+          {{ w['requester_name'] }} • {{ w['requester_email'] }}
+          {% if w['requester_phone'] %} • {{ w['requester_phone'] }}{% endif %}
+          {% if w['requester_company'] %} • {{ w['requester_company'] }}{% endif %}
+        </div>
+
+        {% if w['description'] %}
+          <div style="margin-top:10px;white-space:pre-wrap;">{{ w['description'] }}</div>
+        {% endif %}
+
+        <details class="dropdown" style="margin-top:12px;">
+          <summary>Structured Fields</summary>
+          <div class="dropdown-body">
+            <div class="grid">
+              <div><span class="badge">details</span> <code style="white-space:pre-wrap;">{{ w['details_json'] }}</code></div>
+              <div><span class="badge">constraints</span> <code style="white-space:pre-wrap;">{{ w['constraints_json'] }}</code></div>
+              <div><span class="badge">budget</span> <code style="white-space:pre-wrap;">{{ w['budget_json'] }}</code></div>
+              <div><span class="badge">location</span> <code style="white-space:pre-wrap;">{{ w['location_json'] }}</code></div>
+            </div>
+          </div>
+        </details>
+
+        <form class="form" method="post" action="/admin/work-orders/update" style="margin-top:14px;">
+          <input type="hidden" name="k" value="{{ k }}">
+          <input type="hidden" name="id" value="{{ w['id'] }}">
+
+          <div class="grid grid-2">
+            <div>
+              <div class="label">Update Status</div>
+              <select name="status" required>
+                <option value="new" {% if w['status']=='new' %}selected{% endif %}>new</option>
+                <option value="triage" {% if w['status']=='triage' %}selected{% endif %}>triage</option>
+                <option value="in_progress" {% if w['status']=='in_progress' %}selected{% endif %}>in_progress</option>
+                <option value="waiting" {% if w['status']=='waiting' %}selected{% endif %}>waiting</option>
+                <option value="done" {% if w['status']=='done' %}selected{% endif %}>done</option>
+                <option value="canceled" {% if w['status']=='canceled' %}selected{% endif %}>canceled</option>
+              </select>
+            </div>
+            <div>
+              <div class="label">Assigned To</div>
+              <input name="assigned_to" value="{{ w['assigned_to'] or '' }}" placeholder="operator name/email/role">
+            </div>
+          </div>
+
+          <div class="label">Internal Notes</div>
+          <textarea name="internal_notes" placeholder="Routing notes, follow-up items, missing info…">{{ w['internal_notes'] or '' }}</textarea>
+
+          <div class="btnrow" style="margin-top:12px;">
+            <button class="btn btn-primary" type="submit">Save Update</button>
+          </div>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}
