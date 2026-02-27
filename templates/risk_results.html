@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Results • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Results</h2>
+  <p class="muted">
+    Intake received. Authorized email: <strong>{{ authorized_email }}</strong>
+  </p>
+
+  <div class="grid grid-2" style="margin-top:14px;">
+    <div class="card" style="padding:16px;">
+      <div class="badge">Submission</div>
+      <div style="margin-top:10px;">
+        <div><strong>Name:</strong> {{ intake.name }}</div>
+        <div><strong>Email entered:</strong> {{ intake.email }}</div>
+        <div><strong>Service:</strong> {{ intake.service_requested }}</div>
+        <div class="muted" style="margin-top:10px; white-space:pre-wrap;">{{ intake.notes }}</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <div class="badge">Risk Flags</div>
+
+      {% if flags and flags|length > 0 %}
+        <div style="margin-top:10px;">
+          {% for f in flags %}
+            <div class="alert {% if f.severity == 'high' %}bad{% elif f.severity == 'medium' %}{% else %}ok{% endif %}" style="margin-top:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <strong>{{ f.label }}</strong>
+                <span class="badge">{{ f.severity|upper }}</span>
+              </div>
+              {% if f.detail %}
+                <div class="muted" style="margin-top:8px;">{{ f.detail }}</div>
+              {% endif %}
+              <div class="muted" style="margin-top:8px;font-size:12px;">Code: {{ f.code }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert ok" style="margin-top:10px;">
+          <strong>No risk flags detected.</strong>
+          <div class="muted" style="margin-top:6px;">
+            That’s good. Next step is simple: confirm your goal and upload any documents in your workflow.
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="/dashboard?token={{ token }}">Back to Dashboard</a>
+    <a class="btn" href="/intake-form?token={{ token }}">Submit Another Intake</a>
+  </div>
+
+  <div class="muted" style="margin-top:14px;font-size:12px;">
+    Note: Risk Flags are routing signals. They don’t replace legal advice; they prevent missed steps and bad assumptions.
+  </div>
+</div>
+{% endblock %}
