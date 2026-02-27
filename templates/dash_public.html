@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Public Dashboard{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Public Dashboard</h2>
+  <p class="muted">For consumers outside AV. Start here if you’re not sure.</p>
+  <ul>
+    <li>Clear services menu</li>
+    <li>Lead intake for non-members</li>
+    <li>Examples of what the system produces</li>
+  </ul>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/services">View Services</a>
+    <a class="btn" href="/intake/public">Public Intake</a>
+  </div>
+</div>
+{% endblock %}
