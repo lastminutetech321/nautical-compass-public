@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Logistics Dashboard • Trucks/Drivers{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Logistics Dashboard</h2>
+  <p class="muted">
+    Built for dispatch and load planning. Truck size + liftgate + dock access are mandatory fields in the real world — so we capture them.
+  </p>
+
+  <form class="form" method="post" action="/request-service">
+    <input type="hidden" name="dashboard_type" value="logistics">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="requester_name" required>
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="requester_email" type="email" required>
+      </div>
+      <div>
+        <div class="label">Phone</div>
+        <input name="requester_phone" required>
+      </div>
+      <div>
+        <div class="label">Company</div>
+        <input name="requester_company" placeholder="Logistics provider / fleet (optional)">
+      </div>
+    </div>
+
+    <div class="label">Service</div>
+    <select name="service_key" required>
+      <option value="">Select…</option>
+      <option value="truck_dispatch">Truck Dispatch (delivery/pickup)</option>
+      <option value="box_truck_with_liftgate">Box Truck + Liftgate</option>
+      <option value="sprinter_run">Sprinter / Van Run</option>
+      <option value="semi_53">53’ Trailer / Freight</option>
+      <option value="runner">Runner (small cargo, urgent)</option>
+    </select>
+
+    <div class="label">Priority</div>
+    <select name="priority">
+      <option value="normal" selected>Normal</option>
+      <option value="urgent">Urgent</option>
+      <option value="low">Low</option>
+    </select>
+
+    <div class="label">Title</div>
+    <input name="title" required placeholder="Ex: ‘Load-in delivery — 26ft liftgate to Marriott dock’">
+
+    <details class="dropdown" open>
+      <summary>Truck Specs (prevent mistakes)</summary>
+      <div class="dropdown-body">
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Truck Size</div>
+            <select name="details_json" required>
+              <option value='{"truck_size":"sprinter"}'>Sprinter / Van</option>
+              <option value='{"truck_size":"16ft"}'>16ft Box</option>
+              <option value='{"truck_size":"20ft"}'>20ft Box</option>
+              <option value='{"truck_size":"26ft"}'>26ft Box</option>
+              <option value='{"truck_size":"53ft"}'>53ft Trailer</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">Liftgate</div>
+            <select name="constraints_json" required>
+              <option value='{"liftgate":true}'>Yes (required)</option>
+              <option value='{"liftgate":false}'>No</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Location / Dock</div>
+            <textarea name="location_json" required placeholder='{"pickup":"address","drop":"address","dock_notes":"height/entry/parking"}'></textarea>
+          </div>
+          <div>
+            <div class="label">Time Window</div>
+            <textarea name="budget_json" required placeholder='{"pickup_window":"7-9a","delivery_by":"10a","wait_time_policy":"..."}'></textarea>
+          </div>
+        </div>
+
+        <div class="label">Cargo Notes</div>
+        <textarea name="description" placeholder="Ex: LED panels, road cases, weights, fragile items, number of cases…"></textarea>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Logistics Request</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
