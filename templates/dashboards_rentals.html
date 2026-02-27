@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Equipment Rentals Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Equipment Rentals Dashboard</h2>
+  <p class="muted">
+    Request gear with enough detail that quoting is instant and errors are rare.
+  </p>
+
+  <form class="form" method="post" action="/request-service">
+    <input type="hidden" name="dashboard_type" value="rentals">
+    <input type="hidden" name="service_key" value="gear_rental_request">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Name</div>
+        <input name="requester_name" required>
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="requester_email" type="email" required>
+      </div>
+      <div>
+        <div class="label">Phone</div>
+        <input name="requester_phone" required>
+      </div>
+      <div>
+        <div class="label">Company</div>
+        <input name="requester_company" placeholder="Production / client">
+      </div>
+    </div>
+
+    <div class="label">Title</div>
+    <input name="title" required placeholder="Ex: ‘LED wall rental + playback — 3/12-3/14’">
+
+    <div class="label">Gear Needed</div>
+    <textarea name="description" required placeholder="Ex: LED wall size, pixel pitch, processors, cameras, comms, audio package..."></textarea>
+
+    <details class="dropdown" open>
+      <summary>Delivery / Pickup / Budget</summary>
+      <div class="dropdown-body">
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Location</div>
+            <textarea name="location_json" required placeholder='{"venue":"...","address":"...","dock":"..."}'></textarea>
+          </div>
+          <div>
+            <div class="label">Dates / Windows</div>
+            <textarea name="constraints_json" required placeholder='{"rental_start":"YYYY-MM-DD","rental_end":"YYYY-MM-DD","delivery_window":"...","pickup_window":"..."}'></textarea>
+          </div>
+        </div>
+
+        <div class="label">Budget / Cap</div>
+        <textarea name="budget_json" placeholder='{"budget_cap":5000,"needs_delivery":true,"insurance":"COI available"}'></textarea>
+
+        <div class="label">Priority</div>
+        <select name="priority">
+          <option value="normal" selected>Normal</option>
+          <option value="urgent">Urgent</option>
+          <option value="low">Low</option>
+        </select>
+
+        <div class="label">Details</div>
+        <textarea name="details_json" placeholder='{"preferred_brand":"ROE/Absen","labor_needed":true,"engineer_needed":true}'></textarea>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Rental Request</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
