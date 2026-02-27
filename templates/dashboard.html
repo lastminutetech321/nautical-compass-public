@@ -1,17 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Public Dashboard{% endblock %}
+{% block title %}Member Dashboard{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Public Dashboard</h2>
-  <p class="muted">For consumers outside AV. Start here if you’re not sure.</p>
-  <ul>
-    <li>Clear services menu</li>
-    <li>Lead intake for non-members</li>
-    <li>Examples of what the system produces</li>
-  </ul>
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/services">View Services</a>
-    <a class="btn" href="/intake/public">Public Intake</a>
+  <h2>Member Dashboard</h2>
+  <p class="muted">Authorized email: <b>{{ email }}</b></p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Member Intake</h3>
+      <p class="muted">Submit a structured request.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Intake</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Dashboards</h3>
+      <p class="muted">Explore role dashboards.</p>
+      <div class="btnrow">
+        <a class="btn" href="/dashboards">Open Dashboards</a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
