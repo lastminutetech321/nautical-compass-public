@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Received • Nautical Compass{% endblock %}
+{% block title %}Partner Received{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Partner submission received</h2>
-  <p>Thanks{% if name %}, <strong>{{ name }}</strong>{% endif %}. If there’s a fit, you’ll get a structured next step request.</p>
+  <h2>Partner Submission Received</h2>
+  <p class="muted">You’re in the routing queue. We’ll follow up with access terms when matched.</p>
   <div class="btnrow">
     <a class="btn btn-primary" href="/services">Services</a>
-    <a class="btn" href="/">Home</a>
+    <a class="btn" href="/dashboards">Dashboards</a>
   </div>
 </div>
 {% endblock %}
