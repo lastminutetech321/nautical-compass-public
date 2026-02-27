@@ -1,74 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Dashboards • Nautical Compass{% endblock %}
+{% block title %}Director / Operator Dashboard • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Dashboards</h2>
-  <p class="muted">Pick the dashboard that matches who you are. Each one has its own intake.</p>
+  <h2>Director / Operator Dashboard</h2>
+  <p class="muted">Internal oversight: rails, people, scoreboards, routing.</p>
 
-  <div class="grid grid-3">
-    <div class="card">
-      <h3>Public / Consumer</h3>
-      <p class="muted">General users and non-AV visitors.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/public">Open</a>
-        <a class="btn" href="/intake/public">Intake</a>
+  <ul>
+    <li>Contributor dashboard (admin)</li>
+    <li>Partner dashboard (admin)</li>
+    <li>People dashboard (operators / staff)</li>
+  </ul>
+
+  {% set k = request.query_params.get('k') or request.query_params.get('key') or '' %}
+
+  {% if not k %}
+    <div class="alert bad">
+      <strong>Admin key missing.</strong><br>
+      This page needs <code>?k=ADMIN_KEY</code> in the URL to open admin dashboards.
+      <div class="micro" style="margin-top:8px;">
+        Example: <code>/dashboards?k=YOUR_ADMIN_KEY</code>
       </div>
     </div>
+  {% endif %}
 
-    <div class="card">
-      <h3>Technicians (LMT)</h3>
-      <p class="muted">Labor-side: roles, expectations, transparency.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/tech">Open</a>
-        <a class="btn" href="/intake/tech">Intake</a>
-      </div>
-    </div>
+  <div class="btnrow" style="margin-top:14px;">
+    <a class="btn btn-primary" href="/admin/contributors-dashboard?k={{ k }}">Contributors Admin</a>
+    <a class="btn" href="/admin/partners-dashboard?k={{ k }}">Partners Admin</a>
+    <a class="btn" href="/admin/people-dashboard?k={{ k }}">People Admin</a>
+  </div>
 
-    <div class="card">
-      <h3>Production Company (AVPT)</h3>
-      <p class="muted">Company-side staffing + operations view.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/company">Open</a>
-        <a class="btn" href="/intake/company">Intake</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Corporate Event Manager</h3>
-      <p class="muted">Internal event owner view (Coke, etc.).</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/event">Open</a>
-        <a class="btn" href="/intake/event">Intake</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Equipment / Rentals</h3>
-      <p class="muted">Inventory, holds, delivery coordination.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/rental">Open</a>
-        <a class="btn" href="/intake/rental">Intake</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Logistics / Transport</h3>
-      <p class="muted">Routing, staging, delivery confirmation.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/logistics">Open</a>
-        <a class="btn" href="/intake/logistics">Intake</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Director / Operator</h3>
-      <p class="muted">Internal rails, scoring, oversight.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/dash/director">Open</a>
-        <a class="btn" href="/intake/director">Intake</a>
-      </div>
-    </div>
+  <div style="margin-top:14px;" class="muted">
+    Note: this page expects you to load it with <code>?k=ADMIN_KEY</code> in the URL for admin links.
   </div>
 </div>
 {% endblock %}
