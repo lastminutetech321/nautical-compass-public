@@ -1,51 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Success • Nautical Compass{% endblock %}
-
+{% block title %}Success{% endblock %}
 {% block content %}
 <div class="card">
   <h2>Subscription Confirmed</h2>
-  <p class="muted">
-    You’re in. Your access is now active.
-  </p>
+  <p class="muted">Your access is ready.</p>
 
   {% if dashboard_link %}
     <div class="alert ok">
-      <strong>Next step:</strong> open your dashboard and continue.
+      <b>Access Link:</b><br>
+      <a href="{{ dashboard_link }}">{{ dashboard_link }}</a>
     </div>
-
-    <div class="btnrow" style="margin-top:14px;">
+    <div class="btnrow">
       <a class="btn btn-primary" href="{{ dashboard_link }}">Open Dashboard</a>
-      <a class="btn" href="/services">View Services</a>
+      <a class="btn" href="/services">Services</a>
     </div>
-
-    <details class="dropdown" style="margin-top:16px;">
-      <summary>What happens next <span class="chev">▾</span></summary>
-      <div class="dropdown-body">
-        <ul class="list">
-          <li><strong>Dashboard:</strong> your private hub + access rails</li>
-          <li><strong>Subscriber Intake:</strong> a structured intake that reduces human error</li>
-          <li><strong>Risk Flags:</strong> the system highlights what could hurt your position before you act</li>
-          <li><strong>Outputs:</strong> letters, timelines, packets, next-step plans</li>
-        </ul>
-      </div>
-    </details>
   {% else %}
-    <div class="alert bad">
-      <strong>Almost done:</strong> we didn’t receive a valid Stripe session ID on this page.
-      If you just paid, refresh this page from the Stripe “Return” button, or contact support.
+    <div class="alert">
+      If your dashboard link didn’t generate, use the dev-token route (owner only) or contact support.
     </div>
-
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="/services">View Services</a>
-      <a class="btn" href="/lead">Contact / Public Inquiry</a>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/services">Services</a>
+      <a class="btn" href="/get-access">Access</a>
     </div>
   {% endif %}
-
-  <hr class="sep">
-
-  <p class="muted">
-    This platform is built to create clarity, reduce mistakes, and keep your process organized.
-    No confusion. No guessing. Just structure.
-  </p>
 </div>
 {% endblock %}
