@@ -4,41 +4,40 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Nautical Compass{% endblock %}</title>
+
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/static/styles.css" />
+
   {% block head %}{% endblock %}
 </head>
 
 <body>
-  <header class="nav">
-    <div class="nav-inner">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
       <a class="brand" href="/">
-        <span class="brand-badge">NC</span>
-        <span>
-          Nautical Compass
-          <small>Legal Intake + Access</small>
-        </span>
+        <span class="brand-mark">NC</span>
+        <span class="brand-text">Nautical Compass</span>
       </a>
 
-      <nav class="nav-links">
-        <a href="/">Home</a>
+      <nav class="nav">
         <a href="/services">Services</a>
+        <a href="/dashboards">Dashboards</a>
         <a href="/lead">Lead Intake</a>
         <a href="/partner">Partners</a>
-        <a href="/contributor">Contributors</a>
-        <a class="btn btn-primary" href="/checkout">Subscribe</a>
+        <a href="/get-access" class="btn btn-primary">Get Access</a>
       </nav>
     </div>
   </header>
 
   {% block hero %}{% endblock %}
 
-  <main class="container">
+  <main class="wrap main">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
-    <div>© {{ year if year else "" }} Nautical Compass · Built by CVCS</div>
+    <div>© {{ year if year else "" }} Nautical Compass</div>
+    <div>Structured intake · Clear rails · Secure checkout</div>
   </footer>
 
   {% block scripts %}{% endblock %}
