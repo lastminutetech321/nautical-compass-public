@@ -1,44 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Dashboard • Nautical Compass{% endblock %}
-
+{% block title %}Public Dashboard{% endblock %}
 {% block content %}
-<div class="grid grid-2">
-  <div class="card">
-    <h2>Subscriber Dashboard</h2>
-    <p class="muted">Authorized email: <strong>{{ email }}</strong></p>
-
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
-      <a class="btn" href="/services">Services</a>
-    </div>
-
-    <div class="alert" style="margin-top:14px;">
-      <span class="badge accent">Access</span>
-      <span class="muted">Your link is time-limited. If it expires, run checkout again or request a new link.</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>What you can do now</h3>
-    <ul style="margin:10px 0 0; color: var(--muted); line-height:1.65;">
-      <li>Submit intake with structured facts and goals.</li>
-      <li>Get routed into the right service rail.</li>
-      <li>Track what was submitted (audit-friendly).</li>
-    </ul>
-
-    <details class="dropdown">
-      <summary>Full Catalog (signals depth)</summary>
-      <div class="dropdown-body">
-        <div class="grid">
-          <div><span class="badge">Strategy</span> Standing + Capacity framing</div>
-          <div><span class="badge">Contracts</span> Review + risk mapping</div>
-          <div><span class="badge">Disputes</span> Payment/billing structuring</div>
-          <div><span class="badge">Records</span> Request packets</div>
-          <div><span class="badge">Arbitration</span> Packet assembly</div>
-          <div><span class="badge">Custom</span> Special situation triage</div>
-        </div>
-      </div>
-    </details>
+<div class="card">
+  <h2>Public Dashboard</h2>
+  <p class="muted">For consumers outside AV. Start here if you’re not sure.</p>
+  <ul>
+    <li>Clear services menu</li>
+    <li>Lead intake for non-members</li>
+    <li>Examples of what the system produces</li>
+  </ul>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/services">View Services</a>
+    <a class="btn" href="/intake/public">Public Intake</a>
   </div>
 </div>
 {% endblock %}
