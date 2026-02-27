@@ -3,11 +3,10 @@ import sqlite3
 import smtplib
 import hashlib
 import secrets
-import re
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional
 
 import stripe
 from fastapi import FastAPI, Request, HTTPException
@@ -39,6 +38,7 @@ def _clean(s: str) -> str:
 
 def _clean_url(s: str) -> str:
     s = _clean(s)
+    # Defensive: some users accidentally paste "Value: https://..."
     if s.lower().startswith("value:"):
         s = s.split(":", 1)[1].strip()
     return s
@@ -76,6 +76,18 @@ if STRIPE_SECRET_KEY:
 # --------------------
 EMAIL_USER = _clean(os.getenv("EMAIL_USER", ""))
 EMAIL_PASS = _clean(os.getenv("EMAIL_PASS", ""))
+
+# --------------------
+# Admin keys (optional)
+# --------------------
+ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))  # keep existing behavior if you already use ADMIN_KEY
+
+def require_admin(k: Optional[str]):
+    if not ADMIN_KEY:
+        # If not set, allow nothing (safe default)
+        raise HTTPException(status_code=403, detail="Admin key not configured")
+    if not k or _clean(k) != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
 # --------------------
 # DB
@@ -197,20 +209,6 @@ def init_db():
         )
     """)
 
-    # ✅ Risk Flags storage (linked to an intake submission)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS intake_risk_flags (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            intake_id INTEGER NOT NULL,
-            code TEXT NOT NULL,
-            label TEXT NOT NULL,
-            severity TEXT NOT NULL,
-            detail TEXT,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY(intake_id) REFERENCES intake(id)
-        )
-    """)
-
     conn.commit()
     conn.close()
 
@@ -296,7 +294,6 @@ def require_subscriber_token(token: str | None):
 def send_email(to_email: str, subject: str, body: str):
     if not (EMAIL_USER and EMAIL_PASS):
         return
-
     try:
         msg = EmailMessage()
         msg["Subject"] = subject
@@ -304,8 +301,6 @@ def send_email(to_email: str, subject: str, body: str):
         msg["To"] = to_email
         msg.set_content(body)
 
-        # If you're using Gmail, this stays.
-        # If you move to Mailgun later, we'll swap this block.
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(EMAIL_USER, EMAIL_PASS)
             smtp.send_message(msg)
@@ -351,7 +346,7 @@ class ContributorForm(BaseModel):
     position_interest: str = ""
     comp_plan: str = ""
 
-    director_owner: str = "Duece"  # your requested spelling
+    director_owner: str = "Duece"  # locked spelling per you
 
     assets: str = ""
     regions: str = ""
@@ -449,143 +444,7 @@ def _assign_rail(f: ContributorForm, score: int) -> str:
     return "triage"
 
 # --------------------
-# Risk Flags v1 (Ruleset)
-# --------------------
-def _contains_any(text: str, words: List[str]) -> bool:
-    t = (text or "").lower()
-    return any(w in t for w in words)
-
-def _ssn_like(text: str) -> bool:
-    if not text:
-        return False
-    # 123-45-6789 or 123456789
-    return bool(re.search(r"\b\d{3}-\d{2}-\d{4}\b", text)) or bool(re.search(r"\b\d{9}\b", text))
-
-def risk_flags_v1(service_requested: str, notes: str) -> List[Dict[str, str]]:
-    """
-    Returns list of flags:
-      {code, label, severity, detail}
-    severity: low | medium | high
-    """
-    s = (service_requested or "").strip().lower()
-    n = (notes or "").strip()
-
-    flags: List[Dict[str, str]] = []
-
-    # 1) Low-information submission
-    if len(n) < 40:
-        flags.append({
-            "code": "documentation_gap",
-            "label": "Documentation gap risk",
-            "severity": "medium",
-            "detail": "Notes are very short. We may need more facts, dates, and documents to move fast."
-        })
-
-    # 2) Time-sensitive language
-    if _contains_any(n, ["urgent", "asap", "tomorrow", "today", "48 hours", "24 hours", "deadline", "hearing", "court", "trial", "arraignment"]):
-        flags.append({
-            "code": "deadline_urgent",
-            "label": "Deadline / urgency risk",
-            "severity": "high",
-            "detail": "Mentions urgency or deadlines. This may require priority routing and same-day triage."
-        })
-
-    # 3) Sensitive personal data in notes
-    if _ssn_like(n) or _contains_any(n, ["passport", "driver license", "ssn", "social security"]):
-        flags.append({
-            "code": "sensitive_data",
-            "label": "Sensitive data exposure risk",
-            "severity": "high",
-            "detail": "Sensitive identifiers may be present. Use redaction and avoid sending IDs over email/chat."
-        })
-
-    # 4) Payment / billing disputes
-    if "billing" in s or "payment" in s or _contains_any(n, ["chargeback", "refund", "overcharged", "unauthorized", "billing", "invoice", "stripe"]):
-        flags.append({
-            "code": "billing_dispute",
-            "label": "Billing / payment dispute risk",
-            "severity": "medium",
-            "detail": "May require a timeline, invoices, processor logs, and written demand before escalation."
-        })
-
-    # 5) Platform / marketplace disputes (Uber, DoorDash, etc.)
-    if "platform" in s or "marketplace" in s or _contains_any(n, ["uber", "lyft", "doordash", "instacart", "amazon flex", "account deactivated", "deactivated", "banned"]):
-        flags.append({
-            "code": "platform_dispute",
-            "label": "Platform dispute / deactivation risk",
-            "severity": "medium",
-            "detail": "May involve policies, appeal steps, and record requests to identify decision basis."
-        })
-
-    # 6) Employment / 1099 classification
-    if _contains_any(n, ["1099", "misclass", "misclassification", "contractor", "employee", "w2", "w-2", "w9", "w-9"]):
-        flags.append({
-            "code": "classification_risk",
-            "label": "Worker classification risk",
-            "severity": "medium",
-            "detail": "May require contract review, control factors, and a structured complaint path."
-        })
-
-    # 7) Injury / safety language (potentially higher stakes)
-    if _contains_any(n, ["injury", "accident", "hospital", "er", "emergency", "ambulance", "surgery"]):
-        flags.append({
-            "code": "injury_safety",
-            "label": "Injury / safety stake risk",
-            "severity": "high",
-            "detail": "Higher-stakes scenario. Preserve records, photos, bills, and timeline immediately."
-        })
-
-    # 8) Contract clause exposure
-    if "contract" in s or _contains_any(n, ["termination", "indemnify", "indemnification", "arbitration clause", "non-compete", "confidential"]):
-        flags.append({
-            "code": "contract_clause_risk",
-            "label": "Contract clause risk",
-            "severity": "medium",
-            "detail": "May require clause-by-clause mapping and risk scoring before sending anything."
-        })
-
-    # 9) Single customer / revenue concentration (business risk)
-    if _contains_any(n, ["only client", "one client", "single client", "80% of revenue", "90% of revenue", "main customer"]):
-        flags.append({
-            "code": "single_customer_concentration",
-            "label": "Single customer concentration risk",
-            "severity": "medium",
-            "detail": "Business dependency risk. Consider diversification and contract protections."
-        })
-
-    # Keep list stable + sorted by severity (high -> medium -> low)
-    severity_rank = {"high": 0, "medium": 1, "low": 2}
-    flags.sort(key=lambda f: severity_rank.get(f["severity"], 9))
-    return flags
-
-def store_intake_flags(intake_id: int, flags: List[Dict[str, str]]):
-    if not flags:
-        return
-    conn = db()
-    cur = conn.cursor()
-    for f in flags:
-        cur.execute("""
-            INSERT INTO intake_risk_flags (intake_id, code, label, severity, detail, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (intake_id, f["code"], f["label"], f["severity"], f.get("detail", ""), now_iso()))
-    conn.commit()
-    conn.close()
-
-def fetch_intake_flags(intake_id: int) -> List[Dict[str, Any]]:
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT code, label, severity, detail, created_at
-        FROM intake_risk_flags
-        WHERE intake_id = ?
-        ORDER BY id ASC
-    """, (intake_id,))
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return rows
-
-# --------------------
-# Pages
+# Public Pages
 # --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -611,6 +470,10 @@ def lead_submit(form: LeadForm):
     conn.close()
     return {"status": "Lead received"}
 
+@app.get("/lead/thanks", response_class=HTMLResponse)
+def lead_thanks(request: Request):
+    return templates.TemplateResponse("lead_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
 @app.get("/partner", response_class=HTMLResponse)
 def partner_page(request: Request):
     return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
@@ -627,389 +490,42 @@ def partner_submit(form: PartnerForm):
     conn.close()
     return {"status": "Partner submission received"}
 
+@app.get("/partner/thanks", response_class=HTMLResponse)
+def partner_thanks(request: Request):
+    return templates.TemplateResponse("partner_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
+# --------------------
+# Public Dashboard (NEW)
+# --------------------
+@app.get("/public", response_class=HTMLResponse)
+def public_redirect(request: Request):
+    return RedirectResponse(url="/public/dashboard", status_code=302)
+
+@app.get("/public/dashboard", response_class=HTMLResponse)
+def public_dashboard(request: Request):
+    """
+    Consumer lane: clear, simple, and confidence-building.
+    No admin key. No token required.
+    """
+    # Optional: show basic counts (safe, not sensitive)
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as c FROM leads")
+    leads_count = int(cur.fetchone()["c"])
+    cur.execute("SELECT COUNT(*) as c FROM partners")
+    partners_count = int(cur.fetchone()["c"])
+    conn.close()
+
+    return templates.TemplateResponse(
+        "public_dashboard.html",
+        {
+            "request": request,
+            "year": datetime.utcnow().year,
+            "stats": {"leads": leads_count, "partners": partners_count},
+        }
+    )
+
 # --------------------
 # Subscriber Intake
 # --------------------
-@app.get("/intake-form", response_class=HTMLResponse)
-def intake_form(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-    return templates.TemplateResponse(
-        "intake_form.html",
-        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
-    )
-
-@app.post("/intake")
-def submit_intake(form: IntakeForm, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO intake (name, email, service_requested, notes, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    """, (form.name, form.email, form.service_requested, form.notes or "", now_iso()))
-    intake_id = cur.lastrowid
-    conn.commit()
-    conn.close()
-
-    # ✅ Risk Flags computed + stored
-    flags = risk_flags_v1(form.service_requested, form.notes or "")
-    store_intake_flags(intake_id, flags)
-
-    # Optional: notify you
-    if EMAIL_USER and EMAIL_PASS:
-        flag_lines = "\n".join([f"- [{f['severity'].upper()}] {f['label']} ({f['code']})" for f in flags]) or "- (none)"
-        send_email(
-            EMAIL_USER,
-            "New Subscriber Intake Submission (with Risk Flags)",
-            f"Subscriber authorized email: {email}\n\n"
-            f"Name: {form.name}\n"
-            f"Email entered: {form.email}\n"
-            f"Service: {form.service_requested}\n"
-            f"Notes: {form.notes}\n\n"
-            f"Risk Flags:\n{flag_lines}\n"
-        )
-
-    # ✅ Send them to Results page (token-protected)
-    return RedirectResponse(url=f"/results?token={token}&intake_id={intake_id}", status_code=303)
-
-# --------------------
-# Results Page (NEW)
-# --------------------
-@app.get("/results", response_class=HTMLResponse)
-def results_page(request: Request, token: str, intake_id: int):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM intake WHERE id = ? LIMIT 1", (intake_id,))
-    intake_row = cur.fetchone()
-    conn.close()
-
-    if not intake_row:
-        return HTMLResponse("Result not found.", status_code=404)
-
-    flags = fetch_intake_flags(intake_id)
-
-    return templates.TemplateResponse(
-        "risk_results.html",
-        {
-            "request": request,
-            "year": datetime.utcnow().year,
-            "token": token,
-            "authorized_email": email,
-            "intake": dict(intake_row),
-            "flags": flags,
-        },
-    )
-
-@app.get("/admin/intake")
-def admin_intake_json(limit: int = 50):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM intake ORDER BY id DESC LIMIT ?", (limit,))
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
-# --------------------
-# Stripe Checkout
-# --------------------
-def require_env():
-    missing = []
-    if STARTUP_URL_ERROR:
-        return JSONResponse({"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."}, status_code=500)
-    if not STRIPE_SECRET_KEY:
-        missing.append("STRIPE_SECRET_KEY")
-    if not STRIPE_PRICE_ID:
-        missing.append("STRIPE_PRICE_ID")
-    if not SUCCESS_URL:
-        missing.append("SUCCESS_URL")
-    if not CANCEL_URL:
-        missing.append("CANCEL_URL")
-    if missing:
-        return JSONResponse({"error": "Missing environment variables", "missing": missing}, status_code=500)
-    return None
-
-@app.get("/checkout")
-def checkout(ref: str | None = None):
-    err = require_env()
-    if err:
-        return err
-
-    try:
-        # metadata keeps referral safe for later upgrades
-        metadata = {}
-        if ref:
-            metadata["ref"] = _clean(ref)
-
-        session = stripe.checkout.Session.create(
-            mode="subscription",
-            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
-            success_url=f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=CANCEL_URL,
-            metadata=metadata if metadata else None
-        )
-        return RedirectResponse(session.url, status_code=303)
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.get("/success", response_class=HTMLResponse)
-def success(request: Request, session_id: str | None = None):
-    token = None
-    email = None
-    dashboard_link = None
-
-    if session_id and STRIPE_SECRET_KEY:
-        try:
-            s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
-            if s and s.get("status") in ("complete", "completed"):
-                details = s.get("customer_details") or {}
-                email = details.get("email")
-
-                customer_id = str(s.get("customer") or "")
-                subscription_id = str(s.get("subscription") or "")
-
-                if email:
-                    upsert_subscriber_active(email, customer_id, subscription_id)
-                    token = issue_magic_link(email, hours=24)
-                    base = str(request.base_url).rstrip("/")
-                    dashboard_link = f"{base}/dashboard?token={token}"
-
-                    if EMAIL_USER and EMAIL_PASS:
-                        send_email(
-                            email,
-                            "Your Nautical Compass Access Link",
-                            f"Welcome.\n\nYour access link (valid 24 hours):\n{dashboard_link}\n"
-                        )
-        except Exception as e:
-            print("Success page Stripe fetch failed:", e)
-
-    return templates.TemplateResponse(
-        "success.html",
-        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year}
-    )
-
-@app.get("/cancel", response_class=HTMLResponse)
-def cancel(request: Request):
-    return templates.TemplateResponse("cancel.html", {"request": request, "year": datetime.utcnow().year})
-
-# --------------------
-# Stripe Webhook
-# --------------------
-@app.post("/stripe/webhook")
-async def stripe_webhook(request: Request):
-    if not STRIPE_WEBHOOK_SECRET:
-        raise HTTPException(status_code=500, detail="Missing STRIPE_WEBHOOK_SECRET")
-
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature")
-
-    try:
-        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Webhook signature error: {e}")
-
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        customer_id = str(session.get("customer") or "")
-        customer_email = (session.get("customer_details", {}) or {}).get("email")
-        subscription_id = str(session.get("subscription") or "")
-
-        if customer_email:
-            upsert_subscriber_active(customer_email, customer_id, subscription_id)
-
-            token = issue_magic_link(customer_email, hours=24)
-            base = str(request.base_url).rstrip("/")
-            link = f"{base}/dashboard?token={token}"
-
-            if EMAIL_USER and EMAIL_PASS:
-                send_email(
-                    customer_email,
-                    "Your Nautical Compass Access Link",
-                    f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
-                )
-
-    if event["type"] == "customer.subscription.deleted":
-        sub = event["data"]["object"]
-        sub_id = str(sub.get("id") or "")
-
-        conn = db()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE subscribers
-            SET status='canceled', updated_at=?
-            WHERE stripe_subscription_id=?
-        """, (now_iso(), sub_id))
-        conn.commit()
-        conn.close()
-
-    return {"received": True}
-
-@app.post("/webhook/stripe")
-async def stripe_webhook_alias(request: Request):
-    return await stripe_webhook(request)
-
-# --------------------
-# Dashboard
-# --------------------
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year},
-    )
-
-# --------------------
-# Contributor Intake + Admin
-# --------------------
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-@app.post("/contributor")
-def submit_contributor(form: ContributorForm):
-    score = _score_contributor(form)
-    rail = _assign_rail(form, score)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO contributors (
-            name, email, phone, company, website,
-            primary_role,
-            contribution_track, position_interest, comp_plan, director_owner,
-            assets, regions, capacity, alignment, message,
-            fit_access, fit_build_goal, fit_opportunity, fit_authority,
-            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-            score, rail, status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?,
-                ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?)
-    """, (
-        form.name, str(form.email), form.phone, form.company, form.website,
-        form.primary_role,
-        form.contribution_track, form.position_interest, form.comp_plan, form.director_owner,
-        form.assets, form.regions, form.capacity, form.alignment, form.message,
-        form.fit_access, form.fit_build_goal, form.fit_opportunity, form.fit_authority,
-        form.fit_lane, form.fit_no_conditions, form.fit_visibility, form.fit_why_you,
-        score, rail, "new", now_iso()
-    ))
-    conn.commit()
-    conn.close()
-
-    return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
-
-@app.get("/admin/contributors-dashboard", response_class=HTMLResponse)
-def contributors_dashboard(
-    request: Request,
-    k: Optional[str] = None,
-    key: Optional[str] = None,
-    rail: Optional[str] = None,
-    min_score: Optional[int] = None,
-    track: Optional[str] = None,
-):
-    # Admin gate optional for your current setup
-    # If you already have require_admin(), wire it here.
-    _ = k or key  # keep signature stable
-
-    conn = db()
-    cur = conn.cursor()
-
-    query = "SELECT * FROM contributors WHERE 1=1"
-    params = []
-
-    if rail:
-        query += " AND rail = ?"
-        params.append(rail)
-
-    if min_score is not None:
-        query += " AND score >= ?"
-        params.append(min_score)
-
-    if track:
-        query += " AND contribution_track = ?"
-        params.append(track)
-
-    query += " ORDER BY score DESC"
-
-    cur.execute(query, params)
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return templates.TemplateResponse(
-        "contributors_dashboard.html",
-        {
-            "request": request,
-            "contributors": rows,
-            "rail": rail,
-            "min_score": min_score,
-            "track": track,
-            "year": datetime.utcnow().year,
-        },
-    )
-
-@app.post("/admin/contributor-status")
-def update_contributor_status(id: int, status: str):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("UPDATE contributors SET status = ? WHERE id = ?", (status, id))
-    conn.commit()
-    conn.close()
-    return {"ok": True}
-
-# --------------------
-# Dev Token Route
-# --------------------
-DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
-DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
-
-@app.get("/dev/generate-token")
-def dev_generate_token(email: str, key: str, request: Request):
-    if not DEV_TOKEN_ENABLED:
-        return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
-
-    if not DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
-
-    if _clean(key) != DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Bad key"}, status_code=401)
-
-    email = _clean(email).lower()
-    if not email or "@" not in email:
-        return JSONResponse({"error": "Invalid email"}, status_code=400)
-
-    upsert_subscriber_active(email, "", "")
-    token = issue_magic_link(email, hours=24)
-
-    base = str(request.base_url).rstrip("/")
-    return {
-        "email": email,
-        "token": token,
-        "dashboard": f"{base}/dashboard?token={token}",
-        "intake_form": f"{base}/intake-form?token={token}",
-    }
-
-# --------------------
-# Favicon
-# --------------------
-@app.get("/favicon.ico", include_in_schema=False)
-def favicon():
-    ico = STATIC_DIR / "favicon.ico"
-    if ico.exists():
-        return FileResponse(str(ico), media_type="image/x-icon")
-    return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
+@app.get("/intake-form
