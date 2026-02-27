@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}AV Company Dashboard • AVPT/LMT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>AV Company / Production Dashboard</h2>
+  <p class="muted">
+    This intake is built for production & corporate event managers. The goal: capture the spec correctly the first time.
+  </p>
+
+  <form class="form" method="post" action="/request-service">
+    <input type="hidden" name="dashboard_type" value="av_company">
+    <input type="hidden" name="service_key" value="av_crew_request">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Your Name</div>
+        <input name="requester_name" required>
+      </div>
+      <div>
+        <div class="label">Email</div>
+        <input name="requester_email" type="email" required>
+      </div>
+      <div>
+        <div class="label">Phone</div>
+        <input name="requester_phone" placeholder="For day-of coordination">
+      </div>
+      <div>
+        <div class="label">Company / Production</div>
+        <input name="requester_company" required placeholder="Production company / client">
+      </div>
+    </div>
+
+    <div class="label">Job Title</div>
+    <input name="title" required placeholder="Ex: ‘Conference Ballroom A — 3/12 load-in’">
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Show Type</div>
+        <select name="details_json" required>
+          <option value='{"show_type":"corporate"}'>Corporate</option>
+          <option value='{"show_type":"concert"}'>Concert</option>
+          <option value='{"show_type":"broadcast"}'>Broadcast</option>
+          <option value='{"show_type":"wedding"}'>Wedding</option>
+          <option value='{"show_type":"festival"}'>Festival</option>
+          <option value='{"show_type":"other"}'>Other</option>
+        </select>
+        <div class="muted" style="margin-top:6px;">(We store this as structured details.)</div>
+      </div>
+
+      <div>
+        <div class="label">Priority</div>
+        <select name="priority">
+          <option value="normal" selected>Normal</option>
+          <option value="urgent">Urgent (short notice)</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+
+    <details class="dropdown" open>
+      <summary>Core Specs (required)</summary>
+      <div class="dropdown-body">
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Venue / Address</div>
+            <textarea name="location_json" required placeholder='{"venue":"Hotel XYZ","address":"123 Main St","dock":"north dock"}'></textarea>
+          </div>
+          <div>
+            <div class="label">Run of Show / Schedule</div>
+            <textarea name="constraints_json" required placeholder='{"load_in":"8:00a","show":"12:00p-4:00p","load_out":"4:30p","call_time":"7:30a"}'></textarea>
+          </div>
+        </div>
+
+        <div class="label">Crew Needed (roles + qty)</div>
+        <textarea name="description" required placeholder="Example: A1 x1, A2 x2, V1 x1, LED Tech x1, Stagehands x6, Riggers x2..."></textarea>
+
+        <div class="label">Rates / Caps</div>
+        <textarea name="budget_json" placeholder='{"rates":{"A1":750,"A2":550,"V1":650,"SH":35},"min_hours":10,"overtime_rule":"after 8"}'></textarea>
+      </div>
+    </details>
+
+    <details class="dropdown">
+      <summary>Safety / Compliance (reduces show-day chaos)</summary>
+      <div class="dropdown-body">
+        <div class="grid grid-2">
+          <div>
+            <div class="label">Union / Venue Rules</div>
+            <textarea name="constraints_json" placeholder='{"union":false,"badges_required":true,"background_check":false,"house_rules":"..."}'></textarea>
+          </div>
+          <div>
+            <div class="label">Power / Rigging Notes</div>
+            <textarea name="details_json" placeholder='{"power":"208v 3ph available","rigging_points":"10 points","ceiling_height":"22ft"}'></textarea>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Crew Request</button>
+      <a class="btn" href="/dashboards">Back</a>
+    </div>
+  </form>
+
+  <div class="alert" style="margin-top:16px;">
+    <strong>What happens next:</strong>
+    <div class="muted">
+      Your request becomes a Job Card → routed to operators → crew is matched → confirmations logged.
+    </div>
+  </div>
+</div>
+{% endblock %}
