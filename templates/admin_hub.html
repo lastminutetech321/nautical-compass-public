@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin Hub • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Admin Hub</h2>
+  <p class="muted">
+    This hub ensures every admin dashboard opens with the correct key parameter.
+  </p>
+
+  <div class="alert ok" style="margin-top:12px;">
+    <strong>Admin key loaded.</strong>
+    <div class="muted">Key is not displayed for security.</div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3>People / Operators</h3>
+      <p class="muted">Create operators, manage referral codes, view hierarchy.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/admin/people-dashboard?k={{ k }}">People Dashboard</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Contributors</h3>
+      <p class="muted">Scoring + rail assignment + status updates.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/admin/contributors-dashboard?k={{ k }}">Contributor Dashboard</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Partners</h3>
+      <p class="muted">Manufacturer/vendor submissions + filters.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/admin/partners-dashboard?k={{ k }}">Partner Dashboard</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Leads</h3>
+      <p class="muted">Public lead intake submissions and follow-up routing.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/admin/leads-dashboard?k={{ k }}">Leads Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn" href="/">Back Home</a>
+    <a class="btn" href="/services">Services</a>
+  </div>
+</div>
+{% endblock %}
