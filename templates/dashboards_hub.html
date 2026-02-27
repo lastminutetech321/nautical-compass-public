@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Dashboards • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Dashboards</h2>
+  <p class="muted">
+    Choose your lane. Each dashboard has a tailored intake so it’s hard to make mistakes and fast to submit a correct request.
+  </p>
+
+  <div class="grid grid-2" style="margin-top:14px;">
+    <div class="card">
+      <h3>Public / Consumer</h3>
+      <p class="muted">Non-AV users. General help + structured requests.</p>
+      <a class="btn btn-primary" href="/dashboards/public">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>AV Company / Production</h3>
+      <p class="muted">Crew requests, show specs, call times, departments.</p>
+      <a class="btn btn-primary" href="/dashboards/av-company">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>Tech / Crew</h3>
+      <p class="muted">Availability, roles, rates, certifications, gear.</p>
+      <a class="btn btn-primary" href="/dashboards/tech">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>Logistics</h3>
+      <p class="muted">Truck size, liftgate, dock access, run-of-show routing.</p>
+      <a class="btn btn-primary" href="/dashboards/logistics">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>Equipment Rentals</h3>
+      <p class="muted">LED/audio/lighting rentals with delivery + pickup windows.</p>
+      <a class="btn btn-primary" href="/dashboards/rentals">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>Partners (Manufacturers / Vendors)</h3>
+      <p class="muted">Network, capacity, regions, distribution, integration.</p>
+      <a class="btn btn-primary" href="/dashboards/partner">Open</a>
+    </div>
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <p class="muted">
+    Internal routing board (admin): <code>/admin/work-orders?k=ADMIN_KEY</code>
+  </p>
+</div>
+{% endblock %}
