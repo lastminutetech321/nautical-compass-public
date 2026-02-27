@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Received • Nautical Compass{% endblock %}
+{% block title %}Lead Received{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Lead received</h2>
-  <p>Thanks{% if name %}, <strong>{{ name }}</strong>{% endif %}. We’ll route this to the right rail.</p>
+  <h2>Lead Received</h2>
+  <p class="muted">We’ve logged your request. If it’s urgent, include a deadline in your message.</p>
   <div class="btnrow">
-    <a class="btn btn-primary" href="/checkout">Subscribe</a>
-    <a class="btn" href="/services">Services</a>
+    <a class="btn btn-primary" href="/services">Services</a>
+    <a class="btn" href="/dashboards">Dashboards</a>
   </div>
 </div>
 {% endblock %}
