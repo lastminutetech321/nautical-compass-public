@@ -1,23 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Member Dashboard{% endblock %}
+{% block title %}Dashboard • Nautical Compass{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Member Dashboard</h2>
-  <p class="muted">Authorized email: <b>{{ email }}</b></p>
+  <h2>Subscriber Dashboard</h2>
+  <p class="muted">Authorized email: <strong>{{ email }}</strong></p>
 
-  <div class="grid grid-2">
+  <div class="grid grid-2" style="margin-top:14px;">
     <div class="card">
-      <h3>Member Intake</h3>
-      <p class="muted">Submit a structured request.</p>
+      <h3>Member Actions</h3>
+      <p class="muted">Use these rails to submit structured work without confusion.</p>
       <div class="btnrow">
-        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Intake</a>
+        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
+        <a class="btn" href="/services">Service Catalog</a>
       </div>
     </div>
+
     <div class="card">
-      <h3>Dashboards</h3>
-      <p class="muted">Explore role dashboards.</p>
-      <div class="btnrow">
-        <a class="btn" href="/dashboards">Open Dashboards</a>
+      <h3>Admin (Key Required)</h3>
+      <p class="muted">
+        Admin dashboards require an <strong>admin key</strong>. Paste it once and open your dashboards.
+      </p>
+
+      <form class="form" method="get" action="/admin/hub">
+        <div>
+          <label class="label">Admin Key</label>
+          <input name="k" placeholder="Paste admin key..." required />
+        </div>
+        <div class="btnrow" style="margin-top:12px;">
+          <button class="btn btn-primary" type="submit">Open Admin Hub</button>
+        </div>
+      </form>
+
+      <div class="alert" style="margin-top:12px;">
+        <div class="muted">
+          Tip: Admin links won’t work if you open them without <code>?k=...</code>.
+        </div>
       </div>
     </div>
   </div>
