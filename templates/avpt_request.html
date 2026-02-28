@@ -1,123 +1,95 @@
 {% extends "base.html" %}
-{% block title %}AVPT Job Request{% endblock %}
+{% block title %}AVPT Production Request • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>AVPT Client Job Request</h2>
-  <p class="muted">This form creates a job record that can be matched to LMT workers.</p>
+  <h2>AVPT — Production Request</h2>
+  <p class="muted">
+    This form routes your request into our coordination rail so we can staff faster, quote cleaner, and reduce mistakes.
+  </p>
 
   <form class="form" method="post" action="/avpt/request">
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Production Company / Organization</div>
+        <input name="org_name" required placeholder="Company / Brand / Org" />
+      </div>
 
-    <h3 style="margin-top:0">Company + Contact</h3>
+      <div>
+        <div class="label">Primary Contact</div>
+        <input name="contact_name" required placeholder="Full name" />
+      </div>
 
-    <label class="label">Company Name</label>
-    <input name="company_name" required>
+      <div>
+        <div class="label">Email</div>
+        <input name="email" type="email" required placeholder="name@company.com" />
+      </div>
 
-    <label class="label">Contact Name</label>
-    <input name="contact_name" required>
-
-    <label class="label">Contact Email</label>
-    <input name="contact_email" type="email" required>
-
-    <label class="label">Contact Phone (optional)</label>
-    <input name="contact_phone">
+      <div>
+        <div class="label">Phone (optional)</div>
+        <input name="phone" placeholder="(###) ###-####" />
+      </div>
+    </div>
 
     <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
 
-    <h3>Job Details</h3>
-
-    <label class="label">Job Title</label>
-    <input name="job_title" required placeholder="Coca-Cola Conference — Ballroom A">
-
     <div class="grid grid-2">
       <div>
-        <label class="label">City</label>
-        <input name="city" required>
+        <div class="label">Event Name (optional)</div>
+        <input name="event_name" placeholder="e.g., Corporate Summit / Tour Stop / Gala" />
       </div>
+
       <div>
-        <label class="label">State</label>
-        <input name="state" required placeholder="DC / MD / VA">
+        <div class="label">Venue (optional)</div>
+        <input name="venue" placeholder="Venue name" />
+      </div>
+
+      <div>
+        <div class="label">City / Market</div>
+        <input name="city" placeholder="Washington, DC / Baltimore / NYC / etc." />
+      </div>
+
+      <div>
+        <div class="label">Dates</div>
+        <div class="grid grid-2" style="gap:10px;">
+          <input name="date_start" placeholder="Start (YYYY-MM-DD)" />
+          <input name="date_end" placeholder="End (YYYY-MM-DD)" />
+        </div>
       </div>
     </div>
 
-    <label class="label">Venue (optional)</label>
-    <input name="venue">
-
-    <label class="label">Address (optional)</label>
-    <input name="address">
-
-    <div class="grid grid-2">
-      <div>
-        <label class="label">Date (YYYY-MM-DD)</label>
-        <input name="date" required placeholder="2026-03-01">
-      </div>
-      <div>
-        <label class="label">Department (optional)</label>
-        <input name="department" placeholder="Audio / Video / Lighting / LED / Rigging">
-      </div>
+    <div style="margin-top:14px;">
+      <div class="label">Crew Needed (roles / headcount)</div>
+      <textarea name="crew_needed" placeholder="Example: 1x PM, 2x A2, 1x V1, 2x stagehands, 1x loader…"></textarea>
     </div>
 
-    <div class="grid grid-2">
-      <div>
-        <label class="label">Call Time (optional)</label>
-        <input name="call_time" placeholder="07:00">
-      </div>
-      <div>
-        <label class="label">End Time (optional)</label>
-        <input name="end_time" placeholder="19:00">
-      </div>
+    <div style="margin-top:14px;">
+      <div class="label">Gear Needed (optional)</div>
+      <textarea name="gear_needed" placeholder="Example: LED wall (size/pitch), consoles, comms, power distro, rigging…"></textarea>
     </div>
 
-    <label class="label">Roles Needed (be specific)</label>
-    <input name="roles_needed" required placeholder="A1(1), A2(2), V1(1), LED Tech(2)">
-
-    <div class="grid grid-2">
+    <div class="grid grid-2" style="margin-top:14px;">
       <div>
-        <label class="label">Headcount</label>
-        <input name="headcount" type="number" min="1" value="1" required>
+        <div class="label">Budget Range (optional)</div>
+        <input name="budget_range" placeholder="$ / day, or total range" />
       </div>
+
       <div>
-        <label class="label">Rate Target (optional)</label>
-        <input name="rate_target" placeholder="$45/hr">
+        <div class="label">Notes (optional)</div>
+        <input name="notes" placeholder="Constraints, union rules, parking/load-in, client sensitivities…" />
       </div>
     </div>
-
-    <label class="label">Budget Notes (optional)</label>
-    <textarea name="budget_notes" placeholder="OT rules, meal penalties, travel, etc."></textarea>
-
-    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-    <h3>Logistics + Gear</h3>
-
-    <label class="label">Gear Required (optional)</label>
-    <textarea name="gear_required" placeholder="LED wall, processors, consoles, comms, etc."></textarea>
-
-    <div class="grid grid-2">
-      <div>
-        <label class="label">Truck Needed (optional)</label>
-        <input name="truck_needed" placeholder="None / Sprinter / 16ft / 26ft / Tractor">
-      </div>
-      <div>
-        <label class="label">Liftgate Required? (optional)</label>
-        <input name="liftgate_required" placeholder="Yes / No / Required">
-      </div>
-    </div>
-
-    <label class="label">Parking / Dock Notes (optional)</label>
-    <input name="parking_dock" placeholder="Loading dock access, clearance, staging, etc.">
-
-    <label class="label">Certifications Required (optional)</label>
-    <input name="certifications_required" placeholder="OSHA10, Forklift, Fall Protection">
-
-    <label class="label">Union House (optional)</label>
-    <input name="union_house" placeholder="IATSE Local ### (if applicable)">
-
-    <label class="label">Notes (optional)</label>
-    <textarea name="notes" placeholder="Anything critical that prevents mistakes."></textarea>
 
     <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Submit Job Request</button>
-      <a class="btn" href="/avpt">Back</a>
+      <button class="btn btn-primary" type="submit">Submit Production Request</button>
+      <a class="btn" href="/services">Back to Services</a>
+    </div>
+
+    <div class="alert" style="margin-top:14px;">
+      <strong>What happens next:</strong>
+      <div class="muted" style="margin-top:6px;">
+        Your request is captured and appears in the AVPT Admin dashboard for dispatch + follow-up.
+      </div>
     </div>
   </form>
 </div>
