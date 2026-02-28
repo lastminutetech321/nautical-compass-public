@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}AVPT Client Intake • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>AVPT — Production Company Intake</h2>
+  <p class="muted">
+    This intake builds a crew plan + logistics snapshot. The system will flag missing blockers and route you to the right lane.
+  </p>
+
+  <form class="form" method="post" action="/avpt/client">
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Production Company Name</label>
+        <input name="company_name" required placeholder="Company / DBA" />
+      </div>
+      <div>
+        <label class="label">Primary Contact Name</label>
+        <input name="contact_name" required placeholder="First + last" />
+      </div>
+
+      <div>
+        <label class="label">Contact Email</label>
+        <input name="contact_email" type="email" required placeholder="name@company.com" />
+      </div>
+      <div>
+        <label class="label">Contact Phone</label>
+        <input name="contact_phone" placeholder="Optional (best for fast dispatch)" />
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Event Details</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Event Name</label>
+        <input name="event_name" placeholder="Optional (Internal label)" />
+      </div>
+      <div>
+        <label class="label">Event Type</label>
+        <select name="event_type">
+          <option value="">Select…</option>
+          <option>Corporate</option>
+          <option>Concert</option>
+          <option>Festival</option>
+          <option>Gala</option>
+          <option>Tradeshow</option>
+          <option>Livestream / Broadcast</option>
+          <option>Government / Public</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="label">Venue Name</label>
+        <input name="venue_name" placeholder="Venue / Ballroom / Site name" />
+      </div>
+      <div>
+        <label class="label">Venue Address (Critical)</label>
+        <input name="venue_address" placeholder="Street, City, State" />
+      </div>
+
+      <div>
+        <label class="label">City</label>
+        <input name="city" placeholder="City" />
+      </div>
+      <div>
+        <label class="label">State</label>
+        <input name="state" placeholder="State (2-letter ok)" />
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:8px;">
+      <div>
+        <label class="label">Load-In Date</label>
+        <input name="load_in_date" placeholder="YYYY-MM-DD (or text)" />
+      </div>
+      <div>
+        <label class="label">Show Date (Critical)</label>
+        <input name="show_date" placeholder="YYYY-MM-DD (or text)" />
+      </div>
+      <div>
+        <label class="label">Load-Out Date</label>
+        <input name="load_out_date" placeholder="YYYY-MM-DD (or text)" />
+      </div>
+      <div>
+        <label class="label">Schedule Notes</label>
+        <input name="schedule_notes" placeholder="Call times, turnaround, breaks, etc." />
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Crew + Gear</h3>
+    <div>
+      <label class="label">Crew Counts by Role (Critical)</label>
+      <textarea name="crew_counts" placeholder="Example: 4 loaders, 1 A2, 1 V1, 1 LED tech, 1 stage manager…"></textarea>
+    </div>
+
+    <div>
+      <label class="label">Gear Scope</label>
+      <textarea name="gear_scope" placeholder="LED wall? audio? cameras? staging? power distro? comms?"></textarea>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Commercial Terms</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Budget Range (Recommended)</label>
+        <input name="budget_range" placeholder="Example: $8k–$15k labor" />
+      </div>
+      <div>
+        <label class="label">Rate Expectations</label>
+        <input name="rate_expectation" placeholder="Example: stagehands $35/hr, A2 $55/hr" />
+      </div>
+
+      <div>
+        <label class="label">Payment Terms</label>
+        <select name="payment_terms">
+          <option value="">Select…</option>
+          <option>Net 7</option>
+          <option>Net 14</option>
+          <option>Net 30</option>
+          <option>Same-day / End of show</option>
+          <option>Deposit + remainder</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">On-site Point of Contact</label>
+        <input name="point_of_contact_on_site" placeholder="Name/role (optional but helpful)" />
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:8px;">
+      <div>
+        <label class="label">Requires COI?</label>
+        <select name="requires_coi">
+          <option>No</option>
+          <option>Yes</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Purchase Order required?</label>
+        <select name="po_required">
+          <option>No</option>
+          <option>Yes</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="label">Safety / Access Notes</label>
+      <textarea name="safety_notes" placeholder="Dock access, parking, security, PPE, union venue rules, etc."></textarea>
+    </div>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Generate Results</button>
+      <a class="btn" href="/services">Back to Services</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
