@@ -1,27 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Success{% endblock %}
+{% block title %}Success • Nautical Compass{% endblock %}
+
 {% block content %}
 <div class="card">
   <h2>Subscription Confirmed</h2>
-  <p class="muted">Your access is ready.</p>
-
   {% if dashboard_link %}
-    <div class="alert ok">
-      <b>Access Link:</b><br>
-      <a href="{{ dashboard_link }}">{{ dashboard_link }}</a>
-    </div>
-    <div class="btnrow">
-      <a class="btn btn-primary" href="{{ dashboard_link }}">Open Dashboard</a>
-      <a class="btn" href="/services">Services</a>
-    </div>
+    <p class="muted">Access granted for <strong>{{ email }}</strong>.</p>
+    <a class="btn btn-primary" href="{{ dashboard_link }}">Open Dashboard</a>
+    <p class="muted" style="margin-top:10px;">
+      Save this link. It expires in 24 hours (you can generate a new one later via system flow).
+    </p>
   {% else %}
-    <div class="alert">
-      If your dashboard link didn’t generate, use the dev-token route (owner only) or contact support.
-    </div>
-    <div class="btnrow">
-      <a class="btn btn-primary" href="/services">Services</a>
-      <a class="btn" href="/get-access">Access</a>
-    </div>
+    <p class="muted">
+      Payment completed. If your session_id wasn’t captured, return to the app and try again from /checkout.
+    </p>
+    <a class="btn btn-primary" href="/services">Back to Services</a>
   {% endif %}
 </div>
 {% endblock %}
