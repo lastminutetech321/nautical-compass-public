@@ -1,41 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Services • Nautical Compass{% endblock %}
+
 {% block content %}
 <div class="card">
   <h2>Services</h2>
-  <p class="muted">Curated list + full catalog dropdown (signals depth without confusion).</p>
+  <p class="muted">Clear entry points. No confusion. Each lane routes you to the right system.</p>
 
-  <h3>Curated (Most Requested)</h3>
-  <ul>
-    <li>Legal Intake Strategy</li>
-    <li>Contract Review & Risk Mapping</li>
-    <li>Demand Letter Drafting</li>
-    <li>Arbitration Package Assembly</li>
-    <li>Dispute Timeline & Evidence Organization</li>
-    <li>Complaint Framing & Narrative Structuring</li>
-  </ul>
+  <h3>Fast Entry Points</h3>
+  <div class="grid">
+    <div><span class="badge">NC</span> Subscriber Legal Intake (risk flags + plan)</div>
+    <div><span class="badge">AVPT</span> Production Company Intake (staff + constraints)</div>
+    <div><span class="badge">LMT</span> Labor / Tech Intake (role + routing)</div>
+    <div><span class="badge">Partners</span> Manufacturer / Vendor intake</div>
+  </div>
 
   <details class="dropdown">
-    <summary>Full Catalog (63+ services — expanding)</summary>
+    <summary>Full Catalog (expand)</summary>
     <div class="dropdown-body">
       <div class="grid">
         <div><span class="badge">NC</span> Standing + Capacity framing</div>
-        <div><span class="badge">NC</span> FOIA / records request packets</div>
-        <div><span class="badge">NC</span> Notice + demand automation</div>
-        <div><span class="badge">AVPT</span> Labor coordination + scheduling (coming online)</div>
-        <div><span class="badge">LMT</span> Tech dispatch + rapid fill (coming online)</div>
-        <div><span class="badge">Ops</span> Evidence + audit trail build</div>
-        <div><span class="badge">Custom</span> Situation triage</div>
+        <div><span class="badge">NC</span> Demand letter structuring</div>
+        <div><span class="badge">NC</span> Evidence organization</div>
+        <div><span class="badge">AVPT</span> Staffing + department leads</div>
+        <div><span class="badge">AVPT</span> Compliance verification</div>
+        <div><span class="badge">LMT</span> Rapid fill / dispatch</div>
+        <div><span class="badge">Partners</span> Manufacturer access routing</div>
+        <div><span class="badge">Sponsor</span> Paid access lanes</div>
       </div>
-      <div class="alert">
-        Coming soon: expanded catalog descriptions per service so users understand exactly what each does.
-      </div>
+      <p class="muted" style="margin-top:10px;">
+        Coming soon: expanded catalog (63+) as “capabilities map” without overwhelming users.
+      </p>
     </div>
   </details>
 
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/how-it-works">How It Works</a>
-    <a class="btn" href="/dashboards">Dashboards</a>
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn" href="/intake/production">Production Intake</a>
+    <a class="btn" href="/intake/labor">Labor Intake</a>
+    <a class="btn btn-primary" href="/checkout">Subscribe</a>
   </div>
 </div>
 {% endblock %}
