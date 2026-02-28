@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}AVPT Dashboard • Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>AVPT — Production Requests (Admin)</h2>
+  <p class="muted">Most recent requests first. This confirms your leads are landing in the database.</p>
+
+  {% if rows|length == 0 %}
+    <div class="alert bad">
+      No AVPT requests found yet.
+    </div>
+  {% else %}
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">ID</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Org</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Contact</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Email</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">City</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Dates</th>
+            <th style="padding:10px; border-bottom:1px solid rgba(255,255,255,.10);">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.id }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.org_name }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.contact_name }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.email }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.city }}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">
+              {{ r.date_start }} → {{ r.date_end }}
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">{{ r.created_at }}</td>
+          </tr>
+          <tr>
+            <td colspan="7" style="padding:10px 10px 14px; border-bottom:1px solid rgba(255,255,255,.08);">
+              <div class="muted" style="margin-bottom:6px;"><strong>Event:</strong> {{ r.event_name }} · <strong>Venue:</strong> {{ r.venue }}</div>
+              <div class="muted" style="margin-bottom:6px;"><strong>Crew:</strong> {{ r.crew_needed }}</div>
+              <div class="muted" style="margin-bottom:6px;"><strong>Gear:</strong> {{ r.gear_needed }}</div>
+              <div class="muted"><strong>Budget/Notes:</strong> {{ r.budget_range }} · {{ r.notes }}</div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
