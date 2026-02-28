@@ -1,12 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Canceled{% endblock %}
+{% block title %}Canceled • Nautical Compass{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Checkout Canceled</h2>
-  <p class="muted">No charge was completed.</p>
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/get-access">Try Again</a>
-    <a class="btn" href="/services">Services</a>
-  </div>
+  <h2>Checkout canceled</h2>
+  <p class="muted">No worries. You can restart anytime.</p>
+  <a class="btn btn-primary" href="/checkout">Try Again</a>
+  <a class="btn" href="/services">Back to Services</a>
 </div>
 {% endblock %}
