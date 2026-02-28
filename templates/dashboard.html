@@ -8,36 +8,28 @@
 
   <div class="grid grid-2" style="margin-top:14px;">
     <div class="card">
-      <h3>Member Actions</h3>
-      <p class="muted">Use these rails to submit structured work without confusion.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Subscriber Intake</a>
-        <a class="btn" href="/services">Service Catalog</a>
-      </div>
+      <h3>Legal Intake</h3>
+      <p class="muted">Submit a subscriber intake (risk flags + routing).</p>
+      <a class="btn btn-primary" href="/intake/legal?token={{ token }}">Open Legal Intake</a>
     </div>
 
     <div class="card">
-      <h3>Admin (Key Required)</h3>
-      <p class="muted">
-        Admin dashboards require an <strong>admin key</strong>. Paste it once and open your dashboards.
-      </p>
-
-      <form class="form" method="get" action="/admin/hub">
-        <div>
-          <label class="label">Admin Key</label>
-          <input name="k" placeholder="Paste admin key..." required />
-        </div>
-        <div class="btnrow" style="margin-top:12px;">
-          <button class="btn btn-primary" type="submit">Open Admin Hub</button>
-        </div>
-      </form>
-
-      <div class="alert" style="margin-top:12px;">
-        <div class="muted">
-          Tip: Admin links won’t work if you open them without <code>?k=...</code>.
-        </div>
-      </div>
+      <h3>Services</h3>
+      <p class="muted">Browse entry points and catalog.</p>
+      <a class="btn" href="/services">Open Services</a>
     </div>
   </div>
+
+  <details class="dropdown" style="margin-top:16px;">
+    <summary>Quick Links (expand)</summary>
+    <div class="dropdown-body">
+      <div class="grid">
+        <div><a href="/intake/production">AVPT Production Intake</a></div>
+        <div><a href="/intake/labor">LMT Labor Intake</a></div>
+        <div><a href="/partner">Partner Intake</a></div>
+        <div><a href="/lead">Lead Intake</a></div>
+      </div>
+    </div>
+  </details>
 </div>
 {% endblock %}
