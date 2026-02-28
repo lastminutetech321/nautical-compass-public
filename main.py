@@ -27,7 +27,7 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # =========================
 # APP
 # =========================
-app = FastAPI(title="Nautical Compass Intake", version="0.1.0")
+app = FastAPI(title="Nautical Compass Intake", version="0.2.0")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -40,7 +40,6 @@ def _clean(s: str) -> str:
 
 def _clean_url(s: str) -> str:
     s = _clean(s)
-    # Protect against user accidentally pasting "Value: https://..."
     if s.lower().startswith("value:"):
         s = s.split(":", 1)[1].strip()
     return s
@@ -69,7 +68,6 @@ if STRIPE_SECRET_KEY:
 # =========================
 # EMAIL (OPTIONAL)
 # =========================
-# NOTE: Keep these if you want notifications. If not set, app still works.
 EMAIL_USER = _clean(os.getenv("EMAIL_USER", ""))
 EMAIL_PASS = _clean(os.getenv("EMAIL_PASS", ""))
 
@@ -104,7 +102,7 @@ def init_db():
     conn = db()
     cur = conn.cursor()
 
-    # Subscriber intake
+    # NC subscriber intake
     cur.execute("""
         CREATE TABLE IF NOT EXISTS intake (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,7 +117,7 @@ def init_db():
         )
     """)
 
-    # Leads (public)
+    # Public lead intake
     cur.execute("""
         CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,7 +131,7 @@ def init_db():
         )
     """)
 
-    # Partners (manufacturers/vendors)
+    # Partner/manufacturer intake
     cur.execute("""
         CREATE TABLE IF NOT EXISTS partners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,40 +171,85 @@ def init_db():
         )
     """)
 
-    # Contributors
+    # AVPT client intake (Production Company)
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS contributors (
+        CREATE TABLE IF NOT EXISTS avpt_clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            company_name TEXT NOT NULL,
+            contact_name TEXT NOT NULL,
+            contact_email TEXT NOT NULL,
+            contact_phone TEXT,
+
+            event_name TEXT,
+            event_type TEXT,
+            venue_name TEXT,
+            venue_address TEXT,
+            city TEXT,
+            state TEXT,
+
+            load_in_date TEXT,
+            show_date TEXT,
+            load_out_date TEXT,
+
+            crew_counts TEXT,
+            gear_scope TEXT,
+            schedule_notes TEXT,
+
+            budget_range TEXT,
+            rate_expectation TEXT,
+            payment_terms TEXT,
+
+            point_of_contact_on_site TEXT,
+            safety_notes TEXT,
+
+            requires_coi TEXT,
+            po_required TEXT,
+
+            routing_json TEXT,
+            flags_json TEXT,
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    # LMT worker intake (Labor/Tech)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS lmt_workers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            legal_name TEXT NOT NULL,
+            preferred_name TEXT,
             email TEXT NOT NULL,
-            phone TEXT,
-            company TEXT,
-            website TEXT,
+            phone TEXT NOT NULL,
+            home_city TEXT,
+            home_state TEXT,
 
-            primary_role TEXT NOT NULL,
-            contribution_track TEXT NOT NULL,
-            position_interest TEXT,
-            comp_plan TEXT,
-            director_owner TEXT,
+            worker_type TEXT,
+            primary_role TEXT,
+            secondary_roles TEXT,
+            certifications TEXT,
 
-            assets TEXT,
-            regions TEXT,
-            capacity TEXT,
-            alignment TEXT,
-            message TEXT,
+            availability_window TEXT,
+            availability_notes TEXT,
 
-            fit_access TEXT,
-            fit_build_goal TEXT,
-            fit_opportunity TEXT,
-            fit_authority TEXT,
-            fit_lane TEXT,
-            fit_no_conditions TEXT,
-            fit_visibility TEXT,
-            fit_why_you TEXT,
+            transportation_mode TEXT,
+            truck_size TEXT,
+            liftgate TEXT,
 
-            score INTEGER NOT NULL DEFAULT 0,
-            rail TEXT NOT NULL DEFAULT 'triage',
-            status TEXT NOT NULL DEFAULT 'new',
+            travel_ok TEXT,
+            per_diem_required TEXT,
+
+            rate_target TEXT,
+            min_rate TEXT,
+
+            tax_ready TEXT,
+            business_name TEXT,
+            tax_classification TEXT,
+            ein_last4 TEXT,
+            insurance_ready TEXT,
+
+            notes TEXT,
+
+            routing_json TEXT,
+            flags_json TEXT,
             created_at TEXT NOT NULL
         )
     """)
@@ -231,7 +274,7 @@ def send_email(to_email: str, subject: str, body: str):
         msg["To"] = to_email
         msg.set_content(body)
 
-        # Default Gmail SMTP_SSL. If you later use Mailgun SMTP, switch host/port.
+        # Default Gmail. If you switch to Mailgun SMTP later, update host/port.
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(EMAIL_USER, EMAIL_PASS)
             smtp.send_message(msg)
@@ -373,19 +416,24 @@ LEGAL_SPINE: Dict[str, Dict[str, Any]] = {
     },
 }
 
+
+def spine_pick(service_requested: str) -> List[str]:
+    s = (service_requested or "").lower()
+    topics = ["standing_article_iii"]
+    if any(x in s for x in ["official", "1983", "civil rights", "injunction", "government"]):
+        topics.append("capacity_official_individual")
+    return topics
+
+
 # =========================
-# RISK FLAGS v1 (RULESET)
+# RISK FLAGS v1 (NC)
 # =========================
-def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
-    """
-    Returns list of flags: {code, title, severity, why, fix}
-    """
+def risk_flags_v1_nc(intake: Dict[str, Any]) -> List[Dict[str, str]]:
     flags: List[Dict[str, str]] = []
 
     service = (intake.get("service_requested") or "").lower().strip()
     notes = (intake.get("notes") or "").strip()
 
-    # Universal: thin facts
     if len(notes) < 40:
         flags.append({
             "code": "RF_FACTS_THIN",
@@ -395,14 +443,13 @@ def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
             "fix": "Add timeline: what happened, when, who, where, harm, what you want."
         })
 
-    # Standing: needs concrete injury + remedy clarity
     wants = intake.get("wants") or ""
     if not wants:
         flags.append({
             "code": "RF_REMEDY_UNCLEAR",
             "title": "Requested relief unclear",
             "severity": "medium",
-            "why": "Redressability depends on what the court/decision-maker can actually order.",
+            "why": "Redressability depends on what the court/decision-maker can order.",
             "fix": "Specify: damages amount, correction, injunction/stop conduct, record release, etc."
         })
 
@@ -416,7 +463,6 @@ def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
             "fix": "State your harm: money, denial, lost work, time, privacy invasion, reputational harm, etc."
         })
 
-    # Contract review: missing contract upload mention
     if "contract" in service and ("contract" not in notes.lower()):
         flags.append({
             "code": "RF_DOC_MISSING_CONTRACT",
@@ -426,7 +472,6 @@ def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
             "fix": "Attach or paste relevant clauses, parties, dates, payment terms, termination, liability."
         })
 
-    # Arbitration: missing forum/contract clause
     if "arbitration" in service and ("arbitration" not in notes.lower()):
         flags.append({
             "code": "RF_ARB_FORUM_UNKNOWN",
@@ -436,7 +481,6 @@ def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
             "fix": "Provide clause text or where it appears; note any deadlines or prior notices."
         })
 
-    # Evidence organization: missing exhibits mention
     if "evidence" in service and ("photo" not in notes.lower() and "email" not in notes.lower() and "text" not in notes.lower()):
         flags.append({
             "code": "RF_EVIDENCE_UNLISTED",
@@ -449,19 +493,333 @@ def risk_flags_v1(intake: Dict[str, Any]) -> List[Dict[str, str]]:
     return flags
 
 
-def spine_pick(service_requested: str) -> List[str]:
-    """
-    Decide which spine topics to show based on service.
-    """
-    s = (service_requested or "").lower()
-    topics = ["standing_article_iii"]  # default anchor
-    if any(x in s for x in ["official", "1983", "civil rights", "injunction", "government"]):
-        topics.append("capacity_official_individual")
-    return topics
+# =========================
+# RISK FLAGS v1 (AVPT CLIENT)
+# =========================
+def risk_flags_v1_avpt(intake: Dict[str, Any]) -> List[Dict[str, str]]:
+    flags: List[Dict[str, str]] = []
+
+    company = (intake.get("company_name") or "").strip()
+    email = (intake.get("contact_email") or "").strip()
+    event_type = (intake.get("event_type") or "").strip()
+    venue_address = (intake.get("venue_address") or "").strip()
+    show_date = (intake.get("show_date") or "").strip()
+    crew_counts = (intake.get("crew_counts") or "").strip()
+    budget_range = (intake.get("budget_range") or "").strip()
+    requires_coi = (intake.get("requires_coi") or "").strip()
+    po_required = (intake.get("po_required") or "").strip()
+
+    if not company or len(company) < 2:
+        flags.append({
+            "code": "AVPT_COMPANY_MISSING",
+            "title": "Company name missing",
+            "severity": "high",
+            "why": "We can’t route staffing or invoicing without the production entity name.",
+            "fix": "Enter your production company name (legal or DBA)."
+        })
+
+    if "@" not in email:
+        flags.append({
+            "code": "AVPT_EMAIL_INVALID",
+            "title": "Contact email invalid",
+            "severity": "high",
+            "why": "Scheduling + confirmations require a reachable email.",
+            "fix": "Enter a valid contact email."
+        })
+
+    if not event_type:
+        flags.append({
+            "code": "AVPT_EVENT_TYPE_MISSING",
+            "title": "Event type missing",
+            "severity": "medium",
+            "why": "Crew build depends on whether this is corporate, concert, gala, livestream, etc.",
+            "fix": "Select or describe the event type."
+        })
+
+    if not show_date:
+        flags.append({
+            "code": "AVPT_DATE_MISSING",
+            "title": "Show date missing",
+            "severity": "high",
+            "why": "We can’t forecast labor availability or hold crew without dates.",
+            "fix": "Provide at least the show date; load-in/load-out are strongly recommended."
+        })
+
+    if not venue_address or len(venue_address) < 8:
+        flags.append({
+            "code": "AVPT_VENUE_ADDRESS_MISSING",
+            "title": "Venue address missing",
+            "severity": "high",
+            "why": "Routing, call times, parking, and logistics fail without the real address.",
+            "fix": "Enter the full venue address (street + city + state)."
+        })
+
+    if not crew_counts:
+        flags.append({
+            "code": "AVPT_CREW_COUNTS_EMPTY",
+            "title": "Crew request not specified",
+            "severity": "medium",
+            "why": "We can’t price or allocate without counts per role (e.g., 2 loaders, 1 A2, 1 V1).",
+            "fix": "Provide counts by role or rough headcount."
+        })
+
+    if not budget_range:
+        flags.append({
+            "code": "AVPT_BUDGET_UNKNOWN",
+            "title": "Budget range not provided",
+            "severity": "medium",
+            "why": "Budget anchors rate transparency and prevents mismatched expectations.",
+            "fix": "Provide budget range or max rate per role."
+        })
+
+    # COI / PO flags (not “bad”, but operational blockers)
+    if requires_coi.lower() in ("yes", "y", "required") and po_required.lower() in ("yes", "y", "required"):
+        flags.append({
+            "code": "AVPT_ADMIN_BLOCKERS",
+            "title": "COI + PO required",
+            "severity": "low",
+            "why": "These are normal, but they add lead time. We must collect paperwork early.",
+            "fix": "Have COI holder + PO process ready before crew confirmation."
+        })
+
+    return flags
+
+
+def route_v1_avpt(intake: Dict[str, Any], flags: List[Dict[str, str]]) -> Dict[str, Any]:
+    # Simple, deterministic routing core (upgrade later)
+    crew_counts = (intake.get("crew_counts") or "").lower()
+    event_type = (intake.get("event_type") or "").lower()
+    gear_scope = (intake.get("gear_scope") or "").lower()
+
+    lane = "avpt_client"
+    priority = "standard"
+
+    if any(f["severity"] == "high" for f in flags):
+        priority = "blocked_missing_critical"
+
+    if "concert" in event_type or "festival" in event_type:
+        priority = "high_volume"
+    if "led" in gear_scope or "wall" in gear_scope:
+        priority = "video_heavy"
+    if "a1" in crew_counts or "a2" in crew_counts or "foh" in crew_counts:
+        priority = "audio_heavy"
+
+    next_steps = []
+    if priority == "blocked_missing_critical":
+        next_steps.append("Fix High severity flags, then resubmit or reply with missing details.")
+    else:
+        next_steps.extend([
+            "Confirm venue address + dates.",
+            "Confirm crew counts per role + call times.",
+            "Confirm budget/rate expectations + payment terms.",
+            "Issue staffing plan + confirmations.",
+        ])
+
+    return {
+        "lane": lane,
+        "priority": priority,
+        "next_steps": next_steps,
+    }
 
 
 # =========================
-# ENV REQUIREMENTS (STRIPE)
+# RISK FLAGS v1 (LMT WORKER)
+# =========================
+def risk_flags_v1_lmt(intake: Dict[str, Any]) -> List[Dict[str, str]]:
+    flags: List[Dict[str, str]] = []
+
+    legal_name = (intake.get("legal_name") or "").strip()
+    email = (intake.get("email") or "").strip()
+    phone = (intake.get("phone") or "").strip()
+    worker_type = (intake.get("worker_type") or "").strip()
+    primary_role = (intake.get("primary_role") or "").strip()
+
+    tax_ready = (intake.get("tax_ready") or "").strip().lower()
+    tax_classification = (intake.get("tax_classification") or "").strip()
+
+    transportation = (intake.get("transportation_mode") or "").strip().lower()
+    truck_size = (intake.get("truck_size") or "").strip()
+    liftgate = (intake.get("liftgate") or "").strip().lower()
+
+    if not legal_name or len(legal_name) < 4:
+        flags.append({
+            "code": "LMT_LEGAL_NAME_MISSING",
+            "title": "Legal name missing",
+            "severity": "high",
+            "why": "Payroll/tax paperwork and credentialing cannot be generated without legal name.",
+            "fix": "Enter your legal name as it appears on ID."
+        })
+
+    if "@" not in email:
+        flags.append({
+            "code": "LMT_EMAIL_INVALID",
+            "title": "Email invalid",
+            "severity": "high",
+            "why": "Booking + confirmations rely on email.",
+            "fix": "Enter a valid email."
+        })
+
+    if len(phone) < 7:
+        flags.append({
+            "code": "LMT_PHONE_MISSING",
+            "title": "Phone missing/too short",
+            "severity": "high",
+            "why": "Field dispatch requires a reachable phone.",
+            "fix": "Enter a valid phone number."
+        })
+
+    if not worker_type:
+        flags.append({
+            "code": "LMT_WORKER_TYPE_EMPTY",
+            "title": "Worker type not selected",
+            "severity": "medium",
+            "why": "Routing differs for 1099 vs W2 vs vendor company.",
+            "fix": "Choose: 1099 contractor / W2 employee / Vendor company."
+        })
+
+    if not primary_role:
+        flags.append({
+            "code": "LMT_ROLE_EMPTY",
+            "title": "Primary role not selected",
+            "severity": "medium",
+            "why": "Matching requires at least one primary role.",
+            "fix": "Select your primary role (e.g., Stagehand, A2, V1, LED Tech, Rigger)."
+        })
+
+    # Tax readiness flags (do NOT collect SSN here)
+    if tax_ready in ("no", "not_ready", "later", ""):
+        flags.append({
+            "code": "LMT_TAX_NOT_READY",
+            "title": "Tax setup not ready",
+            "severity": "medium",
+            "why": "Some clients will not book without W-9/COI details ready.",
+            "fix": "Mark tax-ready = Yes once business name + tax classification are set."
+        })
+
+    if tax_ready in ("yes", "y", "true") and not tax_classification:
+        flags.append({
+            "code": "LMT_TAX_CLASS_MISSING",
+            "title": "Tax classification missing",
+            "severity": "low",
+            "why": "Classification is required to pre-fill a W-9 style profile.",
+            "fix": "Choose: Individual/Sole Prop, LLC, S-Corp, C-Corp."
+        })
+
+    # Transportation/vehicle clarity (not always required, but important for logistics roles)
+    if "truck" in transportation or "van" in transportation:
+        if not truck_size:
+            flags.append({
+                "code": "LMT_TRUCK_SIZE_MISSING",
+                "title": "Truck/van size not specified",
+                "severity": "low",
+                "why": "Some calls require box truck vs sprinter vs pickup.",
+                "fix": "Select your truck size."
+            })
+        if liftgate not in ("yes", "no", "") and liftgate:
+            flags.append({
+                "code": "LMT_LIFTGATE_UNKNOWN",
+                "title": "Liftgate value unclear",
+                "severity": "low",
+                "why": "Liftgate impacts load-in planning.",
+                "fix": "Choose Yes or No for liftgate."
+            })
+
+    return flags
+
+
+def route_v1_lmt(intake: Dict[str, Any], flags: List[Dict[str, str]]) -> Dict[str, Any]:
+    primary_role = (intake.get("primary_role") or "").lower()
+    certifications = (intake.get("certifications") or "").lower()
+    availability = (intake.get("availability_window") or "").lower()
+
+    lane = "lmt_worker"
+    bucket = "general_pool"
+
+    if any(f["severity"] == "high" for f in flags):
+        bucket = "blocked_missing_critical"
+
+    # quick role buckets
+    if any(x in primary_role for x in ["rigger", "rigging"]):
+        bucket = "rigging"
+    elif any(x in primary_role for x in ["a1", "a2", "audio"]):
+        bucket = "audio"
+    elif any(x in primary_role for x in ["v1", "v2", "video", "led"]):
+        bucket = "video_led"
+    elif any(x in primary_role for x in ["stagehand", "loader", "pusher"]):
+        bucket = "general_crew"
+
+    # certifications influence
+    if "forklift" in certifications or "osha" in certifications:
+        bucket = f"{bucket}_certified"
+
+    # availability influence (simple)
+    priority = "standard"
+    if "10+" in availability or "full" in availability:
+        priority = "high_availability"
+
+    next_steps = []
+    if bucket == "blocked_missing_critical":
+        next_steps.append("Fix High severity flags, then resubmit.")
+    else:
+        next_steps.extend([
+            "Confirm roles + availability window.",
+            "Confirm rate targets + travel preferences.",
+            "Activate for matching when jobs post.",
+        ])
+
+    return {
+        "lane": lane,
+        "bucket": bucket,
+        "priority": priority,
+        "next_steps": next_steps,
+    }
+
+
+def ready_to_work_pack_lmt(intake: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    IMPORTANT: This is NOT a legal W-9 generator.
+    It's a "Ready-to-work profile pack" that can be used to prefill forms later.
+    We intentionally do NOT collect SSN in-app.
+    """
+    pack = {
+        "profile": {
+            "legal_name": intake.get("legal_name", ""),
+            "preferred_name": intake.get("preferred_name", ""),
+            "email": intake.get("email", ""),
+            "phone": intake.get("phone", ""),
+            "home_city": intake.get("home_city", ""),
+            "home_state": intake.get("home_state", ""),
+        },
+        "work": {
+            "worker_type": intake.get("worker_type", ""),
+            "primary_role": intake.get("primary_role", ""),
+            "secondary_roles": intake.get("secondary_roles", ""),
+            "certifications": intake.get("certifications", ""),
+            "availability_window": intake.get("availability_window", ""),
+            "availability_notes": intake.get("availability_notes", ""),
+            "travel_ok": intake.get("travel_ok", ""),
+            "per_diem_required": intake.get("per_diem_required", ""),
+            "rate_target": intake.get("rate_target", ""),
+            "min_rate": intake.get("min_rate", ""),
+        },
+        "logistics": {
+            "transportation_mode": intake.get("transportation_mode", ""),
+            "truck_size": intake.get("truck_size", ""),
+            "liftgate": intake.get("liftgate", ""),
+        },
+        "tax_profile": {
+            "tax_ready": intake.get("tax_ready", ""),
+            "business_name": intake.get("business_name", ""),
+            "tax_classification": intake.get("tax_classification", ""),
+            "ein_last4": intake.get("ein_last4", ""),
+            "insurance_ready": intake.get("insurance_ready", ""),
+        }
+    }
+    return pack
+
+
+# =========================
+# STRIPE ENV REQUIREMENTS
 # =========================
 def require_stripe_env():
     missing = []
@@ -568,8 +926,6 @@ def checkout(ref: Optional[str] = None):
         return err
 
     try:
-        # Store ref if you want later attribution (can be expanded).
-        # For now we keep it simple.
         session = stripe.checkout.Session.create(
             mode="subscription",
             line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
@@ -587,7 +943,6 @@ def success(request: Request, session_id: Optional[str] = None):
     email = None
     dashboard_link = None
 
-    # If Stripe returns session_id, we try to grant access.
     if session_id and STRIPE_SECRET_KEY:
         try:
             s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
@@ -603,7 +958,6 @@ def success(request: Request, session_id: Optional[str] = None):
                 base = str(request.base_url).rstrip("/")
                 dashboard_link = f"{base}/dashboard?token={token}"
 
-                # Email if configured
                 if EMAIL_USER and EMAIL_PASS:
                     send_email(
                         email,
@@ -641,7 +995,6 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Webhook signature error: {e}")
 
-    # Payment completed
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         customer_id = str(session.get("customer") or "")
@@ -652,7 +1005,6 @@ async def stripe_webhook(request: Request):
             customer_email = customer_email.strip().lower()
             upsert_subscriber_active(customer_email, customer_id, subscription_id)
 
-            # Email access link if configured
             token = issue_magic_link(customer_email, hours=24)
             base = str(request.base_url).rstrip("/")
             link = f"{base}/dashboard?token={token}"
@@ -664,7 +1016,6 @@ async def stripe_webhook(request: Request):
                     f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
                 )
 
-    # Subscription canceled
     if event["type"] == "customer.subscription.deleted":
         sub = event["data"]["object"]
         sub_id = str(sub.get("id") or "")
@@ -682,14 +1033,13 @@ async def stripe_webhook(request: Request):
     return {"received": True}
 
 
-# Compatibility alias (some dashboards show /webhook/stripe)
 @app.post("/webhook/stripe")
 async def stripe_webhook_alias(request: Request):
     return await stripe_webhook(request)
 
 
 # =========================
-# SUBSCRIBER DASH + INTAKE
+# SUBSCRIBER DASH + NC INTAKE
 # =========================
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, token: str):
@@ -720,11 +1070,10 @@ def submit_intake(
     email: str = Form(...),
     service_requested: str = Form(...),
     notes: str = Form(""),
-    # Minimal “facts” used for Risk Flags + Standing logic:
     injury: str = Form(""),
     wants: str = Form(""),
-    defendant_type: str = Form(""),   # gov / company / person / unknown
-    timeline: str = Form(""),         # dates summary
+    defendant_type: str = Form(""),
+    timeline: str = Form(""),
 ):
     subscriber_email, err = require_subscriber_token(token)
     if err:
@@ -742,10 +1091,9 @@ def submit_intake(
         "timeline": timeline or "",
     }
 
-    flags = risk_flags_v1(intake_obj)
+    flags = risk_flags_v1_nc(intake_obj)
     topics = spine_pick(service_requested)
 
-    # Store in DB
     conn = db()
     cur = conn.cursor()
     cur.execute("""
@@ -765,7 +1113,6 @@ def submit_intake(
     conn.commit()
     conn.close()
 
-    # Optional internal notification
     if EMAIL_USER and EMAIL_PASS:
         send_email(
             EMAIL_USER,
@@ -776,25 +1123,15 @@ def submit_intake(
             f"Notes:\n{notes}\n"
         )
 
-    # Redirect to Results (dual mode supported via ?mode=basic or ?mode=court)
     return RedirectResponse(f"/results?id={intake_id}&token={token}&mode=basic", status_code=303)
 
 
-# =========================
-# RESULTS ROUTE (RISK FLAGS + LEGAL SPINE)
-# =========================
 @app.get("/results", response_class=HTMLResponse)
 def results(request: Request, id: int, token: str, mode: str = "basic"):
-    """
-    mode:
-      - basic: plain-language
-      - court: court-ready citations + element checklist
-    """
     subscriber_email, err = require_subscriber_token(token)
     if err:
         return err
 
-    # Fetch intake
     conn = db()
     cur = conn.cursor()
     cur.execute("SELECT * FROM intake WHERE id = ? LIMIT 1", (id,))
@@ -804,16 +1141,13 @@ def results(request: Request, id: int, token: str, mode: str = "basic"):
     if not row:
         return HTMLResponse("Intake not found.", status_code=404)
 
-    # Ensure subscriber is viewing their own intake (basic isolation)
     if row["subscriber_email"] != subscriber_email:
         return HTMLResponse("Unauthorized.", status_code=403)
 
-    intake_obj = row["facts_json"] or ""
-    # re-run flags (don’t trust stale strings)
-    flags = risk_flags_v1({
+    flags = risk_flags_v1_nc({
         "service_requested": row["service_requested"],
         "notes": row["notes"] or "",
-        "injury": "",  # stored inside facts_json string — we treat it as optional for now
+        "injury": "",
         "wants": "",
     })
 
@@ -845,7 +1179,352 @@ def results(request: Request, id: int, token: str, mode: str = "basic"):
 
 
 # =========================
-# ADMIN (JSON intake + Leads dashboard)
+# AVPT CLIENT LANE (PRODUCTION COMPANY)
+# =========================
+@app.get("/avpt/client", response_class=HTMLResponse)
+def avpt_client_form(request: Request):
+    return templates.TemplateResponse("avpt_client_intake.html", {"request": request, "year": datetime.utcnow().year})
+
+
+@app.post("/avpt/client")
+def avpt_client_submit(
+    company_name: str = Form(...),
+    contact_name: str = Form(...),
+    contact_email: str = Form(...),
+    contact_phone: str = Form(""),
+
+    event_name: str = Form(""),
+    event_type: str = Form(""),
+    venue_name: str = Form(""),
+    venue_address: str = Form(""),
+    city: str = Form(""),
+    state: str = Form(""),
+
+    load_in_date: str = Form(""),
+    show_date: str = Form(""),
+    load_out_date: str = Form(""),
+
+    crew_counts: str = Form(""),
+    gear_scope: str = Form(""),
+    schedule_notes: str = Form(""),
+
+    budget_range: str = Form(""),
+    rate_expectation: str = Form(""),
+    payment_terms: str = Form(""),
+
+    point_of_contact_on_site: str = Form(""),
+    safety_notes: str = Form(""),
+
+    requires_coi: str = Form("No"),
+    po_required: str = Form("No"),
+):
+    intake_obj = {
+        "company_name": company_name,
+        "contact_name": contact_name,
+        "contact_email": contact_email,
+        "contact_phone": contact_phone,
+        "event_name": event_name,
+        "event_type": event_type,
+        "venue_name": venue_name,
+        "venue_address": venue_address,
+        "city": city,
+        "state": state,
+        "load_in_date": load_in_date,
+        "show_date": show_date,
+        "load_out_date": load_out_date,
+        "crew_counts": crew_counts,
+        "gear_scope": gear_scope,
+        "schedule_notes": schedule_notes,
+        "budget_range": budget_range,
+        "rate_expectation": rate_expectation,
+        "payment_terms": payment_terms,
+        "point_of_contact_on_site": point_of_contact_on_site,
+        "safety_notes": safety_notes,
+        "requires_coi": requires_coi,
+        "po_required": po_required,
+    }
+
+    flags = risk_flags_v1_avpt(intake_obj)
+    routing = route_v1_avpt(intake_obj, flags)
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO avpt_clients (
+            company_name, contact_name, contact_email, contact_phone,
+            event_name, event_type, venue_name, venue_address, city, state,
+            load_in_date, show_date, load_out_date,
+            crew_counts, gear_scope, schedule_notes,
+            budget_range, rate_expectation, payment_terms,
+            point_of_contact_on_site, safety_notes,
+            requires_coi, po_required,
+            routing_json, flags_json, created_at
+        )
+        VALUES (?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?,
+                ?, ?, ?,
+                ?, ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?, ?)
+    """, (
+        company_name, contact_name, contact_email, contact_phone,
+        event_name, event_type, venue_name, venue_address, city, state,
+        load_in_date, show_date, load_out_date,
+        crew_counts, gear_scope, schedule_notes,
+        budget_range, rate_expectation, payment_terms,
+        point_of_contact_on_site, safety_notes,
+        requires_coi, po_required,
+        str(routing), str(flags), now_iso()
+    ))
+    avpt_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+
+    # Optional ops email
+    if EMAIL_USER and EMAIL_PASS:
+        send_email(
+            EMAIL_USER,
+            "AVPT Client Intake Submitted",
+            f"Company: {company_name}\nContact: {contact_name} ({contact_email})\n"
+            f"Event: {event_name} / {event_type}\n"
+            f"Venue: {venue_name}\nAddress: {venue_address}\n"
+            f"Dates: Load-in={load_in_date} Show={show_date} Load-out={load_out_date}\n"
+            f"Crew: {crew_counts}\nGear: {gear_scope}\nBudget: {budget_range}\n"
+            f"Flags: {len(flags)}\nRouting: {routing}\n"
+        )
+
+    return RedirectResponse(f"/avpt/results?id={avpt_id}", status_code=303)
+
+
+@app.get("/avpt/results", response_class=HTMLResponse)
+def avpt_results(request: Request, id: int):
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM avpt_clients WHERE id = ? LIMIT 1", (id,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return HTMLResponse("AVPT intake not found.", status_code=404)
+
+    flags = []
+    try:
+        # stored as string; keep safe display
+        flags = eval(row["flags_json"]) if row["flags_json"] else []
+    except Exception:
+        flags = []
+
+    routing = {}
+    try:
+        routing = eval(row["routing_json"]) if row["routing_json"] else {}
+    except Exception:
+        routing = {}
+
+    return templates.TemplateResponse(
+        "results_avpt.html",
+        {
+            "request": request,
+            "year": datetime.utcnow().year,
+            "lane_title": "AVPT — Production Company Results",
+            "id": row["id"],
+            "summary": {
+                "Company": row["company_name"],
+                "Contact": f'{row["contact_name"]} ({row["contact_email"]})',
+                "Show date": row["show_date"],
+                "Venue address": row["venue_address"],
+                "Crew counts": row["crew_counts"],
+                "Budget range": row["budget_range"],
+            },
+            "flags": flags,
+            "routing": routing,
+            "next_url": "/avpt/client",
+        }
+    )
+
+
+# =========================
+# LMT WORKER LANE (LABOR/TECH)
+# =========================
+@app.get("/lmt/worker", response_class=HTMLResponse)
+def lmt_worker_form(request: Request):
+    return templates.TemplateResponse("lmt_worker_intake.html", {"request": request, "year": datetime.utcnow().year})
+
+
+@app.post("/lmt/worker")
+def lmt_worker_submit(
+    legal_name: str = Form(...),
+    preferred_name: str = Form(""),
+    email: str = Form(...),
+    phone: str = Form(...),
+    home_city: str = Form(""),
+    home_state: str = Form(""),
+
+    worker_type: str = Form(""),
+    primary_role: str = Form(""),
+    secondary_roles: str = Form(""),
+    certifications: str = Form(""),
+
+    availability_window: str = Form(""),
+    availability_notes: str = Form(""),
+
+    transportation_mode: str = Form(""),
+    truck_size: str = Form(""),
+    liftgate: str = Form(""),
+
+    travel_ok: str = Form(""),
+    per_diem_required: str = Form(""),
+
+    rate_target: str = Form(""),
+    min_rate: str = Form(""),
+
+    tax_ready: str = Form(""),
+    business_name: str = Form(""),
+    tax_classification: str = Form(""),
+    ein_last4: str = Form(""),
+    insurance_ready: str = Form(""),
+
+    notes: str = Form(""),
+):
+    intake_obj = {
+        "legal_name": legal_name,
+        "preferred_name": preferred_name,
+        "email": email,
+        "phone": phone,
+        "home_city": home_city,
+        "home_state": home_state,
+        "worker_type": worker_type,
+        "primary_role": primary_role,
+        "secondary_roles": secondary_roles,
+        "certifications": certifications,
+        "availability_window": availability_window,
+        "availability_notes": availability_notes,
+        "transportation_mode": transportation_mode,
+        "truck_size": truck_size,
+        "liftgate": liftgate,
+        "travel_ok": travel_ok,
+        "per_diem_required": per_diem_required,
+        "rate_target": rate_target,
+        "min_rate": min_rate,
+        "tax_ready": tax_ready,
+        "business_name": business_name,
+        "tax_classification": tax_classification,
+        "ein_last4": ein_last4,
+        "insurance_ready": insurance_ready,
+        "notes": notes,
+    }
+
+    flags = risk_flags_v1_lmt(intake_obj)
+    routing = route_v1_lmt(intake_obj, flags)
+    pack = ready_to_work_pack_lmt(intake_obj)
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO lmt_workers (
+            legal_name, preferred_name, email, phone, home_city, home_state,
+            worker_type, primary_role, secondary_roles, certifications,
+            availability_window, availability_notes,
+            transportation_mode, truck_size, liftgate,
+            travel_ok, per_diem_required,
+            rate_target, min_rate,
+            tax_ready, business_name, tax_classification, ein_last4, insurance_ready,
+            notes,
+            routing_json, flags_json, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?,
+                ?, ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?, ?, ?, ?,
+                ?,
+                ?, ?, ?)
+    """, (
+        legal_name, preferred_name, email, phone, home_city, home_state,
+        worker_type, primary_role, secondary_roles, certifications,
+        availability_window, availability_notes,
+        transportation_mode, truck_size, liftgate,
+        travel_ok, per_diem_required,
+        rate_target, min_rate,
+        tax_ready, business_name, tax_classification, ein_last4, insurance_ready,
+        notes,
+        str({"routing": routing, "pack": pack}), str(flags), now_iso()
+    ))
+    lmt_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+
+    # Optional ops email
+    if EMAIL_USER and EMAIL_PASS:
+        send_email(
+            EMAIL_USER,
+            "LMT Worker Intake Submitted",
+            f"Legal name: {legal_name}\nEmail: {email}\nPhone: {phone}\n"
+            f"Primary role: {primary_role}\nAvailability: {availability_window}\n"
+            f"Transport: {transportation_mode} / {truck_size} / liftgate={liftgate}\n"
+            f"Tax-ready: {tax_ready} / class={tax_classification}\n"
+            f"Flags: {len(flags)}\nRouting: {routing}\n"
+        )
+
+    return RedirectResponse(f"/lmt/results?id={lmt_id}", status_code=303)
+
+
+@app.get("/lmt/results", response_class=HTMLResponse)
+def lmt_results(request: Request, id: int):
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM lmt_workers WHERE id = ? LIMIT 1", (id,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return HTMLResponse("LMT intake not found.", status_code=404)
+
+    flags = []
+    try:
+        flags = eval(row["flags_json"]) if row["flags_json"] else []
+    except Exception:
+        flags = []
+
+    routing = {}
+    pack = {}
+    try:
+        blob = eval(row["routing_json"]) if row["routing_json"] else {}
+        routing = blob.get("routing", {})
+        pack = blob.get("pack", {})
+    except Exception:
+        routing = {}
+        pack = {}
+
+    return templates.TemplateResponse(
+        "results_lmt.html",
+        {
+            "request": request,
+            "year": datetime.utcnow().year,
+            "lane_title": "LMT — Labor/Tech Results",
+            "id": row["id"],
+            "summary": {
+                "Legal name": row["legal_name"],
+                "Email": row["email"],
+                "Phone": row["phone"],
+                "Primary role": row["primary_role"],
+                "Availability": row["availability_window"],
+                "Transport": f'{row["transportation_mode"]} / {row["truck_size"]} / liftgate={row["liftgate"]}',
+                "Tax-ready": row["tax_ready"],
+            },
+            "flags": flags,
+            "routing": routing,
+            "pack": pack,
+            "next_url": "/lmt/worker",
+        }
+    )
+
+
+# =========================
+# ADMIN JSON (quick sanity)
 # =========================
 @app.get("/admin/intake")
 def admin_intake_json(limit: int = 50):
@@ -855,20 +1534,6 @@ def admin_intake_json(limit: int = 50):
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return {"entries": rows}
-
-
-@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
-def leads_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    require_admin(k, key)
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM leads ORDER BY id DESC")
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return templates.TemplateResponse(
-        "leads_dashboard.html",
-        {"request": request, "leads": rows, "k": _clean(k or key or ""), "year": datetime.utcnow().year},
-    )
 
 
 # =========================
