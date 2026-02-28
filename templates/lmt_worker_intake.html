@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}LMT Worker Intake • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>LMT — Labor / Tech Intake</h2>
+  <p class="muted">
+    This intake builds a “ready-to-work pack” (profile + availability + logistics + tax-ready status) and generates risk flags
+    if anything would block you from being booked fast.
+  </p>
+
+  <form class="form" method="post" action="/lmt/worker">
+    <h3>Identity + Contact</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Legal Name (Critical)</label>
+        <input name="legal_name" required placeholder="As it appears on ID" />
+      </div>
+      <div>
+        <label class="label">Preferred Name</label>
+        <input name="preferred_name" placeholder="Optional" />
+      </div>
+
+      <div>
+        <label class="label">Email (Critical)</label>
+        <input name="email" type="email" required placeholder="you@email.com" />
+      </div>
+      <div>
+        <label class="label">Phone (Critical)</label>
+        <input name="phone" required placeholder="Mobile number" />
+      </div>
+
+      <div>
+        <label class="label">Home City</label>
+        <input name="home_city" placeholder="City" />
+      </div>
+      <div>
+        <label class="label">Home State</label>
+        <input name="home_state" placeholder="State (2-letter ok)" />
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Work Profile</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Worker Type</label>
+        <select name="worker_type">
+          <option value="">Select…</option>
+          <option>1099 contractor</option>
+          <option>W2 employee</option>
+          <option>Vendor company (crew owner)</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Primary Role</label>
+        <select name="primary_role">
+          <option value="">Select…</option>
+          <option>Stagehand / Loader</option>
+          <option>Audio A2</option>
+          <option>Audio A1</option>
+          <option>Video V2</option>
+          <option>Video V1</option>
+          <option>LED Wall Tech</option>
+          <option>Lighting Tech</option>
+          <option>Rigger</option>
+          <option>Carpenter / Staging</option>
+          <option>Forklift / Lift Operator</option>
+          <option>Truck Driver</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="label">Secondary Roles (Optional)</label>
+      <input name="secondary_roles" placeholder="Comma-separated: V2, LED, A2, etc." />
+    </div>
+
+    <div>
+      <label class="label">Certifications / Credentials</label>
+      <input name="certifications" placeholder="OSHA, forklift, ETCP, RF, Dante, etc." />
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Availability</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Availability Window (Union-style weekly call)</label>
+        <select name="availability_window">
+          <option value="">Select…</option>
+          <option>0–2 hrs/week</option>
+          <option>3–5 hrs/week</option>
+          <option>6–10 hrs/week</option>
+          <option>10+ hrs/week</option>
+          <option>Full-time available</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Availability Notes</label>
+        <input name="availability_notes" placeholder="Days/times, blackout dates, preferred calls" />
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Logistics</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Transportation Mode</label>
+        <select name="transportation_mode">
+          <option value="">Select…</option>
+          <option>Metro / Public transit</option>
+          <option>Personal car</option>
+          <option>Pickup truck</option>
+          <option>Van / Sprinter</option>
+          <option>Box truck</option>
+          <option>Rideshare only</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Truck / Vehicle Size</label>
+        <select name="truck_size">
+          <option value="">Select…</option>
+          <option>None</option>
+          <option>Pickup</option>
+          <option>Sprinter / Van</option>
+          <option>12–16 ft box</option>
+          <option>18–24 ft box</option>
+          <option>26 ft box</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Liftgate?</label>
+        <select name="liftgate">
+          <option value="">Select…</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Travel OK?</label>
+        <select name="travel_ok">
+          <option value="">Select…</option>
+          <option>Local only</option>
+          <option>Regional</option>
+          <option>National</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Per diem required?</label>
+        <select name="per_diem_required">
+          <option value="">Select…</option>
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Rates + “Ready-to-work” profile</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Target Rate</label>
+        <input name="rate_target" placeholder="Example: $45/hr or $550/day" />
+      </div>
+      <div>
+        <label class="label">Minimum Acceptable</label>
+        <input name="min_rate" placeholder="Example: $35/hr" />
+      </div>
+      <div>
+        <label class="label">Tax-ready? (W-9 style profile complete)</label>
+        <select name="tax_ready">
+          <option value="">Select…</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Tax Classification</label>
+        <select name="tax_classification">
+          <option value="">Select…</option>
+          <option>Individual / Sole Prop</option>
+          <option>LLC</option>
+          <option>S-Corp</option>
+          <option>C-Corp</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Business Name (if any)</label>
+        <input name="business_name" placeholder="Optional" />
+      </div>
+      <div>
+        <label class="label">EIN last 4 (optional)</label>
+        <input name="ein_last4" placeholder="Last 4 only (do not enter full EIN)" />
+      </div>
+      <div>
+        <label class="label">Insurance ready? (COI available)</label>
+        <select name="insurance_ready">
+          <option value="">Select…</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="label">Notes (optional)</label>
+      <textarea name="notes" placeholder="Anything that makes matching easier (gear you own, union experience, special access, etc.)"></textarea>
+    </div>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Generate Results</button>
+      <a class="btn" href="/services">Back to Services</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
