@@ -1,41 +1,39 @@
-# main.py — Nautical Compass unified app (FULL FILE)
-# Drop in as-is.
-
 import os
-import re
 import sqlite3
-import smtplib
+import json
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from email.message import EmailMessage
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 import stripe
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-# --------------------
-# Paths (LOCKED)
-# --------------------
+
+# ============================================================
+# PATHS (LOCKED)
+# ============================================================
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "nc.db"
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# --------------------
-# App
-# --------------------
+
+# ============================================================
+# APP
+# ============================================================
 app = FastAPI(title="Nautical Compass Intake")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# --------------------
-# Helpers
-# --------------------
+
+# ============================================================
+# ENV HELPERS
+# ============================================================
 def _clean(s: str) -> str:
     return (s or "").replace("\r", "").replace("\n", "").strip()
 
@@ -50,42 +48,17 @@ def _require_valid_url(name: str, url: str) -> str:
     if not url:
         return ""
     if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError(f"{name} is not a valid URL (must start with http:// or https://)")
+        raise ValueError(f"{name} must start with http:// or https://")
     return url
 
-def now_iso() -> str:
-    return datetime.utcnow().isoformat()
 
-def sha256(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()
-
-def year() -> int:
-    return datetime.utcnow().year
-
-# --------------------
-# Admin / Security
-# --------------------
-ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))
-
-def _get_key(k: Optional[str], key: Optional[str]) -> str:
-    # support both ?k= and ?key= everywhere
-    return _clean(k or key or "")
-
-def require_admin(k: str):
-    if not ADMIN_KEY:
-        raise HTTPException(status_code=500, detail="Missing ADMIN_KEY env var")
-    if _clean(k) != ADMIN_KEY:
-        raise HTTPException(status_code=401, detail="Bad admin key")
-
-# --------------------
-# Stripe Config
-# --------------------
+# ============================================================
+# STRIPE CONFIG
+# ============================================================
 STRIPE_SECRET_KEY = _clean(os.getenv("STRIPE_SECRET_KEY", ""))
-STRIPE_PRICE_ID = _clean(os.getenv("STRIPE_PRICE_ID", ""))
+STRIPE_PRICE_ID = _clean(os.getenv("STRIPE_PRICE_ID", ""))  # subscriber tier
+STRIPE_SPONSOR_PRICE_ID = _clean(os.getenv("STRIPE_SPONSOR_PRICE_ID", ""))  # sponsor tier optional
 STRIPE_WEBHOOK_SECRET = _clean(os.getenv("STRIPE_WEBHOOK_SECRET", ""))
-
-# Optional sponsor checkout (if you use it later)
-STRIPE_SPONSOR_PRICE_ID = _clean(os.getenv("STRIPE_SPONSOR_PRICE_ID", ""))
 
 try:
     SUCCESS_URL = _require_valid_url("SUCCESS_URL", os.getenv("SUCCESS_URL", ""))
@@ -100,112 +73,65 @@ else:
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
 
-# --------------------
-# Email (optional)
-# --------------------
+
+# ============================================================
+# ADMIN + DEV TOKEN CONFIG
+# ============================================================
+ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))  # used for admin dashboards
+DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
+DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))  # secret key for /dev/generate-token
+
+
+def require_admin(k: Optional[str]) -> None:
+    if not ADMIN_KEY:
+        raise HTTPException(status_code=500, detail="ADMIN_KEY not set")
+    if not k or _clean(k) != ADMIN_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# ============================================================
+# EMAIL (OPTIONAL) — kept minimal; do not block deployment
+# ============================================================
 EMAIL_USER = _clean(os.getenv("EMAIL_USER", ""))
 EMAIL_PASS = _clean(os.getenv("EMAIL_PASS", ""))
-SMTP_HOST = _clean(os.getenv("SMTP_HOST", "smtp.gmail.com"))
-SMTP_PORT = int(_clean(os.getenv("SMTP_PORT", "465")) or "465")
+SMTP_HOST = _clean(os.getenv("SMTP_HOST", ""))  # optional
+SMTP_PORT = _clean(os.getenv("SMTP_PORT", ""))  # optional
 
-def send_email(to_email: str, subject: str, body: str):
-    if not (EMAIL_USER and EMAIL_PASS):
-        return
-    try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_USER
-        msg["To"] = to_email
-        msg.set_content(body)
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
-            smtp.login(EMAIL_USER, EMAIL_PASS)
-            smtp.send_message(msg)
-    except Exception as e:
-        print("Email failed:", e)
-
-# --------------------
+# ============================================================
 # DB
-# --------------------
+# ============================================================
 def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-# --------------------
-# People / Referral (NC-only right now)
-# --------------------
-DUECE_REF = _clean(os.getenv("DUECE_REF", "DEUC46E"))  # your current ref code
-DUECE_ID = 1
+def now_iso() -> str:
+    return datetime.utcnow().isoformat()
 
-def make_ref_code(prefix: str) -> str:
-    # OP + 5 random chars
-    rand = secrets.token_hex(4)[:5].upper()
-    return f"{prefix}{rand}"
+def sha256(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
-# --------------------
-# Tables
-# --------------------
+
+# ============================================================
+# TABLES
+# ============================================================
 def init_db():
     conn = db()
     cur = conn.cursor()
 
-    # Subscriber intake (member-only)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS intake (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            service_requested TEXT NOT NULL,
-            notes TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    # Public lead intake
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS leads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            company TEXT,
-            interest TEXT NOT NULL,
-            message TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    # Partners
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS partners (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            company TEXT NOT NULL,
-            role TEXT NOT NULL,
-            product_type TEXT NOT NULL,
-            website TEXT,
-            regions TEXT,
-            message TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    # Subscribers
+    # Subscribers / magic links
     cur.execute("""
         CREATE TABLE IF NOT EXISTS subscribers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE,
             stripe_customer_id TEXT,
             stripe_subscription_id TEXT,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'inactive',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )
     """)
-
-    # Magic links
     cur.execute("""
         CREATE TABLE IF NOT EXISTS magic_links (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -216,76 +142,31 @@ def init_db():
         )
     """)
 
-    # Contributors
+    # Unified intake engine
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS contributors (
+        CREATE TABLE IF NOT EXISTS intake_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            company TEXT,
-            website TEXT,
-
-            primary_role TEXT NOT NULL,
-            contribution_track TEXT NOT NULL,
-            position_interest TEXT,
-            comp_plan TEXT,
-            director_owner TEXT,
-
-            assets TEXT,
-            regions TEXT,
-            capacity TEXT,
-            alignment TEXT,
-            message TEXT,
-
-            fit_access TEXT,
-            fit_build_goal TEXT,
-            fit_opportunity TEXT,
-            fit_authority TEXT,
-            fit_lane TEXT,
-            fit_no_conditions TEXT,
-            fit_visibility TEXT,
-            fit_why_you TEXT,
-
-            score INTEGER NOT NULL DEFAULT 0,
-            rail TEXT NOT NULL DEFAULT 'triage',
-            status TEXT NOT NULL DEFAULT 'new',
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    # People (operators/staff under Duece)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS people (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            role TEXT NOT NULL,          -- 'director' | 'operator' | 'staff'
-            ref_code TEXT UNIQUE,        -- referral code
-            parent_id INTEGER,           -- Duece is parent for now
-            created_at TEXT NOT NULL
+            lane TEXT NOT NULL,                 -- legal | production | labor | partner | lead
+            created_at TEXT NOT NULL,
+            contact_name TEXT NOT NULL,
+            contact_email TEXT NOT NULL,
+            contact_phone TEXT,
+            org_name TEXT,
+            payload_json TEXT NOT NULL,         -- raw structured answers
+            flags_json TEXT NOT NULL,           -- computed risk flags
+            route TEXT NOT NULL                 -- where it should go next (ops lane)
         )
     """)
 
     conn.commit()
-
-    # Ensure Duece exists in people table
-    cur.execute("SELECT id FROM people WHERE id = ? LIMIT 1", (DUECE_ID,))
-    row = cur.fetchone()
-    if not row:
-        cur.execute("""
-            INSERT INTO people (id, name, email, role, ref_code, parent_id, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (DUECE_ID, "Duece", "duece@example.com", "director", DUECE_REF, None, now_iso()))
-        conn.commit()
-
     conn.close()
 
 init_db()
 
-# --------------------
-# Magic Links
-# --------------------
+
+# ============================================================
+# MAGIC LINKS (SUBSCRIBER ACCESS)
+# ============================================================
 def issue_magic_link(email: str, hours: int = 24) -> str:
     token = secrets.token_urlsafe(32)
     token_hash = sha256(token)
@@ -311,14 +192,11 @@ def validate_magic_link(token: str) -> Optional[str]:
     )
     row = cur.fetchone()
     conn.close()
-
     if not row:
         return None
-
     expires_at = datetime.fromisoformat(row["expires_at"])
     if datetime.utcnow() > expires_at:
         return None
-
     return row["email"]
 
 def is_active_subscriber(email: str) -> bool:
@@ -347,360 +225,541 @@ def upsert_subscriber_active(email: str, customer_id: str = "", subscription_id:
 def require_subscriber_token(token: Optional[str]):
     if not token:
         return None, HTMLResponse("Missing token.", status_code=401)
-
     email = validate_magic_link(token)
     if not email:
         return None, HTMLResponse("Invalid or expired link.", status_code=401)
-
     if not is_active_subscriber(email):
         return None, HTMLResponse("Subscription not active.", status_code=403)
-
     return email, None
 
-# --------------------
-# Contributor scoring + rail assignment
-# --------------------
-def _score_contributor(f: dict) -> int:
-    score = 0
-    track = (f.get("contribution_track") or "").strip().lower()
 
-    track_weights = {
-        "ecosystem_staff": 18,
-        "sales_growth": 18,
-        "builder_operator": 16,
-        "partner_vendor": 14,
-        "hardware_supply": 16,
-        "capital_sponsor": 14,
-        "advisor_specialist": 10,
-        "not_sure": 8,
+# ============================================================
+# RISK FLAGS V1 (RULESET)
+# ============================================================
+def flag(sev: str, code: str, title: str, meaning: str, action: str) -> Dict[str, str]:
+    return {
+        "severity": sev,      # low | medium | high
+        "code": code,
+        "title": title,
+        "meaning": meaning,
+        "action": action
     }
-    score += track_weights.get(track, 10)
 
-    comp = (f.get("comp_plan") or "").strip().lower()
-    if "residual" in comp:
-        score += 10
-    elif "commission" in comp:
-        score += 10
-    elif "hourly" in comp:
-        score += 6
-    elif "equity" in comp or "revshare" in comp:
-        score += 8
+def risk_flags_legal(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+    flags = []
+    urgency = (payload.get("urgency") or "").lower()
+    timeline = (payload.get("timeline") or "").strip()
+    jurisdiction = (payload.get("jurisdiction") or "").strip()
+    evidence = (payload.get("evidence") or "").strip()
 
-    assets = (f.get("assets") or "").strip()
-    website = (f.get("website") or "").strip()
-    company = (f.get("company") or "").strip()
+    if not timeline:
+        flags.append(flag("high","NC-L01","Missing timeline",
+                          "Without a clear timeline, strategy and deadlines become guesswork.",
+                          "Add key dates: event date, notice date, denial date, deadline date."))
 
-    if assets and len(assets) > 10:
-        score += 10
-    if website and len(website) > 6:
-        score += 6
-    if company and len(company) > 2:
-        score += 4
+    if not jurisdiction:
+        flags.append(flag("medium","NC-L02","Jurisdiction not stated",
+                          "Court/agency choices depend on jurisdiction.",
+                          "Add city/state and where the dispute happened."))
 
-    fit_fields = [
-        f.get("fit_access"), f.get("fit_build_goal"), f.get("fit_opportunity"), f.get("fit_authority"),
-        f.get("fit_lane"), f.get("fit_no_conditions"), f.get("fit_visibility"), f.get("fit_why_you")
-    ]
-    filled = sum(1 for x in fit_fields if x and str(x).strip())
-    score += min(16, filled * 2)
+    if len(evidence) < 20:
+        flags.append(flag("medium","NC-L03","Evidence thin",
+                          "Claims fail when evidence is missing or disorganized.",
+                          "List documents: emails, contracts, screenshots, receipts, call logs."))
 
-    auth = (f.get("fit_authority") or "").lower().strip()
-    if auth == "owner_exec":
-        score += 10
-    elif auth == "manager_influence":
-        score += 6
-    elif auth == "partial":
-        score += 3
+    if "emergency" in urgency or "today" in urgency:
+        flags.append(flag("high","NC-L04","Time pressure",
+                          "Urgency increases error risk and reduces options.",
+                          "We will prioritize the shortest path: preserve evidence + notice + next action."))
 
-    return int(score)
+    return flags
 
-def _assign_rail(f: dict, score: int) -> str:
-    track = (f.get("contribution_track") or "").strip().lower()
-    pos = (f.get("position_interest") or "").strip().lower()
-    lane = (f.get("fit_lane") or "").strip().lower()
+def risk_flags_production(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+    flags = []
+    show_date = (payload.get("show_date") or "").strip()
+    load_in = (payload.get("load_in") or "").strip()
+    crew_count = int(payload.get("crew_count") or 0)
+    venue = (payload.get("venue") or "").strip()
+    budget = (payload.get("budget_range") or "").lower()
+    gear = (payload.get("gear_needed") or "").strip()
+    complexity = (payload.get("complexity") or "").lower()
 
-    if score >= 70:
-        if track == "sales_growth" or lane == "sales" or "sales" in pos or "closer" in pos:
-            return "sales_priority"
-        if track == "ecosystem_staff" or "intake" in pos or "ops" in pos or "client" in pos:
-            return "staff_priority"
-        if track == "hardware_supply" or lane == "hardware":
-            return "hardware_supply"
-        if track == "capital_sponsor" or lane == "finance":
-            return "capital"
-        return "priority"
+    if not show_date:
+        flags.append(flag("high","AVPT-P01","Show date missing",
+                          "Scheduling cannot be confirmed without a show date.",
+                          "Add the show date (and time window if possible)."))
+    if not load_in:
+        flags.append(flag("medium","AVPT-P02","Load-in not defined",
+                          "No load-in time leads to late crews and blame cycles.",
+                          "Add load-in time, rehearsal time, show time, strike time."))
 
-    if score >= 45:
-        if track == "sales_growth":
-            return "sales_pool"
-        if track == "ecosystem_staff":
-            return "staff_pool"
-        if track in ("partner_vendor", "hardware_supply"):
-            return "bd_followup"
-        return "review"
+    if crew_count <= 0:
+        flags.append(flag("high","AVPT-P03","Crew count not specified",
+                          "We can’t staff accurately without headcount.",
+                          "Enter a headcount estimate (you can adjust later)."))
+    if crew_count >= 25:
+        flags.append(flag("medium","AVPT-P04","Large crew risk",
+                          "Large crews require stronger coordination and department leads.",
+                          "We will propose department breakdown + chain-of-command."))
+
+    if not venue:
+        flags.append(flag("medium","AVPT-P05","Venue unknown",
+                          "Venue rules affect rigging, power, docks, labor, and compliance.",
+                          "Add venue name + address + loading dock notes."))
+
+    if "low" in budget or "$" in budget and "low" in budget:
+        flags.append(flag("medium","AVPT-P06","Budget compression",
+                          "Low budget often conflicts with high expectations.",
+                          "We’ll confirm scope vs. resources before committing."))
+
+    if len(gear) < 10 and "led" in complexity:
+        flags.append(flag("medium","AVPT-P07","LED complexity but gear not specified",
+                          "LED builds require exact panel counts, processors, distro, and power plan.",
+                          "Specify wall size, resolution goal, processor model, and power constraints."))
+
+    return flags
+
+def risk_flags_labor(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+    flags = []
+    role = (payload.get("role") or "").lower()
+    start = (payload.get("call_time") or "").strip()
+    location = (payload.get("location") or "").strip()
+    truck = (payload.get("truck_type") or "").lower()
+    liftgate = (payload.get("liftgate") or "").lower()
+    certs = (payload.get("certs") or "").lower()
+
+    if not start:
+        flags.append(flag("high","LMT-W01","Call time missing",
+                          "If call time is missing, you risk no-shows and misalignment.",
+                          "Add call time + expected duration."))
+
+    if not location:
+        flags.append(flag("medium","LMT-W02","Location missing",
+                          "Routing and travel pay depend on location.",
+                          "Add exact address or venue name."))
+
+    if "driver" in role and not truck:
+        flags.append(flag("medium","LMT-W03","Truck type not specified",
+                          "Truck size determines what you can accept and what you get paid.",
+                          "Choose: Sprinter/Box(12–16)/Box(20–26)/53ft/Other."))
+
+    if "box" in truck and liftgate == "":
+        flags.append(flag("low","LMT-W04","Liftgate unknown",
+                          "Liftgate affects load speed and safety.",
+                          "Confirm liftgate Yes/No."))
+
+    if "fork" in certs and "forklift" not in certs:
+        # (soft example)
+        pass
+
+    return flags
+
+
+# ============================================================
+# ROUTING (WHERE IT GOES NEXT)
+# ============================================================
+def route_for_lane(lane: str, payload: Dict[str, Any], flags: List[Dict[str, str]]) -> str:
+    # Simple v1 routing; upgrade later to fully automated ops queue
+    if lane == "production":
+        # If high severity flags exist, route to "ops_review"
+        if any(f["severity"] == "high" for f in flags):
+            return "avpt_ops_review"
+        return "avpt_ready"
+
+    if lane == "labor":
+        if any(f["severity"] == "high" for f in flags):
+            return "lmt_screening"
+        return "lmt_ready"
+
+    if lane == "legal":
+        if any(f["severity"] == "high" for f in flags):
+            return "nc_priority"
+        return "nc_standard"
 
     return "triage"
 
-# --------------------
-# Pages (Public)
-# --------------------
+
+# ============================================================
+# SAVE INTAKE RECORD
+# ============================================================
+def save_intake_record(
+    lane: str,
+    name: str,
+    email: str,
+    phone: str,
+    org_name: str,
+    payload: Dict[str, Any],
+    flags: List[Dict[str, str]],
+    route: str
+) -> int:
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO intake_records (
+            lane, created_at, contact_name, contact_email, contact_phone, org_name,
+            payload_json, flags_json, route
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        lane, now_iso(), name, email, phone, org_name,
+        json.dumps(payload, ensure_ascii=False),
+        json.dumps(flags, ensure_ascii=False),
+        route
+    ))
+    conn.commit()
+    rid = cur.lastrowid
+    conn.close()
+    return int(rid)
+
+
+# ============================================================
+# PAGES (PUBLIC)
+# ============================================================
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "year": year()})
+    return templates.TemplateResponse("index.html", {"request": request, "year": datetime.utcnow().year})
 
 @app.get("/services", response_class=HTMLResponse)
 def services(request: Request):
-    return templates.TemplateResponse("services.html", {"request": request, "year": year()})
+    return templates.TemplateResponse("services.html", {"request": request, "year": datetime.utcnow().year})
 
-@app.get("/dashboards", response_class=HTMLResponse)
-def dashboards(request: Request):
-    # This is your Director/Operator landing page (the one in your screenshot)
-    return templates.TemplateResponse("dashboards.html", {"request": request, "year": year()})
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    ico = STATIC_DIR / "favicon.ico"
+    if ico.exists():
+        return FileResponse(str(ico), media_type="image/x-icon")
+    return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
 
-# --------------------
-# Lead Intake (Public)
-# --------------------
-@app.get("/lead", response_class=HTMLResponse)
-def lead_page(request: Request):
-    return templates.TemplateResponse("lead_intake.html", {"request": request, "year": year()})
 
-@app.post("/lead")
-async def lead_submit(request: Request):
-    form = await request.form()
-    name = _clean(form.get("name", ""))
-    email = _clean(form.get("email", ""))
-    interest = _clean(form.get("interest", ""))
-    phone = _clean(form.get("phone", ""))
-    company = _clean(form.get("company", ""))
-    message = _clean(form.get("message", ""))
+# ============================================================
+# NC LEGAL INTAKE (SUBSCRIBERS-ONLY)
+# ============================================================
+@app.get("/intake/legal", response_class=HTMLResponse)
+def intake_legal_page(request: Request, token: str):
+    email, err = require_subscriber_token(token)
+    if err:
+        return err
+    return templates.TemplateResponse("intake_legal.html", {"request": request, "token": token, "email": email, "year": datetime.utcnow().year})
 
-    if not name or not email:
-        return JSONResponse({"error": "Missing name/email"}, status_code=400)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO leads (name, email, phone, company, interest, message, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, phone, company, interest, message, now_iso()))
-    conn.commit()
-    conn.close()
-
-    return RedirectResponse(url="/lead/thanks", status_code=303)
-
-@app.get("/lead/thanks", response_class=HTMLResponse)
-def lead_thanks(request: Request):
-    return templates.TemplateResponse("lead_thanks.html", {"request": request, "year": year()})
-
-# --------------------
-# Partner Intake
-# --------------------
-@app.get("/partner", response_class=HTMLResponse)
-def partner_page(request: Request):
-    return templates.TemplateResponse("partner_intake.html", {"request": request, "year": year()})
-
-@app.post("/partner")
-async def partner_submit(request: Request):
-    form = await request.form()
-    name = _clean(form.get("name", ""))
-    email = _clean(form.get("email", ""))
-    company = _clean(form.get("company", ""))
-    role = _clean(form.get("role", ""))
-    product_type = _clean(form.get("product_type", ""))
-    website = _clean(form.get("website", ""))
-    regions = _clean(form.get("regions", ""))
-    message = _clean(form.get("message", ""))
-
-    if not name or not email:
-        return JSONResponse({"error": "Missing name/email"}, status_code=400)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
-    conn.commit()
-    conn.close()
-
-    return RedirectResponse(url="/partner/thanks", status_code=303)
-
-@app.get("/partner/thanks", response_class=HTMLResponse)
-def partner_thanks(request: Request):
-    return templates.TemplateResponse("partner_thanks.html", {"request": request, "year": year()})
-
-# --------------------
-# Contributor Intake
-# --------------------
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": year()})
-
-@app.post("/contributor")
-async def submit_contributor(request: Request):
-    form = await request.form()
+@app.post("/intake/legal")
+def intake_legal_submit(
+    token: str = Form(...),
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    jurisdiction: str = Form(""),
+    urgency: str = Form(""),
+    timeline: str = Form(""),
+    issue: str = Form(""),
+    desired_outcome: str = Form(""),
+    evidence: str = Form(""),
+    notes: str = Form("")
+):
+    sub_email, err = require_subscriber_token(token)
+    if err:
+        return err
 
     payload = {
-        "name": _clean(form.get("name", "")),
-        "email": _clean(form.get("email", "")),
-        "phone": _clean(form.get("phone", "")),
-        "company": _clean(form.get("company", "")),
-        "website": _clean(form.get("website", "")),
-
-        "primary_role": _clean(form.get("primary_role", "")),
-        "contribution_track": _clean(form.get("contribution_track", "")),
-        "position_interest": _clean(form.get("position_interest", "")),
-        "comp_plan": _clean(form.get("comp_plan", "")),
-        "director_owner": _clean(form.get("director_owner", "Duece")),
-
-        "assets": _clean(form.get("assets", "")),
-        "regions": _clean(form.get("regions", "")),
-        "capacity": _clean(form.get("capacity", "")),
-        "alignment": _clean(form.get("alignment", "")),
-        "message": _clean(form.get("message", "")),
-
-        "fit_access": _clean(form.get("fit_access", "")),
-        "fit_build_goal": _clean(form.get("fit_build_goal", "")),
-        "fit_opportunity": _clean(form.get("fit_opportunity", "")),
-        "fit_authority": _clean(form.get("fit_authority", "")),
-        "fit_lane": _clean(form.get("fit_lane", "")),
-        "fit_no_conditions": _clean(form.get("fit_no_conditions", "")),
-        "fit_visibility": _clean(form.get("fit_visibility", "")),
-        "fit_why_you": _clean(form.get("fit_why_you", "")),
+        "subscriber_email": sub_email,
+        "jurisdiction": jurisdiction,
+        "urgency": urgency,
+        "timeline": timeline,
+        "issue": issue,
+        "desired_outcome": desired_outcome,
+        "evidence": evidence,
+        "notes": notes
     }
+    flags = risk_flags_legal(payload)
+    route = route_for_lane("legal", payload, flags)
 
-    if not payload["name"] or not payload["email"] or not payload["primary_role"] or not payload["contribution_track"]:
-        return JSONResponse({"error": "Missing required fields"}, status_code=400)
+    rid = save_intake_record(
+        lane="legal",
+        name=name,
+        email=email,
+        phone=phone,
+        org_name="",
+        payload=payload,
+        flags=flags,
+        route=route
+    )
+    return RedirectResponse(f"/results/{rid}", status_code=303)
 
-    score = _score_contributor(payload)
-    rail = _assign_rail(payload, score)
 
+# ============================================================
+# AVPT PRODUCTION COMPANY INTAKE (PUBLIC)
+# ============================================================
+@app.get("/intake/production", response_class=HTMLResponse)
+def intake_production_page(request: Request):
+    return templates.TemplateResponse("intake_production.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.post("/intake/production")
+def intake_production_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    company: str = Form(""),
+    show_name: str = Form(""),
+    show_date: str = Form(""),
+    venue: str = Form(""),
+    load_in: str = Form(""),
+    show_time: str = Form(""),
+    strike_time: str = Form(""),
+    crew_count: str = Form("0"),
+    departments: str = Form(""),
+    gear_needed: str = Form(""),
+    complexity: str = Form(""),
+    budget_range: str = Form(""),
+    notes: str = Form("")
+):
+    payload = {
+        "company": company,
+        "show_name": show_name,
+        "show_date": show_date,
+        "venue": venue,
+        "load_in": load_in,
+        "show_time": show_time,
+        "strike_time": strike_time,
+        "crew_count": crew_count,
+        "departments": departments,
+        "gear_needed": gear_needed,
+        "complexity": complexity,
+        "budget_range": budget_range,
+        "notes": notes
+    }
+    flags = risk_flags_production(payload)
+    route = route_for_lane("production", payload, flags)
+
+    rid = save_intake_record(
+        lane="production",
+        name=name,
+        email=email,
+        phone=phone,
+        org_name=company,
+        payload=payload,
+        flags=flags,
+        route=route
+    )
+    return RedirectResponse(f"/results/{rid}", status_code=303)
+
+
+# ============================================================
+# LMT LABOR/TECH INTAKE (PUBLIC)
+# ============================================================
+@app.get("/intake/labor", response_class=HTMLResponse)
+def intake_labor_page(request: Request):
+    return templates.TemplateResponse("intake_labor.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.post("/intake/labor")
+def intake_labor_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    role: str = Form(""),
+    primary_skills: str = Form(""),
+    certs: str = Form(""),
+    location: str = Form(""),
+    call_time: str = Form(""),
+    duration: str = Form(""),
+    travel_ok: str = Form(""),
+    truck_type: str = Form(""),
+    liftgate: str = Form(""),
+    availability: str = Form(""),
+    rate_expectation: str = Form(""),
+    notes: str = Form("")
+):
+    payload = {
+        "role": role,
+        "primary_skills": primary_skills,
+        "certs": certs,
+        "location": location,
+        "call_time": call_time,
+        "duration": duration,
+        "travel_ok": travel_ok,
+        "truck_type": truck_type,
+        "liftgate": liftgate,
+        "availability": availability,
+        "rate_expectation": rate_expectation,
+        "notes": notes
+    }
+    flags = risk_flags_labor(payload)
+    route = route_for_lane("labor", payload, flags)
+
+    rid = save_intake_record(
+        lane="labor",
+        name=name,
+        email=email,
+        phone=phone,
+        org_name="",
+        payload=payload,
+        flags=flags,
+        route=route
+    )
+    return RedirectResponse(f"/results/{rid}", status_code=303)
+
+
+# ============================================================
+# RESULTS PAGE (RECEIPT + FLAGS + NEXT STEPS)
+# ============================================================
+@app.get("/results/{rid}", response_class=HTMLResponse)
+def results_page(request: Request, rid: int):
     conn = db()
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO contributors (
-            name, email, phone, company, website,
-            primary_role,
-            contribution_track, position_interest, comp_plan, director_owner,
-            assets, regions, capacity, alignment, message,
-            fit_access, fit_build_goal, fit_opportunity, fit_authority,
-            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-            score, rail, status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?,
-                ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?)
-    """, (
-        payload["name"], payload["email"], payload["phone"], payload["company"], payload["website"],
-        payload["primary_role"],
-        payload["contribution_track"], payload["position_interest"], payload["comp_plan"], payload["director_owner"],
-        payload["assets"], payload["regions"], payload["capacity"], payload["alignment"], payload["message"],
-        payload["fit_access"], payload["fit_build_goal"], payload["fit_opportunity"], payload["fit_authority"],
-        payload["fit_lane"], payload["fit_no_conditions"], payload["fit_visibility"], payload["fit_why_you"],
-        score, rail, "new", now_iso()
-    ))
-    conn.commit()
+    cur.execute("SELECT * FROM intake_records WHERE id = ? LIMIT 1", (rid,))
+    row = cur.fetchone()
     conn.close()
 
-    return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
+    if not row:
+        return HTMLResponse("Result not found.", status_code=404)
 
-# --------------------
-# Subscriber Intake (Member-only)
-# --------------------
-@app.get("/intake-form", response_class=HTMLResponse)
-def intake_form(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token, "year": year()})
+    payload = json.loads(row["payload_json"])
+    flags = json.loads(row["flags_json"])
 
-@app.post("/intake")
-async def submit_intake(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
+    # plain next-step packet v1 (tight and clear)
+    lane = row["lane"]
+    route = row["route"]
 
-    form = await request.form()
-    name = _clean(form.get("name", ""))
-    public_email = _clean(form.get("email", ""))
-    service_requested = _clean(form.get("service_requested", ""))
-    notes = _clean(form.get("notes", ""))
+    next_steps = []
+    if lane == "production":
+        next_steps = [
+            "Confirm show date/time + load-in + strike time.",
+            "Confirm venue dock/power/rigging constraints.",
+            "Lock crew count + departments (A/V, lighting, video, LED, rigging, carpentry).",
+            "We’ll route to AVPT Ops for staffing + compliance + execution plan."
+        ]
+    elif lane == "labor":
+        next_steps = [
+            "Confirm role + call time + location.",
+            "Confirm travel/truck/liftgate (if driving).",
+            "We’ll route to LMT screening or ready pool based on risk flags.",
+            "You’ll be matched when jobs fit your profile + availability."
+        ]
+    elif lane == "legal":
+        next_steps = [
+            "Confirm jurisdiction + timeline.",
+            "Organize evidence into a simple list.",
+            "We’ll propose the best legal lane: notice/demand/admin remedy/complaint structure.",
+            "Your dashboard link is your control center."
+        ]
+    else:
+        next_steps = ["We received your submission and will route it to the correct lane."]
 
-    if not name or not public_email or not service_requested:
-        return JSONResponse({"error": "Missing required fields"}, status_code=400)
+    return templates.TemplateResponse(
+        "results.html",
+        {
+            "request": request,
+            "row": dict(row),
+            "payload": payload,
+            "flags": flags,
+            "next_steps": next_steps,
+            "year": datetime.utcnow().year
+        }
+    )
 
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO intake (name, email, service_requested, notes, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, public_email, service_requested, notes, now_iso()))
-    conn.commit()
-    conn.close()
 
-    # optional notification to you
-    if EMAIL_USER and EMAIL_PASS:
-        send_email(
-            EMAIL_USER,
-            "New Subscriber Intake Submission",
-            f"Subscriber: {email}\n\nName: {name}\nEmail: {public_email}\nService: {service_requested}\nNotes: {notes}"
-        )
-
-    return JSONResponse({"status": "Intake stored successfully"})
-
+# ============================================================
+# DASHBOARD (SUBSCRIBER)
+# ============================================================
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, token: str):
     email, err = require_subscriber_token(token)
     if err:
         return err
-    return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token, "year": year()})
 
-# --------------------
-# Stripe Checkout
-# --------------------
-def require_env():
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, "email": email, "token": token, "year": datetime.utcnow().year}
+    )
+
+
+# ============================================================
+# LEAD + PARTNER + SPONSOR (PUBLIC)
+# ============================================================
+@app.get("/lead", response_class=HTMLResponse)
+def lead_page(request: Request):
+    return templates.TemplateResponse("lead_intake.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.post("/lead")
+def lead_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    interest: str = Form(""),
+    phone: str = Form(""),
+    company: str = Form(""),
+    message: str = Form("")
+):
+    payload = {
+        "interest": interest,
+        "company": company,
+        "message": message
+    }
+    flags: List[Dict[str, str]] = []
+    route = "lead_followup"
+
+    rid = save_intake_record("lead", name, email, phone, company, payload, flags, route)
+    return RedirectResponse("/lead/thanks", status_code=303)
+
+@app.get("/lead/thanks", response_class=HTMLResponse)
+def lead_thanks(request: Request):
+    return templates.TemplateResponse("lead_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.get("/partner", response_class=HTMLResponse)
+def partner_page(request: Request):
+    return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.post("/partner")
+def partner_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    company: str = Form(""),
+    role: str = Form(""),
+    product_type: str = Form(""),
+    website: str = Form(""),
+    regions: str = Form(""),
+    message: str = Form("")
+):
+    payload = {
+        "company": company,
+        "role": role,
+        "product_type": product_type,
+        "website": website,
+        "regions": regions,
+        "message": message
+    }
+    flags: List[Dict[str, str]] = []
+    route = "partner_review"
+
+    rid = save_intake_record("partner", name, email, "", company, payload, flags, route)
+    return RedirectResponse("/partner/thanks", status_code=303)
+
+@app.get("/partner/thanks", response_class=HTMLResponse)
+def partner_thanks(request: Request):
+    return templates.TemplateResponse("partner_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
+@app.get("/sponsor", response_class=HTMLResponse)
+def sponsor_page(request: Request):
+    return templates.TemplateResponse("sponsor.html", {"request": request, "year": datetime.utcnow().year})
+
+
+# ============================================================
+# STRIPE CHECKOUT (SUBSCRIPTION)
+# ============================================================
+def require_stripe_env_basic():
     if STARTUP_URL_ERROR:
-        return JSONResponse(
-            {"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."},
-            status_code=500
-        )
-
+        return JSONResponse({"error": STARTUP_URL_ERROR}, status_code=500)
     missing = []
-    if not STRIPE_SECRET_KEY:
-        missing.append("STRIPE_SECRET_KEY")
-    if not STRIPE_PRICE_ID:
-        missing.append("STRIPE_PRICE_ID")
-    if not SUCCESS_URL:
-        missing.append("SUCCESS_URL")
-    if not CANCEL_URL:
-        missing.append("CANCEL_URL")
+    if not STRIPE_SECRET_KEY: missing.append("STRIPE_SECRET_KEY")
+    if not STRIPE_PRICE_ID: missing.append("STRIPE_PRICE_ID")
+    if not SUCCESS_URL: missing.append("SUCCESS_URL")
+    if not CANCEL_URL: missing.append("CANCEL_URL")
     if missing:
         return JSONResponse({"error": "Missing environment variables", "missing": missing}, status_code=500)
     return None
 
-def _normalize_ref(ref: Optional[str]) -> str:
-    ref = _clean(ref or "")
-    if not ref:
-        return ""
-    # allow simple safe chars
-    if not re.match(r"^[A-Z0-9]{4,16}$", ref.upper()):
-        return ""
-    return ref.upper()
-
 @app.get("/checkout")
-def checkout(ref: Optional[str] = None):
-    err = require_env()
+def checkout():
+    err = require_stripe_env_basic()
     if err:
         return err
-
-    ref_code = _normalize_ref(ref)
-    metadata = {}
-    if ref_code:
-        metadata["ref"] = ref_code
 
     try:
         session = stripe.checkout.Session.create(
@@ -708,7 +767,25 @@ def checkout(ref: Optional[str] = None):
             line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
             success_url=f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=CANCEL_URL,
-            metadata=metadata,
+        )
+        return RedirectResponse(session.url, status_code=303)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/sponsor/checkout")
+def sponsor_checkout():
+    err = require_stripe_env_basic()
+    if err:
+        return err
+    if not STRIPE_SPONSOR_PRICE_ID:
+        return JSONResponse({"error": "STRIPE_SPONSOR_PRICE_ID not set"}, status_code=500)
+
+    try:
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            line_items=[{"price": STRIPE_SPONSOR_PRICE_ID, "quantity": 1}],
+            success_url=f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=CANCEL_URL,
         )
         return RedirectResponse(session.url, status_code=303)
     except Exception as e:
@@ -723,10 +800,10 @@ def success(request: Request, session_id: Optional[str] = None):
     if session_id and STRIPE_SECRET_KEY:
         try:
             s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
-            if s and s.get("status") in ("complete", "completed"):
+            status = (s.get("status") or "").lower()
+            if status in ("complete", "completed"):
                 details = s.get("customer_details") or {}
                 email = details.get("email")
-
                 customer_id = str(s.get("customer") or "")
                 subscription_id = str(s.get("subscription") or "")
 
@@ -735,28 +812,22 @@ def success(request: Request, session_id: Optional[str] = None):
                     token = issue_magic_link(email, hours=24)
                     base = str(request.base_url).rstrip("/")
                     dashboard_link = f"{base}/dashboard?token={token}"
-
-                    if EMAIL_USER and EMAIL_PASS:
-                        send_email(
-                            email,
-                            "Your Nautical Compass Access Link",
-                            f"Welcome.\n\nYour access link (valid 24 hours):\n{dashboard_link}\n"
-                        )
         except Exception as e:
             print("Success page Stripe fetch failed:", e)
 
     return templates.TemplateResponse(
         "success.html",
-        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": year()}
+        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year}
     )
 
 @app.get("/cancel", response_class=HTMLResponse)
 def cancel(request: Request):
-    return templates.TemplateResponse("cancel.html", {"request": request, "year": year()})
+    return templates.TemplateResponse("cancel.html", {"request": request, "year": datetime.utcnow().year})
 
-# --------------------
-# Stripe Webhook
-# --------------------
+
+# ============================================================
+# STRIPE WEBHOOK
+# ============================================================
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
     if not STRIPE_WEBHOOK_SECRET:
@@ -779,17 +850,6 @@ async def stripe_webhook(request: Request):
         if customer_email:
             upsert_subscriber_active(customer_email, customer_id, subscription_id)
 
-            token = issue_magic_link(customer_email, hours=24)
-            base = str(request.base_url).rstrip("/")
-            link = f"{base}/dashboard?token={token}"
-
-            if EMAIL_USER and EMAIL_PASS:
-                send_email(
-                    customer_email,
-                    "Your Nautical Compass Access Link",
-                    f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
-                )
-
     if event["type"] == "customer.subscription.deleted":
         sub = event["data"]["object"]
         sub_id = str(sub.get("id") or "")
@@ -810,196 +870,85 @@ async def stripe_webhook(request: Request):
 async def stripe_webhook_alias(request: Request):
     return await stripe_webhook(request)
 
-# --------------------
-# Admin Dashboards (NC)
-# --------------------
-@app.get("/admin/intake")
-def admin_intake_json(limit: int = 50):
+
+# ============================================================
+# ADMIN DASHBOARDS (AVPT + LMT + NC)
+# ============================================================
+@app.get("/admin/intake", response_class=JSONResponse)
+def admin_intake_json(limit: int = 50, k: Optional[str] = None):
+    require_admin(k)
     conn = db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM intake ORDER BY id DESC LIMIT ?", (limit,))
+    cur.execute("SELECT * FROM intake_records ORDER BY id DESC LIMIT ?", (limit,))
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
-    return {"entries": rows}
+    return JSONResponse({"entries": rows})
 
-@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
-def leads_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    k2 = _get_key(k, key)
-    require_admin(k2)
 
+@app.get("/admin/avpt-dashboard", response_class=HTMLResponse)
+def admin_avpt_dashboard(request: Request, k: Optional[str] = None):
+    require_admin(k)
     conn = db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM leads ORDER BY id DESC LIMIT 200")
+    cur.execute("SELECT * FROM intake_records WHERE lane='production' ORDER BY id DESC LIMIT 200")
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
+
+    # Pre-parse a few fields for display
+    for r in rows:
+        r["payload"] = json.loads(r["payload_json"])
+        r["flags"] = json.loads(r["flags_json"])
 
     return templates.TemplateResponse(
-        "admin_leads.html",
-        {"request": request, "leads": rows, "k": k2, "year": year()},
+        "results.html",
+        {
+            "request": request,
+            "row": {"lane": "production", "id": "ADMIN_VIEW", "route": "avpt_admin"},
+            "payload": {"admin_view": True, "count": len(rows)},
+            "flags": [],
+            "next_steps": [
+                "This is the AVPT admin view. Use /results/{id} for a single record receipt.",
+                "Sort is newest-first. Risk flags are computed per record."
+            ],
+            "year": datetime.utcnow().year
+        }
     )
 
-@app.get("/admin/partners-dashboard", response_class=HTMLResponse)
-def partners_dashboard(
-    request: Request,
-    k: Optional[str] = None,
-    key: Optional[str] = None,
-    q: str = "",
-    product: str = "",
-    region: str = "",
-):
-    k2 = _get_key(k, key)
-    require_admin(k2)
 
-    q = _clean(q)
-    product = _clean(product)
-    region = _clean(region)
-
+@app.get("/admin/lmt-dashboard", response_class=HTMLResponse)
+def admin_lmt_dashboard(request: Request, k: Optional[str] = None):
+    require_admin(k)
     conn = db()
     cur = conn.cursor()
-
-    sql = "SELECT * FROM partners WHERE 1=1"
-    params = []
-
-    if q:
-        sql += " AND (name LIKE ? OR email LIKE ? OR company LIKE ?)"
-        like = f"%{q}%"
-        params += [like, like, like]
-
-    if product:
-        sql += " AND product_type LIKE ?"
-        params.append(f"%{product}%")
-
-    if region:
-        sql += " AND regions LIKE ?"
-        params.append(f"%{region}%")
-
-    sql += " ORDER BY id DESC"
-
-    cur.execute(sql, params)
+    cur.execute("SELECT * FROM intake_records WHERE lane='labor' ORDER BY id DESC LIMIT 200")
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
 
     return templates.TemplateResponse(
-        "partners_dashboard.html",
-        {"request": request, "partners": rows, "q": q, "product": product, "region": region, "k": k2, "year": year()},
+        "results.html",
+        {
+            "request": request,
+            "row": {"lane": "labor", "id": "ADMIN_VIEW", "route": "lmt_admin"},
+            "payload": {"admin_view": True, "count": len(rows)},
+            "flags": [],
+            "next_steps": [
+                "This is the LMT admin view. Use /results/{id} for a single record receipt.",
+                "Next upgrade: add a dedicated HTML table dashboard (we’ll do it after your meeting)."
+            ],
+            "year": datetime.utcnow().year
+        }
     )
 
-@app.get("/admin/contributors-dashboard", response_class=HTMLResponse)
-def contributors_dashboard(
-    request: Request,
-    k: Optional[str] = None,
-    key: Optional[str] = None,
-    rail: Optional[str] = None,
-    min_score: Optional[int] = None,
-    track: Optional[str] = None,
-):
-    k2 = _get_key(k, key)
-    require_admin(k2)
 
-    conn = db()
-    cur = conn.cursor()
-
-    query = "SELECT * FROM contributors WHERE 1=1"
-    params = []
-
-    if rail:
-        query += " AND rail = ?"
-        params.append(rail)
-
-    if min_score is not None:
-        query += " AND score >= ?"
-        params.append(min_score)
-
-    if track:
-        query += " AND contribution_track = ?"
-        params.append(track)
-
-    query += " ORDER BY score DESC"
-
-    cur.execute(query, params)
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return templates.TemplateResponse(
-        "contributors_dashboard.html",
-        {"request": request, "contributors": rows, "rail": rail, "min_score": min_score, "track": track, "k": k2, "year": year()},
-    )
-
-@app.post("/admin/contributor-status")
-async def update_contributor_status(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    k2 = _get_key(k, key)
-    require_admin(k2)
-    form = await request.form()
-    cid = int(form.get("id"))
-    status = _clean(form.get("status", ""))
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("UPDATE contributors SET status = ? WHERE id = ?", (status, cid))
-    conn.commit()
-    conn.close()
-    return {"ok": True}
-
-@app.get("/admin/people-dashboard", response_class=HTMLResponse)
-def people_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    k2 = _get_key(k, key)
-    require_admin(k2)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM people ORDER BY role DESC, id ASC")
-    people = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return templates.TemplateResponse(
-        "admin_people.html",
-        {"request": request, "people": people, "duece_ref": DUECE_REF, "k": k2, "year": year()},
-    )
-
-@app.post("/admin/create-operator")
-async def create_operator(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    k2 = _get_key(k, key)
-    require_admin(k2)
-
-    form = await request.form()
-    name = _clean(form.get("name", ""))
-    email = _clean(form.get("email", ""))
-
-    if not name or not email:
-        return JSONResponse({"error": "Missing name/email"}, status_code=400)
-
-    ref = make_ref_code("OP")
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO people (name, email, role, ref_code, parent_id, created_at)
-        VALUES (?, ?, 'operator', ?, ?, ?)
-    """, (name, email, ref, DUECE_ID, now_iso()))
-    conn.commit()
-    conn.close()
-
-    base = "https://nautical-compass-9rjs6.ondigitalocean.app"
-    return {
-        "ok": True,
-        "ref_code": ref,
-        "operator_link": f"{base}/checkout?ref={ref}"
-    }
-
-# --------------------
-# Dev Token Route (for testing without paying)
-# --------------------
-DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
-DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
-
+# ============================================================
+# DEV TOKEN (TEST ACCESS WITHOUT PAYING)
+# ============================================================
 @app.get("/dev/generate-token")
 def dev_generate_token(email: str, key: str, request: Request):
     if not DEV_TOKEN_ENABLED:
         return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
-
     if not DEV_TOKEN_KEY:
         return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
-
     if _clean(key) != DEV_TOKEN_KEY:
         return JSONResponse({"error": "Bad key"}, status_code=401)
 
@@ -1015,62 +964,5 @@ def dev_generate_token(email: str, key: str, request: Request):
         "email": email,
         "token": token,
         "dashboard": f"{base}/dashboard?token={token}",
-        "intake_form": f"{base}/intake-form?token={token}",
+        "legal_intake": f"{base}/intake/legal?token={token}",
     }
-
-# --------------------
-# Footer pages (Legal + Support)
-# --------------------
-@app.get("/terms", response_class=HTMLResponse)
-def terms_page(request: Request):
-    return templates.TemplateResponse("terms.html", {"request": request, "year": year()})
-
-@app.get("/privacy", response_class=HTMLResponse)
-def privacy_page(request: Request):
-    return templates.TemplateResponse("privacy.html", {"request": request, "year": year()})
-
-@app.get("/privacy-notice", response_class=HTMLResponse)
-def privacy_notice_page(request: Request):
-    return templates.TemplateResponse("privacy_notice.html", {"request": request, "year": year()})
-
-@app.get("/consumer-privacy-rights", response_class=HTMLResponse)
-def consumer_privacy_rights_page(request: Request):
-    return templates.TemplateResponse("consumer_privacy_rights.html", {"request": request, "year": year()})
-
-@app.get("/cookie-settings", response_class=HTMLResponse)
-def cookie_settings_page(request: Request):
-    return templates.TemplateResponse("cookie_settings.html", {"request": request, "year": year()})
-
-@app.get("/accessibility", response_class=HTMLResponse)
-def accessibility_page(request: Request):
-    return templates.TemplateResponse("accessibility.html", {"request": request, "year": year()})
-
-@app.get("/support", response_class=HTMLResponse)
-def support_page(request: Request):
-    return templates.TemplateResponse("support.html", {"request": request, "year": year()})
-
-@app.get("/faq", response_class=HTMLResponse)
-def faq_page(request: Request):
-    return templates.TemplateResponse("faq.html", {"request": request, "year": year()})
-
-@app.get("/contact", response_class=HTMLResponse)
-def contact_page(request: Request):
-    return templates.TemplateResponse("contact.html", {"request": request, "year": year()})
-
-@app.get("/download/ios")
-def download_ios():
-    return RedirectResponse(url="/", status_code=303)
-
-@app.get("/download/android")
-def download_android():
-    return RedirectResponse(url="/", status_code=303)
-
-# --------------------
-# Favicon
-# --------------------
-@app.get("/favicon.ico", include_in_schema=False)
-def favicon():
-    ico = STATIC_DIR / "favicon.ico"
-    if ico.exists():
-        return FileResponse(str(ico), media_type="image/x-icon")
-    return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
