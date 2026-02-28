@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}LMT Results • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 style="margin:0 0 6px;">{{ lane_title }}</h2>
+  <div class="muted">Intake #{{ id }} · Risk flags + routing + ready-to-work pack.</div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Snapshot</h3>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;">
+    {% for k,v in summary.items() %}
+      <div class="alert">
+        <div style="font-weight:900;">{{ k }}</div>
+        <div class="muted" style="margin-top:6px;">{{ v }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Risk Flags</h3>
+  {% if flags and flags|length > 0 %}
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+      {% for f in flags %}
+        <div class="alert {% if f.severity == 'high' %}bad{% elif f.severity == 'medium' %}{% else %}ok{% endif %}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-weight:900;">{{ f.title }}</div>
+            <span class="badge">{{ f.severity|upper }}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;line-height:1.55;">
+            <div><strong>Why:</strong> {{ f.why }}</div>
+            <div style="margin-top:6px;"><strong>Fix:</strong> {{ f.fix }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert ok">
+      <strong>No risk flags detected.</strong>
+      <div class="muted" style="margin-top:6px;">You supplied enough to be matched quickly.</div>
+    </div>
+  {% endif %}
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Routing Output</h3>
+  <div class="alert">
+    <div class="muted">
+      <strong>Bucket:</strong> {{ routing.bucket }}<br/>
+      <strong>Priority:</strong> {{ routing.priority }}<br/>
+      <strong>Lane:</strong> {{ routing.lane }}
+    </div>
+
+    <div style="margin-top:10px;">
+      <div style="font-weight:900;">Next steps</div>
+      <ul style="margin:6px 0 0;padding-left:18px;">
+        {% for s in routing.next_steps %}
+          <li style="margin:6px 0;line-height:1.6;">{{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Ready-to-Work Pack</h3>
+  <p class="muted" style="margin-top:0;line-height:1.6;">
+    This is a safe “profile pack” for fast booking. It is designed to prefill paperwork later.
+    We intentionally do not collect SSN inside the app.
+  </p>
+
+  <details class="dropdown" open>
+    <summary>Profile + Work + Logistics + Tax Profile</summary>
+    <div class="dropdown-body">
+      <pre style="white-space:pre-wrap;word-break:break-word;line-height:1.55;margin:0;">
+{{ pack }}
+      </pre>
+    </div>
+  </details>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="{{ next_url }}">New LMT Intake</a>
+    <a class="btn" href="/services">Services</a>
+  </div>
+</div>
+{% endblock %}
