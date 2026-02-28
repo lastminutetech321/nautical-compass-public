@@ -1,5 +1,221 @@
-/* ---------------- FOOTER (Lexis/Lexington-style) ---------------- */
+:root{
+  --bg:#0b1220;
+  --bg-soft:#0f1b33;
+  --panel:#0f1a2e;
+  --panel2:#0c162b;
 
+  --text:#e7eefc;
+  --muted:#a9b7d6;
+
+  --accent:#b88a2a;        /* bronze */
+  --accent-light:#e0b354;
+  --accent-soft:rgba(184,138,42,.25);
+
+  --line:rgba(255,255,255,.10);
+  --shadow:0 18px 40px rgba(0,0,0,.35);
+
+  --radius:16px;
+  --radius-sm:12px;
+  --max:1100px;
+
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  font-family:var(--font);
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, var(--accent-soft), transparent 55%),
+    linear-gradient(180deg, var(--bg), #050914);
+}
+
+/* NAV */
+.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  backdrop-filter: blur(12px);
+  background: rgba(5,9,20,.85);
+  border-bottom:1px solid var(--line);
+}
+
+.nav-inner{
+  max-width:var(--max);
+  margin:0 auto;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.4px;
+  color: var(--text);
+  text-decoration:none;
+}
+
+.brand-badge{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  color:#0b1220;
+}
+
+.nav-links{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  font-weight:700;
+}
+
+.nav-links a{
+  padding:8px 12px;
+  border-radius:10px;
+  transition:.2s ease;
+  color: rgba(231,238,252,.82); /* dimmer than bright blue */
+  text-decoration:none;
+}
+
+.nav-links a:hover{
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+}
+
+/* HERO */
+.hero{
+  padding:40px 20px 10px;
+  max-width:var(--max);
+  margin:0 auto;
+}
+.h-title{
+  font-size:36px;
+  margin:0 0 10px;
+}
+.h-sub{
+  margin:0;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+/* LAYOUT */
+.container{
+  max-width:var(--max);
+  margin:0 auto;
+  padding:20px;
+}
+.grid{
+  display:grid;
+  gap:18px;
+}
+.grid-2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+@media(max-width:900px){
+  .grid-2{grid-template-columns:1fr}
+}
+
+/* CARDS */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 22px 50px rgba(0,0,0,.45);
+}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:12px 16px;
+  border-radius:var(--radius-sm);
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s ease;
+  text-decoration:none;
+}
+.btn:hover{ background: rgba(255,255,255,.09); }
+.btn-primary{
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border:none;
+  color:#0b1220;
+}
+.btn-primary:hover{ filter:brightness(1.05); }
+
+.btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
+
+/* FORMS */
+.label{
+  color:var(--muted);
+  font-weight:700;
+  font-size:13px;
+  margin:14px 0 6px;
+}
+input, textarea, select{
+  width:100%;
+  padding:12px 14px;
+  border-radius:var(--radius-sm);
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color:var(--text);
+  outline:none;
+  transition:.2s ease;
+}
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+input:focus, textarea:focus, select:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(184,138,42,.25);
+}
+
+/* BADGES / ALERTS */
+.badge{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  color:var(--muted);
+  background: rgba(255,255,255,.05);
+  font-weight:800;
+  font-size:12px;
+}
+.alert{
+  padding:14px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.05);
+  margin-top:14px;
+}
+.alert.ok{ border-color: rgba(34,197,94,.6); }
+.alert.warn{ border-color: rgba(245,158,11,.6); }
+.alert.bad{ border-color: rgba(239,68,68,.6); }
+
+/* FOOTER */
 .footer{
   max-width:var(--max);
   margin:30px auto 40px;
@@ -8,93 +224,28 @@
   font-size:13px;
 }
 
-.footer-inner{
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
-}
-
-.footer-grid{
-  display:grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
-  gap: 18px;
-}
-
-@media(max-width: 900px){
-  .footer-grid{ grid-template-columns: 1fr; }
-}
-
-.footer-col{
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-}
-
-.footer-title{
-  color: var(--text);
-  font-weight: 800;
-  letter-spacing: .2px;
-  margin-bottom: 2px;
-}
-
-.footer-link{
-  color: var(--muted);
-  text-decoration: none;
-  display:inline-flex;
-  width: fit-content;
-  padding: 4px 0;
-  transition: .2s ease;
-}
-
-.footer-link:hover{
-  color: var(--text);
-  text-decoration: underline;
-}
-
-.footer-badges{
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.badge-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
-  color: var(--text);
-  font-weight: 800;
-  text-decoration: none;
-  transition: .2s ease;
-}
-
-.badge-btn:hover{
-  background: rgba(255,255,255,.09);
-}
-
-.footer-bottom{
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-}
-
-.footer-bottom-links{
-  display:flex;
-  flex-wrap:wrap;
-  gap: 14px;
-}
-
-.footer-copy{
-  line-height: 1.5;
-}
-
-/* Keep your textarea preference */
 textarea{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* DROPDOWN (details/summary) */
+.dropdown{
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(0,0,0,.12);
+}
+.dropdown > summary{
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+}
+.dropdown > summary::-webkit-details-marker{ display:none; }
+.dropdown .dropdown-body{
+  padding: 14px;
+  border-top: 1px solid var(--line);
 }
