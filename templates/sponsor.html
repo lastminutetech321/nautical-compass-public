@@ -1,56 +1,29 @@
 {% extends "base.html" %}
-{% block title %}Sponsor Access • Nautical Compass{% endblock %}
-
-{% block hero %}
-<section class="hero">
-  <div class="wrap">
-    <div class="hero-card">
-      <h1 class="h-title">Sponsor Access</h1>
-      <p class="h-sub">
-        Preferred placement + territory priority + routed intros.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/sponsor/checkout">Start Sponsor Access</a>
-        <a class="btn btn-ghost" href="/partner">Partner Intake</a>
-      </div>
-      <p class="micro">
-        This is a monthly sponsor lane designed for manufacturers and suppliers who want pipeline visibility and priority routing.
-      </p>
-    </div>
-  </div>
-</section>
-{% endblock %}
+{% block title %}Sponsor • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="grid grid-2">
-  <div class="card">
-    <h2>What you get</h2>
-    <ul class="muted" style="line-height:1.75; margin:0; padding-left:18px;">
-      <li>Preferred placement + “Recommended” positioning</li>
-      <li>Territory / category priority (defined after intake)</li>
-      <li>Routed intros (qualified, not spam)</li>
-      <li>Monthly reporting: intros / quotes / active bids</li>
-      <li>Co-marketing placement inside the ecosystem</li>
-      <li>Response expectations (protects both sides)</li>
-    </ul>
-  </div>
+<div class="card">
+  <h2>Sponsor Access</h2>
+  <p class="muted">
+    Sponsor access is for manufacturers/partners who want priority placement and structured inbound routing.
+  </p>
 
-  <div class="card">
-    <h2>Start sponsor access</h2>
-    <p class="muted">
-      If you haven’t submitted partner intake yet, do that first so we lock region + product category correctly.
-    </p>
-    <div class="btnrow">
-      <a class="btn" href="/partner">Submit Partner Intake</a>
-      <a class="btn btn-primary" href="/sponsor/checkout">Checkout</a>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>What you get</h3>
+      <ul>
+        <li>Priority routing of relevant leads</li>
+        <li>Structured partner intake + filtering</li>
+        <li>Regional coverage visibility</li>
+        <li>Reduced friction for onboarding</li>
+      </ul>
     </div>
-
-    <details class="dropdown" style="margin-top:14px;">
-      <summary>Notes</summary>
-      <div class="dropdown-body muted">
-        Sponsor access is designed for manufacturers and suppliers who want consistent pipeline access and clear routing rules.
-      </div>
-    </details>
+    <div class="card">
+      <h3>Checkout</h3>
+      <p class="muted">If Sponsor pricing is enabled, checkout is instant.</p>
+      <a class="btn btn-primary" href="/sponsor/checkout">Sponsor Checkout</a>
+      <p class="muted" style="margin-top:10px;">If this errors: set STRIPE_SPONSOR_PRICE_ID.</p>
+    </div>
   </div>
 </div>
 {% endblock %}
