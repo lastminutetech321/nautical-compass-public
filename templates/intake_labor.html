@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Labor Intake • LMT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Labor / Tech Intake (LMT)</h2>
+  <p class="muted">Built for speed + accuracy. The system routes you correctly.</p>
+
+  <form method="post" action="/intake/labor">
+    <div class="label">Name</div>
+    <input name="name" required />
+
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
+
+    <div class="label">Phone (optional)</div>
+    <input name="phone" />
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <div class="label">Primary Role</div>
+    <select name="role">
+      <option value="">Select…</option>
+      <option value="a2">A2</option>
+      <option value="a1">A1</option>
+      <option value="v2">V2</option>
+      <option value="v1">V1</option>
+      <option value="led-tech">LED Tech</option>
+      <option value="stagehand">Stagehand</option>
+      <option value="rigger">Rigger</option>
+      <option value="driver">Driver</option>
+      <option value="pm">PM / Lead</option>
+    </select>
+
+    <div class="label">Primary Skills</div>
+    <input name="primary_skills" placeholder="Consoles, comms, RF, LED processors, networking…" />
+
+    <div class="label">Certifications (optional)</div>
+    <input name="certs" placeholder="Forklift, OSHA, rigging, vendor certs…" />
+
+    <div class="label">Preferred Work Location</div>
+    <input name="location" placeholder="City/region or typical venues" />
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Call Time</div>
+        <input name="call_time" placeholder="e.g., 7:00 AM" />
+      </div>
+      <div>
+        <div class="label">Expected Duration</div>
+        <input name="duration" placeholder="e.g., 10 hours" />
+      </div>
+    </div>
+
+    <div class="label">Travel OK?</div>
+    <select name="travel_ok">
+      <option value="">Select…</option>
+      <option value="local">Local only</option>
+      <option value="regional">Regional</option>
+      <option value="national">National</option>
+    </select>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Truck Type (if driving)</div>
+        <select name="truck_type">
+          <option value="">Select…</option>
+          <option value="sprinter">Sprinter</option>
+          <option value="box-12-16">Box 12–16</option>
+          <option value="box-20-26">Box 20–26</option>
+          <option value="53ft">53ft</option>
+          <option value="none">No truck</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">Liftgate?</div>
+        <select name="liftgate">
+          <option value="">Select…</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="label">Availability</div>
+    <select name="availability">
+      <option value="">Select…</option>
+      <option value="0-2">0–2 hrs/week</option>
+      <option value="3-5">3–5 hrs/week</option>
+      <option value="6-10">6–10 hrs/week</option>
+      <option value="10+">10+ hrs/week</option>
+    </select>
+
+    <div class="label">Rate Expectation (optional)</div>
+    <input name="rate_expectation" placeholder="$ / hr" />
+
+    <div class="label">Notes</div>
+    <textarea name="notes" placeholder="Anything that matters for correct placement…"></textarea>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Generate Risk Flags + Route</button>
+      <a class="btn" href="/services">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
