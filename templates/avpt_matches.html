@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}AVPT Matches{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Match Results</h2>
+  <p class="muted">
+    Job <strong>#{{ job_id }}</strong> — {{ job.job_title }} ({{ job.city }}, {{ job.state }})<br>
+    Roles: <strong>{{ job.roles_needed }}</strong>
+  </p>
+
+  <div class="btnrow" style="margin:14px 0;">
+    <a class="btn" href="/avpt/results?job_id={{ job_id }}">Back to Job</a>
+    <a class="btn btn-primary" href="/lmt/worker">Add / Update Worker Profile</a>
+  </div>
+
+  {% if matches|length == 0 %}
+    <div class="alert bad">No workers found yet. Add worker profiles in LMT first.</div>
+  {% else %}
+    <div class="grid" style="gap:14px;">
+      {% for m in matches %}
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          <div>
+            <strong style="font-size:16px;">{{ m.worker.name }}</strong>
+            <div class="muted">{{ m.worker.email }} · {{ m.worker.phone }}</div>
+            <div class="muted">{{ m.worker.home_city }}, {{ m.worker.home_state }} · radius {{ m.worker.travel_radius_miles }}mi</div>
+          </div>
+          <div class="badge">Score {{ m.score }}</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="badge">Roles</div>
+          <div style="margin-top:6px;">{{ m.worker.primary_roles }}{% if m.worker.secondary_roles %} · <span class="muted">{{ m.worker.secondary_roles }}</span>{% endif %}</div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:10px;">
+          <div>
+            <div class="badge">Availability</div>
+            <div style="margin-top:6px;" class="muted">{{ m.worker.availability_next_7_days or "—" }}</div>
+          </div>
+          <div>
+            <div class="badge">Logistics</div>
+            <div style="margin-top:6px;" class="muted">
+              Transport: {{ m.worker.transportation or "—" }}<br>
+              Truck: {{ m.worker.truck_size or "—" }} · Liftgate: {{ m.worker.liftgate or "—" }}
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="badge">Why this match</div>
+          <ul style="margin:8px 0 0 18px;">
+            {% for r in m.reasons %}
+              <li class="muted">{{ r }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="badge">Certs</div>
+          <div style="margin-top:6px;" class="muted">{{ m.worker.tools_certifications or "—" }}</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="badge">Rate</div>
+          <div style="margin-top:6px;" class="muted">{{ m.worker.preferred_rate or "—" }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
