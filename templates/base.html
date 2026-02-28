@@ -7,90 +7,37 @@
 
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/static/styles.css" />
-
   {% block head %}{% endblock %}
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="wrap topbar-inner">
+  <header class="nav">
+    <div class="nav-inner">
       <a class="brand" href="/">
-        <span class="brand-mark">NC</span>
-        <span class="brand-text">Nautical Compass</span>
+        <span class="brand-badge">NC</span>
+        <span>Nautical Compass</span>
       </a>
 
-      <nav class="nav">
+      <nav class="nav-links">
         <a href="/services">Services</a>
-        <a href="/dashboards">Dashboards</a>
-        <a href="/lead">Lead Intake</a>
-        <a href="/partner">Partners</a>
-        <a class="btn btn-primary" href="/checkout">Get Access</a>
+        <a href="/intake/production">AVPT (Production)</a>
+        <a href="/intake/labor">LMT (Labor)</a>
+        <a href="/partner">Partner</a>
+        <a href="/lead">Lead</a>
+        <a class="btn btn-primary" href="/checkout">Subscribe</a>
       </nav>
     </div>
   </header>
 
   {% block hero %}{% endblock %}
 
-  <main class="wrap main">
+  <main class="container">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- FOOTER (Lexis/Lexington style) -->
   <footer class="footer">
-    <div class="wrap footer-inner">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <div class="footer-title">Nautical Compass</div>
-          <div class="muted" style="line-height:1.6;">
-            Structured intake, routing, and guided execution across legal + AV + operations.
-          </div>
-          <div class="footer-mini muted" style="margin-top:10px;">
-            Powered by CVCS Consulting
-          </div>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-title">Explore</div>
-          <a class="footer-link" href="/services">Services</a>
-          <a class="footer-link" href="/lead">Lead Intake</a>
-          <a class="footer-link" href="/partner">Partner Intake</a>
-          <a class="footer-link" href="/contributor">Contributor Intake</a>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-title">Support</div>
-          <a class="footer-link" href="/support">Support</a>
-          <a class="footer-link" href="/faq">FAQ</a>
-          <a class="footer-link" href="/contact">Contact</a>
-          <a class="footer-link" href="/accessibility">Accessibility</a>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-title">Download the app</div>
-          <div class="footer-badges">
-            <a class="badge-btn" href="/download/ios">Download on the App Store</a>
-            <a class="badge-btn" href="/download/android">Get it on Google Play</a>
-          </div>
-          <div class="footer-mini muted" style="margin-top:10px;">
-            (Badges are placeholders until you publish.)
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <div class="footer-bottom-links">
-          <a class="footer-link" href="/terms">Terms of Use</a>
-          <a class="footer-link" href="/privacy">Privacy Policy</a>
-          <a class="footer-link" href="/privacy-notice">Privacy Notice</a>
-          <a class="footer-link" href="/consumer-privacy-rights">Consumer Privacy Rights</a>
-          <a class="footer-link" href="/cookie-settings">Cookie Settings</a>
-        </div>
-
-        <div class="footer-copy muted">
-          © {{ year if year else "" }} Nautical Compass · Private platform · Structured intake · Secure checkout
-        </div>
-      </div>
-    </div>
+    <div>© {{ year if year else "" }} Nautical Compass</div>
+    <div class="muted">One engine · Many doors · Risk flags · Clean routing</div>
   </footer>
 
   {% block scripts %}{% endblock %}
