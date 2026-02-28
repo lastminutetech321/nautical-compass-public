@@ -1,34 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Lead Intake • Nautical Compass{% endblock %}
-
+{% block title %}Thank You • Nautical Compass{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>General Inquiry (Public)</h2>
-  <p class="muted">Use this if you’re not sure which lane to enter yet.</p>
-
-  <form method="post" action="/lead">
-    <div class="label">Name</div>
-    <input name="name" required />
-
-    <div class="label">Email</div>
-    <input name="email" type="email" required />
-
-    <div class="label">Phone</div>
-    <input name="phone" />
-
-    <div class="label">Company (optional)</div>
-    <input name="company" />
-
-    <div class="label">Interest</div>
-    <input name="interest" placeholder="Legal / Production / Labor / Partner / Sponsor" />
-
-    <div class="label">Message</div>
-    <textarea name="message"></textarea>
-
-    <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/services">Back</a>
-    </div>
-  </form>
+  <h2>Received.</h2>
+  <p class="muted">Your inquiry is logged. We’ll route it to the correct lane.</p>
+  <a class="btn btn-primary" href="/services">Back to Services</a>
 </div>
 {% endblock %}
