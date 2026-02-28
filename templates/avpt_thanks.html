@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Request Received • AVPT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Request received.</h2>
+  <p class="muted">
+    Your production request is in the dispatch queue. If you included contact details, you’ll be reached for any missing
+    specs (crew roles, show flow, load-in constraints).
+  </p>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="/services">Return to Services</a>
+    <a class="btn" href="/avpt/request">Submit Another Request</a>
+  </div>
+
+  <div class="alert" style="margin-top:14px;">
+    <strong>Tip:</strong>
+    <div class="muted" style="margin-top:6px;">
+      If you need same-day staffing, add “URGENT” in notes and include your load-in time.
+    </div>
+  </div>
+</div>
+{% endblock %}
