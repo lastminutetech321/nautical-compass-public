@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Results • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Results Receipt</h2>
+  <p class="muted">
+    Lane: <strong>{{ row.lane }}</strong> · Route: <strong>{{ row.route }}</strong> · Record: <strong>#{{ row.id }}</strong>
+  </p>
+
+  <h3>Risk Flags</h3>
+
+  {% if flags and flags|length > 0 %}
+    <div class="grid">
+      {% for f in flags %}
+      <div class="alert {% if f.severity=='high' %}bad{% elif f.severity=='medium' %}warn{% else %}ok{% endif %}">
+        <div class="badge">{{ f.severity|upper }}</div>
+        <h4 style="margin:10px 0 6px;">{{ f.title }}</h4>
+        <div class="muted"><strong>Meaning:</strong> {{ f.meaning }}</div>
+        <div class="muted" style="margin-top:8px;"><strong>Next action:</strong> {{ f.action }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert ok">
+      <strong>No critical flags detected.</strong>
+      <div class="muted">You still get a structured route + next steps.</div>
+    </div>
+  {% endif %}
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Next Steps</h3>
+  <ol>
+    {% for s in next_steps %}
+      <li>{{ s }}</li>
+    {% endfor %}
+  </ol>
+
+  <details class="dropdown">
+    <summary>Show structured payload (expand)</summary>
+    <div class="dropdown-body">
+      <pre style="white-space:pre-wrap;word-break:break-word;margin:0;">{{ payload | tojson(indent=2) }}</pre>
+    </div>
+  </details>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn" href="/services">Back to Services</a>
+    <a class="btn btn-primary" href="/">Home</a>
+  </div>
+</div>
+{% endblock %}
