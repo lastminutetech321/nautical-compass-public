@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}AVPT Request Created{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Job Request Created</h2>
+  <p class="muted">Job ID: <strong>#{{ job_id }}</strong></p>
+
+  <div class="grid grid-2" style="margin-top:10px;">
+    <div>
+      <div class="badge">Client</div>
+      <div style="margin-top:8px;">
+        <strong>{{ job.company_name }}</strong><br>
+        {{ job.contact_name }} — {{ job.contact_email }}<br>
+        <span class="muted">{{ job.contact_phone }}</span>
+      </div>
+    </div>
+    <div>
+      <div class="badge">Event</div>
+      <div style="margin-top:8px;">
+        <strong>{{ job.job_title }}</strong><br>
+        {{ job.city }}, {{ job.state }}<br>
+        <span class="muted">{{ job.date }} {{ job.call_time }}–{{ job.end_time }}</span>
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <div class="grid grid-2">
+    <div>
+      <div class="badge">Roles Needed</div>
+      <p style="margin-top:8px;">{{ job.roles_needed }}</p>
+    </div>
+    <div>
+      <div class="badge">Logistics</div>
+      <p style="margin-top:8px;">
+        Truck: <strong>{{ job.truck_needed or "—" }}</strong><br>
+        Liftgate: <strong>{{ job.liftgate_required or "—" }}</strong><br>
+        Certs: <strong>{{ job.certifications_required or "—" }}</strong>
+      </p>
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="/avpt/matches?job_id={{ job_id }}">Find Tech Matches</a>
+    <a class="btn" href="/avpt/request">Create Another Job</a>
+    <a class="btn" href="/services">Back to Services</a>
+  </div>
+</div>
+{% endblock %}
