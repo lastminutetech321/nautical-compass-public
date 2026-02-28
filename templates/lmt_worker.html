@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}LMT Worker Profile{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>LMT Worker Profile</h2>
+  <p class="muted">This creates a worker record used by Matching v1.</p>
+
+  <form class="form" method="post" action="/lmt/worker">
+
+    <h3 style="margin-top:0">Identity</h3>
+    <label class="label">Name</label>
+    <input name="name" required>
+
+    <label class="label">Email</label>
+    <input name="email" type="email" required>
+
+    <label class="label">Phone (optional)</label>
+    <input name="phone">
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Home Base</h3>
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Home City</label>
+        <input name="home_city" required>
+      </div>
+      <div>
+        <label class="label">Home State</label>
+        <input name="home_state" required>
+      </div>
+    </div>
+
+    <label class="label">Travel Radius (miles)</label>
+    <input name="travel_radius_miles" type="number" min="0" value="25" required>
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Skills</h3>
+    <label class="label">Primary Roles (comma-separated)</label>
+    <input name="primary_roles" required placeholder="A2, V1, LED Tech">
+
+    <label class="label">Secondary Roles (optional)</label>
+    <input name="secondary_roles" placeholder="A1, RF Coordinator, Stagehand">
+
+    <label class="label">Tools / Certifications (optional)</label>
+    <input name="tools_certifications" placeholder="OSHA10, Forklift, Fall Protection">
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <h3>Availability + Logistics</h3>
+    <label class="label">Availability next 7 days (plain English)</label>
+    <textarea name="availability_next_7_days" placeholder="Mon/Tue open; Wed after 2pm; Thu blocked; Fri open"></textarea>
+
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Transportation</label>
+        <input name="transportation" placeholder="Metro / Car / Truck">
+      </div>
+      <div>
+        <label class="label">Preferred Rate</label>
+        <input name="preferred_rate" placeholder="$45/hr">
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <label class="label">Truck Size (optional)</label>
+        <input name="truck_size" placeholder="None / Sprinter / 16ft / 26ft">
+      </div>
+      <div>
+        <label class="label">Liftgate</label>
+        <input name="liftgate" placeholder="Yes / No">
+      </div>
+    </div>
+
+    <label class="label">Notes (optional)</label>
+    <textarea name="notes" placeholder="Anything that prevents mistakes."></textarea>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Save Worker Profile</button>
+      <a class="btn" href="/lmt">Back</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
