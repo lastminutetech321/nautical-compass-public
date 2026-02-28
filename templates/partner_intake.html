@@ -1,22 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Partner Intake{% endblock %}
+{% block title %}Partner Intake • Nautical Compass{% endblock %}
+
 {% block content %}
 <div class="card">
-  <h2>Partner Intake</h2>
-  <p class="muted">Manufacturers / vendors / providers: submit to be routed into sponsor or vendor rails.</p>
+  <h2>Partner / Manufacturer Intake</h2>
+  <p class="muted">Vendor + manufacturer lane (LED, processors, logistics, rentals, coverage).</p>
 
-  <form class="form" method="post" action="/partner">
-    <div><div class="label">Name</div><input name="name" required></div>
-    <div><div class="label">Email</div><input name="email" type="email" required></div>
-    <div><div class="label">Company</div><input name="company"></div>
-    <div><div class="label">Role</div><input name="role" placeholder="Regional sales / vendor / manufacturer"></div>
-    <div><div class="label">Product Type</div><input name="product_type" placeholder="LED wall / lighting / audio / staging"></div>
-    <div><div class="label">Regions</div><input name="regions" placeholder="DMV / East Coast / National"></div>
-    <div><div class="label">Message</div><textarea name="message"></textarea></div>
+  <form method="post" action="/partner">
+    <div class="label">Name</div>
+    <input name="name" required />
 
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/">Back</a>
+    <div class="label">Email</div>
+    <input name="email" type="email" required />
+
+    <div class="label">Company</div>
+    <input name="company" />
+
+    <div class="label">Role</div>
+    <input name="role" placeholder="Regional sales, rental house, manufacturer rep…" />
+
+    <div class="label">Product Type</div>
+    <input name="product_type" placeholder="LED panels, processors, comms, distro, staging…" />
+
+    <div class="label">Website</div>
+    <input name="website" />
+
+    <div class="label">Regions Covered</div>
+    <input name="regions" placeholder="DMV, East Coast, National…" />
+
+    <div class="label">Message</div>
+    <textarea name="message"></textarea>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Submit Partner Intake</button>
+      <a class="btn" href="/services">Back</a>
     </div>
   </form>
 </div>
