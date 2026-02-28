@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Production Intake • AVPT{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Production Company Intake (AVPT)</h2>
+  <p class="muted">This is not a “form.” It generates risk flags + an execution route.</p>
+
+  <form method="post" action="/intake/production">
+    <div class="label">Contact Name</div>
+    <input name="name" required />
+
+    <div class="label">Contact Email</div>
+    <input name="email" type="email" required />
+
+    <div class="label">Contact Phone (optional)</div>
+    <input name="phone" />
+
+    <div class="label">Company (optional)</div>
+    <input name="company" />
+
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+    <div class="label">Show Name (optional)</div>
+    <input name="show_name" />
+
+    <div class="label">Show Date</div>
+    <input name="show_date" placeholder="YYYY-MM-DD" />
+
+    <div class="label">Venue / Location</div>
+    <input name="venue" placeholder="Venue name + city" />
+
+    <div class="grid grid-2">
+      <div>
+        <div class="label">Load-in</div>
+        <input name="load_in" placeholder="e.g., 9:00 AM" />
+      </div>
+      <div>
+        <div class="label">Show Time</div>
+        <input name="show_time" placeholder="e.g., 6:00 PM" />
+      </div>
+      <div>
+        <div class="label">Strike Time</div>
+        <input name="strike_time" placeholder="e.g., 11:00 PM" />
+      </div>
+      <div>
+        <div class="label">Estimated Crew Count</div>
+        <input name="crew_count" placeholder="e.g., 12" />
+      </div>
+    </div>
+
+    <div class="label">Departments Needed</div>
+    <input name="departments" placeholder="Audio, Video, LED, Lighting, Rigging, Carpenters..." />
+
+    <div class="label">Gear Needed</div>
+    <textarea name="gear_needed" placeholder="LED wall size, processors, comms, consoles, distro, etc."></textarea>
+
+    <div class="label">Complexity</div>
+    <select name="complexity">
+      <option value="">Select…</option>
+      <option value="standard">Standard corporate</option>
+      <option value="led-heavy">LED-heavy / high integration</option>
+      <option value="broadcast">Broadcast / streaming</option>
+      <option value="festival">Festival / large footprint</option>
+    </select>
+
+    <div class="label">Budget Range (optional)</div>
+    <select name="budget_range">
+      <option value="">Select…</option>
+      <option value="low">Low</option>
+      <option value="mid">Mid</option>
+      <option value="high">High</option>
+    </select>
+
+    <div class="label">Notes</div>
+    <textarea name="notes" placeholder="Constraints, deadlines, client expectations, anything that can blow up a show…"></textarea>
+
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn btn-primary" type="submit">Generate Risk Flags + Route</button>
+      <a class="btn" href="/services">Back</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
