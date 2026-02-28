@@ -3,60 +3,50 @@
 
 {% block hero %}
 <section class="hero">
-  <div class="wrap">
-    <div class="hero-card">
-      <h1 class="h-title">Nautical Compass</h1>
-      <p class="h-sub">
-        A unified ecosystem for legal navigation + AV/trades operations — built to turn complexity into simple, mistake-proof rails.
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/services">Explore Services</a>
-        <a class="btn btn-ghost" href="/lead">Public Inquiry</a>
-      </div>
-
-      <p class="micro">
-        Subscribers unlock priority intake + dashboards. Partners and contributors can onboard through dedicated portals.
-      </p>
-    </div>
-  </div>
+  <h1 class="h-title">One Hall. Many Doors.</h1>
+  <p class="h-sub">
+    Nautical Compass is a structured intake engine that turns answers into action:
+    <strong>risk flags</strong>, <strong>routing</strong>, and a <strong>next-step packet</strong>.
+  </p>
 </section>
 {% endblock %}
 
 {% block content %}
 <div class="grid grid-2">
-
   <div class="card">
-    <h2>Why We Exist</h2>
+    <h2>For Legal (NC)</h2>
     <p class="muted">
-      Every industry we touch has the same root problem: the work is complex, the stakes are high, and the process is easy to mess up.
-      We exist to replace confusion with rails.
+      Subscribers-only intake that converts your dispute into a structured plan with risk flags.
     </p>
-    <ul>
-      <li><strong>Reduce chaos:</strong> structured intake + routing + next-step execution.</li>
-      <li><strong>Raise standards:</strong> transparency, audit trails, measurable performance.</li>
-      <li><strong>Protect people:</strong> fewer mistakes, better documentation, clearer expectations.</li>
-    </ul>
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn btn-primary" href="/services">See What We Do</a>
-      <a class="btn" href="/checkout">Subscribe</a>
-    </div>
+    <a class="btn btn-primary" href="/checkout">Subscribe to Access Legal Intake</a>
+    <p class="muted" style="margin-top:10px;">Already have a token? Use your dashboard link.</p>
   </div>
 
   <div class="card">
-    <h2>Choose Your Path</h2>
-    <p class="muted">Different portals for different users — so nobody gets lost.</p>
-    <ul>
-      <li><strong>Client / Subscriber:</strong> structured legal intake + results rails.</li>
-      <li><strong>Partner:</strong> manufacturers, vendors, sponsors, solution providers.</li>
-      <li><strong>Contributor:</strong> staff, sales operators, builders, hardware, logistics.</li>
-    </ul>
-    <div class="btnrow" style="margin-top:14px;">
-      <a class="btn" href="/partner">Partner Intake</a>
-      <a class="btn" href="/contributor">Contributor Intake</a>
-      <a class="btn" href="/lead">Public Lead Intake</a>
-    </div>
+    <h2>For Production (AVPT)</h2>
+    <p class="muted">
+      Production company intake that captures show details, staffing, and constraints—without confusion.
+    </p>
+    <a class="btn" href="/intake/production">Open Production Intake</a>
   </div>
 
+  <div class="card">
+    <h2>For Labor / Tech (LMT)</h2>
+    <p class="muted">
+      Worker intake designed for speed and accuracy: role, call-time, location, truck/liftgate, availability.
+    </p>
+    <a class="btn" href="/intake/labor">Open Labor Intake</a>
+  </div>
+
+  <div class="card">
+    <h2>Partners & Manufacturers</h2>
+    <p class="muted">
+      Vendor + manufacturer intake for LED walls, processors, logistics, and regional coverage.
+    </p>
+    <div class="btnrow">
+      <a class="btn" href="/partner">Partner Intake</a>
+      <a class="btn" href="/sponsor">Sponsor Access</a>
+    </div>
+  </div>
 </div>
 {% endblock %}
