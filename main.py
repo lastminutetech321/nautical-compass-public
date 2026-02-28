@@ -1,5 +1,5 @@
 # main.py — Nautical Compass (NC) + AVPT + LMT (FULL, CLEAN, LOCKED)
-# Option A implemented: /intake/labor -> redirects to /lmt/worker
+# Adds: AVPT "thanks" page + AVPT admin dashboard + keeps existing rails.
 
 import os
 import sqlite3
@@ -49,7 +49,6 @@ def _clean(s: str) -> str:
 
 def _clean_url(s: str) -> str:
     s = _clean(s)
-    # guard against copy-paste like "Value: https://..."
     if s.lower().startswith("value:"):
         s = s.split(":", 1)[1].strip()
     return s
@@ -69,9 +68,7 @@ def _require_valid_url(name: str, url: str) -> str:
 # --------------------
 STRIPE_SECRET_KEY = _clean(os.getenv("STRIPE_SECRET_KEY", ""))
 STRIPE_PRICE_ID = _clean(os.getenv("STRIPE_PRICE_ID", ""))
-# Optional: sponsor tier (if you add later)
-STRIPE_SPONSOR_PRICE_ID = _clean(os.getenv("STRIPE_SPONSOR_PRICE_ID", ""))
-
+STRIPE_SPONSOR_PRICE_ID = _clean(os.getenv("STRIPE_SPONSOR_PRICE_ID", ""))  # optional
 STRIPE_WEBHOOK_SECRET = _clean(os.getenv("STRIPE_WEBHOOK_SECRET", ""))
 
 try:
@@ -231,7 +228,7 @@ def init_db():
         )
     """)
 
-    # AVPT client requests (production companies / event managers)
+    # AVPT client requests (Production Company / Event Manager)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS avpt_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -381,88 +378,7 @@ def send_email(to_email: str, subject: str, body: str):
 
 
 # --------------------
-# Contributor scoring + rail assignment (simple v1)
-# --------------------
-def _score_contributor(track: str, comp_plan: str, assets: str, website: str, company: str,
-                      fit_access: str, fit_build_goal: str, fit_opportunity: str, fit_authority: str,
-                      fit_lane: str, fit_no_conditions: str, fit_visibility: str, fit_why_you: str) -> int:
-    score = 0
-    t = (track or "").strip().lower()
-    weights = {
-        "ecosystem_staff": 18,
-        "sales_growth": 18,
-        "builder_operator": 16,
-        "partner_vendor": 14,
-        "hardware_supply": 16,
-        "capital_sponsor": 14,
-        "advisor_specialist": 10,
-        "not_sure": 8,
-    }
-    score += weights.get(t, 10)
-
-    cp = (comp_plan or "").strip().lower()
-    if "residual" in cp or "mrr" in cp:
-        score += 10
-    elif "commission" in cp:
-        score += 10
-    elif "hourly" in cp:
-        score += 6
-    elif "equity" in cp or "revshare" in cp:
-        score += 8
-
-    if assets and len(assets.strip()) > 10:
-        score += 10
-    if website and len(website.strip()) > 6:
-        score += 6
-    if company and len(company.strip()) > 2:
-        score += 4
-
-    fit_fields = [fit_access, fit_build_goal, fit_opportunity, fit_authority,
-                  fit_lane, fit_no_conditions, fit_visibility, fit_why_you]
-    filled = sum(1 for x in fit_fields if x and str(x).strip())
-    score += min(16, filled * 2)
-
-    auth = (fit_authority or "").lower().strip()
-    if auth == "owner_exec":
-        score += 10
-    elif auth == "manager_influence":
-        score += 6
-    elif auth == "partial":
-        score += 3
-
-    return int(score)
-
-
-def _assign_rail(track: str, position_interest: str, fit_lane: str, score: int) -> str:
-    t = (track or "").strip().lower()
-    pos = (position_interest or "").strip().lower()
-    lane = (fit_lane or "").strip().lower()
-
-    if score >= 70:
-        if t == "sales_growth" or lane == "sales" or "sales" in pos or "closer" in pos:
-            return "sales_priority"
-        if t == "ecosystem_staff" or "intake" in pos or "ops" in pos or "client" in pos:
-            return "staff_priority"
-        if t == "hardware_supply" or lane == "hardware":
-            return "hardware_supply"
-        if t == "capital_sponsor" or lane == "finance":
-            return "capital"
-        return "priority"
-
-    if score >= 45:
-        if t == "sales_growth":
-            return "sales_pool"
-        if t == "ecosystem_staff":
-            return "staff_pool"
-        if t in ("partner_vendor", "hardware_supply"):
-            return "bd_followup"
-        return "review"
-
-    return "triage"
-
-
-# --------------------
-# Favicon
+# Basic pages + assets
 # --------------------
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
@@ -472,9 +388,6 @@ def favicon():
     return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
 
 
-# --------------------
-# Public Pages
-# --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "year": datetime.utcnow().year})
@@ -537,7 +450,6 @@ def partner_submit(
     regions: str = Form(""),
     message: str = Form(""),
 ):
-    # If company/role/product_type are required for your UI, enforce here:
     if not company.strip():
         company = "N/A"
     if not role.strip():
@@ -593,7 +505,6 @@ def submit_intake(
     conn.commit()
     conn.close()
 
-    # Optional notify admin email
     if EMAIL_USER and EMAIL_PASS:
         send_email(
             EMAIL_USER,
@@ -615,7 +526,7 @@ def admin_intake_json(limit: int = 50):
 
 
 # --------------------
-# Option A (your choice): /intake/labor -> redirect to /lmt/worker
+# Option A: /intake/labor -> /lmt/worker
 # --------------------
 @app.get("/intake/labor")
 def intake_labor_redirect():
@@ -623,7 +534,7 @@ def intake_labor_redirect():
 
 
 # --------------------
-# AVPT Client Intake (Production Company / Event Manager)
+# AVPT Client Intake (Production / Corporate)
 # --------------------
 @app.get("/avpt/request", response_class=HTMLResponse)
 def avpt_request_page(request: Request):
@@ -661,7 +572,42 @@ def avpt_request_submit(
     ))
     conn.commit()
     conn.close()
-    return RedirectResponse("/services", status_code=303)
+
+    # send internal notification if email is configured
+    if EMAIL_USER and EMAIL_PASS:
+        send_email(
+            EMAIL_USER,
+            "AVPT Production Request (New)",
+            f"Org: {org_name}\nContact: {contact_name}\nEmail: {email}\nPhone: {phone}\n"
+            f"Event: {event_name}\nVenue: {venue}\nCity: {city}\n"
+            f"Dates: {date_start} → {date_end}\n"
+            f"Crew: {crew_needed}\nGear: {gear_needed}\nBudget: {budget_range}\n"
+            f"Notes: {notes}"
+        )
+
+    return RedirectResponse("/avpt/thanks", status_code=303)
+
+
+@app.get("/avpt/thanks", response_class=HTMLResponse)
+def avpt_thanks(request: Request):
+    return templates.TemplateResponse("avpt_thanks.html", {"request": request, "year": datetime.utcnow().year})
+
+
+# Admin dashboard so you can SEE the AVPT leads instantly
+@app.get("/admin/avpt-dashboard", response_class=HTMLResponse)
+def admin_avpt_dashboard(request: Request, k: str | None = None, key: str | None = None):
+    require_admin(k or key)
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM avpt_requests ORDER BY id DESC LIMIT 500")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return templates.TemplateResponse(
+        "avpt_dashboard.html",
+        {"request": request, "rows": rows, "year": datetime.utcnow().year},
+    )
 
 
 # --------------------
@@ -738,7 +684,6 @@ def checkout(ref: str | None = None):
         return err
 
     try:
-        # Pass referral code through to Stripe as metadata (so you can credit Duece/operators later)
         session = stripe.checkout.Session.create(
             mode="subscription",
             line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
@@ -753,13 +698,6 @@ def checkout(ref: str | None = None):
 
 @app.get("/success", response_class=HTMLResponse)
 def success(request: Request, session_id: str | None = None):
-    """
-    If Stripe is configured and session_id is present:
-      - fetch email
-      - mark subscriber active
-      - issue token
-      - render success.html w/ dashboard_link
-    """
     token = None
     email = None
     dashboard_link = None
@@ -767,7 +705,6 @@ def success(request: Request, session_id: str | None = None):
     if session_id and STRIPE_SECRET_KEY:
         try:
             s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
-            # Stripe usually returns "complete" or "open"; we accept complete-ish statuses
             if s:
                 details = s.get("customer_details") or {}
                 email = details.get("email")
@@ -868,179 +805,3 @@ def dashboard(request: Request, token: str):
     if err:
         return err
     return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
-
-
-# --------------------
-# Contributor Intake + Admin
-# --------------------
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-
-@app.post("/contributor")
-def submit_contributor(
-    name: str = Form(...),
-    email: str = Form(...),
-    phone: str = Form(""),
-    company: str = Form(""),
-    website: str = Form(""),
-
-    primary_role: str = Form(...),
-    contribution_track: str = Form(...),
-    position_interest: str = Form(""),
-    comp_plan: str = Form(""),
-    director_owner: str = Form("Duece"),
-
-    assets: str = Form(""),
-    regions: str = Form(""),
-    capacity: str = Form(""),
-    alignment: str = Form(""),
-    message: str = Form(""),
-
-    fit_access: str = Form(""),
-    fit_build_goal: str = Form(""),
-    fit_opportunity: str = Form(""),
-    fit_authority: str = Form(""),
-    fit_lane: str = Form(""),
-    fit_no_conditions: str = Form(""),
-    fit_visibility: str = Form(""),
-    fit_why_you: str = Form(""),
-):
-    score = _score_contributor(
-        contribution_track, comp_plan, assets, website, company,
-        fit_access, fit_build_goal, fit_opportunity, fit_authority,
-        fit_lane, fit_no_conditions, fit_visibility, fit_why_you
-    )
-    rail = _assign_rail(contribution_track, position_interest, fit_lane, score)
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO contributors (
-            name, email, phone, company, website,
-            primary_role,
-            contribution_track, position_interest, comp_plan, director_owner,
-            assets, regions, capacity, alignment, message,
-            fit_access, fit_build_goal, fit_opportunity, fit_authority,
-            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-            score, rail, status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?,
-                ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?)
-    """, (
-        name, email, phone, company, website,
-        primary_role,
-        contribution_track, position_interest, comp_plan, director_owner,
-        assets, regions, capacity, alignment, message,
-        fit_access, fit_build_goal, fit_opportunity, fit_authority,
-        fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-        score, rail, "new", now_iso()
-    ))
-    conn.commit()
-    conn.close()
-
-    return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
-
-
-@app.get("/admin/contributors-dashboard", response_class=HTMLResponse)
-def contributors_dashboard(
-    request: Request,
-    k: Optional[str] = None,
-    key: Optional[str] = None,
-    rail: Optional[str] = None,
-    min_score: Optional[int] = None,
-    track: Optional[str] = None,
-):
-    require_admin(k or key)
-
-    conn = db()
-    cur = conn.cursor()
-
-    query = "SELECT * FROM contributors WHERE 1=1"
-    params = []
-
-    if rail:
-        query += " AND rail = ?"
-        params.append(rail)
-    if min_score is not None:
-        query += " AND score >= ?"
-        params.append(min_score)
-    if track:
-        query += " AND contribution_track = ?"
-        params.append(track)
-
-    query += " ORDER BY score DESC"
-
-    cur.execute(query, params)
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return templates.TemplateResponse(
-        "contributors_dashboard.html",
-        {"request": request, "contributors": rows, "rail": rail, "min_score": min_score, "track": track, "year": datetime.utcnow().year},
-    )
-
-
-@app.post("/admin/contributor-status")
-def update_contributor_status(id: int = Form(...), status: str = Form(...), k: str | None = None, key: str | None = None):
-    require_admin(k or key)
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("UPDATE contributors SET status = ? WHERE id = ?", (status, id))
-    conn.commit()
-    conn.close()
-    return {"ok": True}
-
-
-# --------------------
-# Admin Leads Dashboard (simple)
-# --------------------
-@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
-def leads_dashboard(request: Request, k: str | None = None, key: str | None = None):
-    require_admin(k or key)
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM leads ORDER BY id DESC LIMIT 500")
-    leads = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return templates.TemplateResponse("leads_dashboard.html", {"request": request, "leads": leads, "year": datetime.utcnow().year})
-
-
-# --------------------
-# Dev Token Route (optional)
-# --------------------
-DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
-DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
-
-
-@app.get("/dev/generate-token")
-def dev_generate_token(email: str, key: str, request: Request):
-    if not DEV_TOKEN_ENABLED:
-        return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
-
-    if not DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
-
-    if _clean(key) != DEV_TOKEN_KEY:
-        return JSONResponse({"error": "Bad key"}, status_code=401)
-
-    email = _clean(email).lower()
-    if not email or "@" not in email:
-        return JSONResponse({"error": "Invalid email"}, status_code=400)
-
-    upsert_subscriber_active(email, "", "")
-    token = issue_magic_link(email, hours=24)
-
-    base = str(request.base_url).rstrip("/")
-    return {
-        "email": email,
-        "token": token,
-        "dashboard": f"{base}/dashboard?token={token}",
-        "intake_form": f"{base}/intake-form?token={token}",
-    }
