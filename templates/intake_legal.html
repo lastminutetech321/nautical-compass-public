@@ -1,52 +1,26 @@
 {% extends "base.html" %}
-{% block title %}Legal Intake • NC{% endblock %}
-
+{% block title %}NC Legal Intake{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Subscriber Legal Intake</h2>
-  <p class="muted">Authorized subscriber: <strong>{{ email }}</strong></p>
+  <h2>NC — Legal Intake</h2>
+  <p class="muted">Subscriber: {{ subscriber_email }}</p>
 
-  <form method="post" action="/intake/legal">
-    <input type="hidden" name="token" value="{{ token }}" />
+  <form method="post" action="/intake?token={{ token }}" class="form">
+    <label>Your name</label>
+    <input name="name" required>
 
-    <div class="label">Your Name</div>
-    <input name="name" required />
+    <label>Your email</label>
+    <input name="email" type="email" required>
 
-    <div class="label">Your Email</div>
-    <input name="email" type="email" required />
+    <label>Service requested</label>
+    <input name="service_requested" required placeholder="Contract review, demand letter, records request...">
 
-    <div class="label">Phone (optional)</div>
-    <input name="phone" />
+    <label>Notes</label>
+    <textarea name="notes" rows="6"></textarea>
 
-    <div class="label">Jurisdiction</div>
-    <input name="jurisdiction" placeholder="City/State where it happened" />
-
-    <div class="label">Urgency</div>
-    <select name="urgency">
-      <option value="">Select…</option>
-      <option value="normal">Normal</option>
-      <option value="urgent">Urgent</option>
-      <option value="emergency-today">Emergency / Today</option>
-    </select>
-
-    <div class="label">Timeline</div>
-    <textarea name="timeline" placeholder="Key dates, what happened first, what happened next…"></textarea>
-
-    <div class="label">Issue Summary</div>
-    <textarea name="issue" placeholder="What happened in plain language."></textarea>
-
-    <div class="label">Desired Outcome</div>
-    <textarea name="desired_outcome" placeholder="What do you want done?"></textarea>
-
-    <div class="label">Evidence</div>
-    <textarea name="evidence" placeholder="Emails, screenshots, contracts, receipts, calls, names…"></textarea>
-
-    <div class="label">Notes</div>
-    <textarea name="notes"></textarea>
-
-    <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Generate Risk Flags + Route</button>
-      <a class="btn" href="/dashboard?token={{ token }}">Back to Dashboard</a>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/dashboard?token={{ token }}">Back</a>
     </div>
   </form>
 </div>
