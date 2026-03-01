@@ -1,52 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Home • Nautical Compass{% endblock %}
 
-{% block hero %}
-<section class="hero">
-  <h1 class="h-title">One Hall. Many Doors.</h1>
-  <p class="h-sub">
-    Nautical Compass is a structured intake engine that turns answers into action:
-    <strong>risk flags</strong>, <strong>routing</strong>, and a <strong>next-step packet</strong>.
-  </p>
-</section>
-{% endblock %}
-
 {% block content %}
-<div class="grid grid-2">
-  <div class="card">
-    <h2>For Legal (NC)</h2>
-    <p class="muted">
-      Subscribers-only intake that converts your dispute into a structured plan with risk flags.
-    </p>
-    <a class="btn btn-primary" href="/checkout">Subscribe to Access Legal Intake</a>
-    <p class="muted" style="margin-top:10px;">Already have a token? Use your dashboard link.</p>
-  </div>
+<div class="card">
+  <h2>One Hall. Many Doors.</h2>
+  <p class="muted">
+    Nautical Compass routes people into the right lane fast — legal, production, labor, partners —
+    and shows “risk flags” so decisions are clear and mistakes are harder to make.
+  </p>
 
-  <div class="card">
-    <h2>For Production (AVPT)</h2>
-    <p class="muted">
-      Production company intake that captures show details, staffing, and constraints—without confusion.
-    </p>
-    <a class="btn" href="/intake/production">Open Production Intake</a>
-  </div>
-
-  <div class="card">
-    <h2>For Labor / Tech (LMT)</h2>
-    <p class="muted">
-      Worker intake designed for speed and accuracy: role, call-time, location, truck/liftgate, availability.
-    </p>
-    <a class="btn" href="/intake/labor">Open Labor Intake</a>
-  </div>
-
-  <div class="card">
-    <h2>Partners & Manufacturers</h2>
-    <p class="muted">
-      Vendor + manufacturer intake for LED walls, processors, logistics, and regional coverage.
-    </p>
-    <div class="btnrow">
-      <a class="btn" href="/partner">Partner Intake</a>
-      <a class="btn" href="/sponsor">Sponsor Access</a>
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3>Production Companies (AVPT Client Lane)</h3>
+      <p class="muted">Request crews, set requirements, avoid scope/payment failures.</p>
+      <a class="btn btn-primary" href="/intake/production">Start Production Intake</a>
     </div>
+
+    <div class="card">
+      <h3>Labor / Techs (LMT Worker Lane)</h3>
+      <p class="muted">Declare roles + readiness. Get matched to open requests.</p>
+      <a class="btn btn-primary" href="/intake/labor">Start Labor Intake</a>
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn" href="/services">Browse Services</a>
   </div>
 </div>
 {% endblock %}
