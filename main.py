@@ -1,218 +1,66 @@
 import os
 import sqlite3
-import smtplib
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from email.message import EmailMessage
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
-import stripe
 from fastapi import FastAPI, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, EmailStr
 
-# =========================
+# --------------------
 # Paths (LOCKED)
-# =========================
+# --------------------
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "nc.db"
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# =========================
+# --------------------
 # App
-# =========================
-app = FastAPI(title="Nautical Compass Intake")
+# --------------------
+app = FastAPI(title="Nautical Compass")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# =========================
-# Helpers (env cleanup + admin)
-# =========================
+# --------------------
+# Env
+# --------------------
 def _clean(s: str) -> str:
     return (s or "").replace("\r", "").replace("\n", "").strip()
 
-def _clean_url(s: str) -> str:
-    s = _clean(s)
-    # protect against accidentally pasting "Value: https://..."
-    if s.lower().startswith("value:"):
-        s = s.split(":", 1)[1].strip()
-    return s
+ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))
 
-def _require_valid_url(name: str, url: str) -> str:
-    url = _clean_url(url)
-    if not url:
-        return ""
-    if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError(f"{name} is not a valid URL (must start with http:// or https://)")
-    return url
+DEV_TOKEN_ENABLED = _clean(os.getenv("DEV_TOKEN_ENABLED", "false")).lower() in ("1", "true", "yes")
+DEV_TOKEN_KEY = _clean(os.getenv("DEV_TOKEN_KEY", ""))
 
-def now_iso() -> str:
-    return datetime.utcnow().isoformat()
-
+# --------------------
+# DB
+# --------------------
 def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-ADMIN_KEY = _clean(os.getenv("ADMIN_KEY", ""))
+def now_iso():
+    return datetime.utcnow().isoformat()
 
-def require_admin(k: Optional[str], key: Optional[str]) -> None:
-    admin = _clean(k or key or "")
-    if not ADMIN_KEY:
-        raise HTTPException(status_code=500, detail="ADMIN_KEY env var not set")
-    if not admin or admin != ADMIN_KEY:
-        raise HTTPException(status_code=401, detail="Unauthorized (bad admin key)")
+def sha256(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
-# =========================
-# Stripe Config
-# =========================
-STRIPE_SECRET_KEY = _clean(os.getenv("STRIPE_SECRET_KEY", ""))
-STRIPE_PRICE_ID = _clean(os.getenv("STRIPE_PRICE_ID", ""))
-STRIPE_WEBHOOK_SECRET = _clean(os.getenv("STRIPE_WEBHOOK_SECRET", ""))
-
-try:
-    SUCCESS_URL = _require_valid_url("SUCCESS_URL", os.getenv("SUCCESS_URL", ""))
-    CANCEL_URL = _require_valid_url("CANCEL_URL", os.getenv("CANCEL_URL", ""))
-except Exception as e:
-    # don’t crash startup—surface via checkout error
-    SUCCESS_URL = _clean_url(os.getenv("SUCCESS_URL", ""))
-    CANCEL_URL = _clean_url(os.getenv("CANCEL_URL", ""))
-    STARTUP_URL_ERROR = str(e)
-else:
-    STARTUP_URL_ERROR = ""
-
-if STRIPE_SECRET_KEY:
-    stripe.api_key = STRIPE_SECRET_KEY
-
-# =========================
-# Email (optional)
-# =========================
-EMAIL_USER = _clean(os.getenv("EMAIL_USER", ""))
-EMAIL_PASS = _clean(os.getenv("EMAIL_PASS", ""))
-
-# Optional Mailgun SMTP support (if you used it)
-SMTP_HOST = _clean(os.getenv("SMTP_HOST", "")) or "smtp.gmail.com"
-SMTP_PORT = int(_clean(os.getenv("SMTP_PORT", "")) or "465")
-
-def send_email(to_email: str, subject: str, body: str):
-    if not (EMAIL_USER and EMAIL_PASS):
-        return
-    try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_USER
-        msg["To"] = to_email
-        msg.set_content(body)
-
-        # Gmail: SSL 465
-        # Mailgun: STARTTLS 587 (if you set SMTP_PORT=587)
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
-                smtp.login(EMAIL_USER, EMAIL_PASS)
-                smtp.send_message(msg)
-        else:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
-                smtp.starttls()
-                smtp.login(EMAIL_USER, EMAIL_PASS)
-                smtp.send_message(msg)
-    except Exception as e:
-        print("Email failed:", e)
-
-# =========================
-# Models (JSON endpoints use these; HTML forms use Form(...) below)
-# =========================
-class IntakeForm(BaseModel):
-    name: str
-    email: str
-    service_requested: str
-    notes: str | None = None
-
-class ContributorForm(BaseModel):
-    name: str
-    email: EmailStr
-    phone: str = ""
-    company: str = ""
-    website: str = ""
-
-    primary_role: str
-    contribution_track: str
-    position_interest: str = ""
-    comp_plan: str = ""
-    director_owner: str = "Duece"
-
-    assets: str = ""
-    regions: str = ""
-    capacity: str = ""
-    alignment: str = ""
-    message: str = ""
-
-    fit_access: str = ""
-    fit_build_goal: str = ""
-    fit_opportunity: str = ""
-    fit_authority: str = ""
-    fit_lane: str = ""
-    fit_no_conditions: str = ""
-    fit_visibility: str = ""
-    fit_why_you: str = ""
-
-# =========================
-# DB Init (tables)
-# =========================
 def init_db():
     conn = db()
     cur = conn.cursor()
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS intake (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            service_requested TEXT NOT NULL,
-            notes TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS leads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            interest TEXT,
-            phone TEXT,
-            company TEXT,
-            message TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS partners (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            company TEXT,
-            role TEXT,
-            product_type TEXT,
-            website TEXT,
-            regions TEXT,
-            message TEXT,
-            created_at TEXT NOT NULL
-        )
-    """)
-
+    # Subscribers + magic links (kept minimal here)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS subscribers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE,
-            stripe_customer_id TEXT,
-            stripe_subscription_id TEXT,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )
@@ -228,74 +76,86 @@ def init_db():
         )
     """)
 
+    # Production intakes (AVPT client lane)
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS contributors (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            company TEXT,
-            website TEXT,
-
-            primary_role TEXT NOT NULL,
-            contribution_track TEXT NOT NULL,
-            position_interest TEXT,
-            comp_plan TEXT,
-            director_owner TEXT,
-
-            assets TEXT,
-            regions TEXT,
-            capacity TEXT,
-            alignment TEXT,
-            message TEXT,
-
-            fit_access TEXT,
-            fit_build_goal TEXT,
-            fit_opportunity TEXT,
-            fit_authority TEXT,
-            fit_lane TEXT,
-            fit_no_conditions TEXT,
-            fit_visibility TEXT,
-            fit_why_you TEXT,
-
-            score INTEGER NOT NULL DEFAULT 0,
-            rail TEXT NOT NULL DEFAULT 'triage',
-            status TEXT NOT NULL DEFAULT 'new',
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    # =========================
-    # AVPT Production Requests (THIS FIXES YOUR 404 PRODUCTION ROUTE ISSUE)
-    # =========================
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS avpt_requests (
+        CREATE TABLE IF NOT EXISTS production_intakes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             company_name TEXT NOT NULL,
             contact_name TEXT NOT NULL,
             email TEXT NOT NULL,
             phone TEXT,
-
-            project_type TEXT,
-            venue_name TEXT,
-            venue_city TEXT,
-            venue_state TEXT,
-
-            date_start TEXT,
-            date_end TEXT,
-            call_time TEXT,
-
-            crew_roles_needed TEXT,
-            labor_count TEXT,
-            gear_needed TEXT,
-
-            truck_size TEXT,
-            lift_gate TEXT,
-
-            budget_range TEXT,
-            union_status TEXT,
+            city TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            event_date TEXT NOT NULL,
+            crew_needed TEXT NOT NULL,
+            budget_range TEXT NOT NULL,
+            scope_clarity TEXT NOT NULL,
+            po_ready TEXT NOT NULL,
+            coi_required TEXT NOT NULL,
+            timeline TEXT NOT NULL,
             notes TEXT,
+            created_at TEXT NOT NULL
+        )
+    """)
 
+    # Labor / tech intakes (LMT worker lane)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS labor_intakes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT,
+            home_city TEXT NOT NULL,
+            roles TEXT NOT NULL,
+            experience_level TEXT NOT NULL,
+            availability_days TEXT NOT NULL,
+            has_transport TEXT NOT NULL,
+            has_certs TEXT NOT NULL,
+            has_llc TEXT NOT NULL,
+            has_insurance TEXT NOT NULL,
+            rate_min TEXT NOT NULL,
+            notes TEXT,
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    # Matching v1 tables
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            production_intake_id INTEGER,
+            title TEXT NOT NULL,
+            role_needed TEXT NOT NULL,
+            city TEXT NOT NULL,
+            event_date TEXT NOT NULL,
+            call_time TEXT NOT NULL,
+            hours_est TEXT NOT NULL,
+            rate_offer TEXT NOT NULL,
+            liftgate_needed TEXT NOT NULL,
+            truck_size TEXT NOT NULL,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'open',
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS workers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            labor_intake_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT,
+            home_city TEXT NOT NULL,
+            roles TEXT NOT NULL,
+            experience_level TEXT NOT NULL,
+            availability_days TEXT NOT NULL,
+            has_transport TEXT NOT NULL,
+            has_certs TEXT NOT NULL,
+            has_llc TEXT NOT NULL,
+            has_insurance TEXT NOT NULL,
+            rate_min TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'available',
             created_at TEXT NOT NULL
         )
     """)
@@ -305,11 +165,15 @@ def init_db():
 
 init_db()
 
-# =========================
-# Magic links
-# =========================
-def sha256(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+# --------------------
+# Auth helpers
+# --------------------
+def require_admin(k: Optional[str]):
+    k = k or ""
+    if not ADMIN_KEY:
+        raise HTTPException(status_code=500, detail="ADMIN_KEY not set")
+    if _clean(k) != ADMIN_KEY:
+        raise HTTPException(status_code=401, detail="Bad admin key")
 
 def issue_magic_link(email: str, hours: int = 24) -> str:
     token = secrets.token_urlsafe(32)
@@ -336,142 +200,109 @@ def validate_magic_link(token: str) -> str | None:
     )
     row = cur.fetchone()
     conn.close()
-
     if not row:
         return None
-
     expires_at = datetime.fromisoformat(row["expires_at"])
     if datetime.utcnow() > expires_at:
         return None
-
     return row["email"]
 
-def is_active_subscriber(email: str) -> bool:
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT status FROM subscribers WHERE email = ? LIMIT 1", (email,))
-    row = cur.fetchone()
-    conn.close()
-    return bool(row) and row["status"] == "active"
+# --------------------
+# Risk Flags v1 (RULESET)
+# --------------------
+def risk_flags_production(p: dict) -> List[dict]:
+    flags = []
 
-def upsert_subscriber_active(email: str, customer_id: str = "", subscription_id: str = ""):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO subscribers (email, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at)
-        VALUES (?, ?, ?, 'active', ?, ?)
-        ON CONFLICT(email) DO UPDATE SET
-          stripe_customer_id=excluded.stripe_customer_id,
-          stripe_subscription_id=excluded.stripe_subscription_id,
-          status='active',
-          updated_at=excluded.updated_at
-    """, (email, customer_id, subscription_id, now_iso(), now_iso()))
-    conn.commit()
-    conn.close()
+    def add(code, title, why, severity="MED"):
+        flags.append({"code": code, "title": title, "why": why, "severity": severity})
 
-def require_subscriber_token(token: Optional[str]):
-    if not token:
-        return None, HTMLResponse("Missing token.", status_code=401)
-    email = validate_magic_link(token)
-    if not email:
-        return None, HTMLResponse("Invalid or expired link.", status_code=401)
-    if not is_active_subscriber(email):
-        return None, HTMLResponse("Subscription not active.", status_code=403)
-    return email, None
+    # Single customer concentration risk (if "one-off / single" style deal)
+    if p.get("event_type","").lower() in ("private", "one-off", "one off"):
+        add("P001", "Single-customer concentration risk", "One-off deal; margin + scope creep risk higher.", "LOW")
 
-# =========================
-# Contributor scoring + rails
-# =========================
-def _score_contributor(f: ContributorForm) -> int:
+    if p.get("scope_clarity","") in ("Unclear", "Not sure"):
+        add("P010", "Scope clarity risk", "Unclear scope increases change orders + blame chain.", "HIGH")
+
+    if p.get("po_ready","") == "No":
+        add("P020", "PO / authorization risk", "No PO/authorization increases payment delay risk.", "HIGH")
+
+    if p.get("coi_required","") == "Yes":
+        add("P030", "COI compliance requirement", "COI required; must confirm before dispatching.", "MED")
+
+    if p.get("timeline","") in ("Rush (24-48h)", "Emergency (same-day)"):
+        add("P040", "Rush timeline risk", "Rush increases cost + staffing failure probability.", "HIGH")
+
+    # Budget sanity
+    if "low" in p.get("budget_range","").lower():
+        add("P050", "Budget compression risk", "Budget may not support required roles/rates.", "MED")
+
+    return flags
+
+def risk_flags_labor(l: dict) -> List[dict]:
+    flags = []
+
+    def add(code, title, why, severity="MED"):
+        flags.append({"code": code, "title": title, "why": why, "severity": severity})
+
+    if l.get("has_transport","") == "No":
+        add("L010", "Transport reliability risk", "No personal transport; risk of late call-times.", "MED")
+
+    if l.get("has_certs","") == "No":
+        add("L020", "Certification / credential risk", "May be blocked from certain venues/roles.", "MED")
+
+    if l.get("has_llc","") == "No":
+        add("L030", "Business readiness risk", "No LLC; limits certain commercial pay setups.", "LOW")
+
+    if l.get("has_insurance","") == "No":
+        add("L040", "Insurance coverage risk", "No coverage; restricts premium gigs.", "MED")
+
+    # Availability
+    if l.get("availability_days","") in ("0-2", "3"):
+        add("L050", "Low availability risk", "Limited availability reduces match success.", "LOW")
+
+    return flags
+
+# --------------------
+# Basic Match Scoring v1
+# --------------------
+def score_worker_for_job(worker: dict, job: dict) -> int:
     score = 0
-    track = (f.contribution_track or "").strip().lower()
+    # Role match
+    w_roles = (worker.get("roles") or "").lower()
+    needed = (job.get("role_needed") or "").lower()
+    if needed and needed in w_roles:
+        score += 45
+    elif needed:
+        score += 5
 
-    track_weights = {
-        "ecosystem_staff": 18,
-        "sales_growth": 18,
-        "builder_operator": 16,
-        "partner_vendor": 14,
-        "hardware_supply": 16,
-        "capital_sponsor": 14,
-        "advisor_specialist": 10,
-        "not_sure": 8,
-    }
-    score += track_weights.get(track, 10)
-
-    comp = (f.comp_plan or "").strip().lower()
-    if "residual" in comp:
-        score += 10
-    elif "commission" in comp:
-        score += 10
-    elif "hourly" in comp:
-        score += 6
-    elif "equity" in comp or "revshare" in comp:
+    # City match
+    if (worker.get("home_city") or "").strip().lower() == (job.get("city") or "").strip().lower():
+        score += 20
+    else:
         score += 8
 
-    if f.assets and len(f.assets.strip()) > 10:
-        score += 10
-    if f.website and len(f.website.strip()) > 6:
-        score += 6
-    if f.company and len(f.company.strip()) > 2:
+    # Experience
+    exp = (worker.get("experience_level") or "").lower()
+    if "lead" in exp or "advanced" in exp:
+        score += 12
+    elif "intermediate" in exp:
+        score += 8
+    else:
         score += 4
 
-    fit_fields = [
-        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
-        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you
-    ]
-    filled = sum(1 for x in fit_fields if x and str(x).strip())
-    score += min(16, filled * 2)
-
-    auth = (f.fit_authority or "").lower().strip()
-    if auth == "owner_exec":
-        score += 10
-    elif auth == "manager_influence":
+    # Readiness
+    if worker.get("has_transport") == "Yes":
+        score += 8
+    if worker.get("has_certs") == "Yes":
         score += 6
-    elif auth == "partial":
-        score += 3
+    if worker.get("has_insurance") == "Yes":
+        score += 4
 
     return int(score)
 
-def _assign_rail(f: ContributorForm, score: int) -> str:
-    track = (f.contribution_track or "").strip().lower()
-    pos = (f.position_interest or "").strip().lower()
-    lane = (f.fit_lane or "").strip().lower()
-
-    if score >= 70:
-        if track == "sales_growth" or lane == "sales" or "sales" in pos or "closer" in pos:
-            return "sales_priority"
-        if track == "ecosystem_staff" or "intake" in pos or "ops" in pos or "client" in pos:
-            return "staff_priority"
-        if track == "hardware_supply" or lane == "hardware":
-            return "hardware_supply"
-        if track == "capital_sponsor" or lane == "finance":
-            return "capital"
-        return "priority"
-
-    if score >= 45:
-        if track == "sales_growth":
-            return "sales_pool"
-        if track == "ecosystem_staff":
-            return "staff_pool"
-        if track in ("partner_vendor", "hardware_supply"):
-            return "bd_followup"
-        return "review"
-
-    return "triage"
-
-# =========================
-# Favicon
-# =========================
-@app.get("/favicon.ico", include_in_schema=False)
-def favicon():
-    ico = STATIC_DIR / "favicon.ico"
-    if ico.exists():
-        return FileResponse(str(ico), media_type="image/x-icon")
-    return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
-
-# =========================
-# Public Pages
-# =========================
+# --------------------
+# Pages (Public)
+# --------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "year": datetime.utcnow().year})
@@ -480,466 +311,347 @@ def home(request: Request):
 def services(request: Request):
     return templates.TemplateResponse("services.html", {"request": request, "year": datetime.utcnow().year})
 
-# =========================
-# Lead Intake (Public)
-# =========================
-@app.get("/lead", response_class=HTMLResponse)
-def lead_page(request: Request):
-    return templates.TemplateResponse("lead_intake.html", {"request": request, "year": datetime.utcnow().year})
+# --------------------
+# Intake: Production (AVPT client lane)
+# --------------------
+@app.get("/intake/production", response_class=HTMLResponse)
+def intake_production_page(request: Request):
+    return templates.TemplateResponse("intake_production.html", {"request": request, "year": datetime.utcnow().year})
 
-@app.post("/lead")
-def lead_submit(
-    name: str = Form(...),
-    email: str = Form(...),
-    interest: str = Form(""),
-    phone: str = Form(""),
-    company: str = Form(""),
-    message: str = Form(""),
-):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO leads (name, email, interest, phone, company, message, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, interest, phone, company, message, now_iso()))
-    conn.commit()
-    conn.close()
-    return RedirectResponse("/lead/thanks", status_code=303)
-
-@app.get("/lead/thanks", response_class=HTMLResponse)
-def lead_thanks(request: Request):
-    return templates.TemplateResponse("lead_thanks.html", {"request": request, "year": datetime.utcnow().year})
-
-# =========================
-# Partner Intake (Public)
-# =========================
-@app.get("/partner", response_class=HTMLResponse)
-def partner_page(request: Request):
-    return templates.TemplateResponse("partner_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-@app.post("/partner")
-def partner_submit(
-    name: str = Form(...),
-    email: str = Form(...),
-    company: str = Form(""),
-    role: str = Form(""),
-    product_type: str = Form(""),
-    website: str = Form(""),
-    regions: str = Form(""),
-    message: str = Form(""),
-):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO partners (name, email, company, role, product_type, website, regions, message, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, company, role, product_type, website, regions, message, now_iso()))
-    conn.commit()
-    conn.close()
-    return RedirectResponse("/partner/thanks", status_code=303)
-
-@app.get("/partner/thanks", response_class=HTMLResponse)
-def partner_thanks(request: Request):
-    return templates.TemplateResponse("partner_thanks.html", {"request": request, "year": datetime.utcnow().year})
-
-# =========================
-# Subscriber Intake (Token protected)
-# =========================
-@app.get("/intake-form", response_class=HTMLResponse)
-def intake_form(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-    return templates.TemplateResponse("intake_form.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
-
-@app.post("/intake")
-def submit_intake(
-    token: str,
-    name: str = Form(...),
-    email: str = Form(...),
-    service_requested: str = Form(...),
-    notes: str = Form(""),
-):
-    subscriber_email, err = require_subscriber_token(token)
-    if err:
-        return err
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO intake (name, email, service_requested, notes, created_at)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, email, service_requested, notes, now_iso()))
-    conn.commit()
-    conn.close()
-
-    # optional notify internal inbox
-    if EMAIL_USER and EMAIL_PASS:
-        send_email(
-            EMAIL_USER,
-            "New Subscriber Intake Submission",
-            f"Subscriber: {subscriber_email}\n\nName: {name}\nEmail: {email}\nService: {service_requested}\nNotes: {notes}"
-        )
-
-    return JSONResponse({"status": "Intake stored successfully"})
-
-@app.get("/admin/intake")
-def admin_intake_json(limit: int = 50):
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM intake ORDER BY id DESC LIMIT ?", (limit,))
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return {"entries": rows}
-
-# =========================
-# Admin Leads Dashboard (HTML)
-# =========================
-@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
-def leads_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    require_admin(k, key)
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM leads ORDER BY id DESC LIMIT 500")
-    leads = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return templates.TemplateResponse("leads_dashboard.html", {"request": request, "leads": leads, "year": datetime.utcnow().year})
-
-# =========================
-# AVPT Production Intake (PUBLIC)  ✅ THIS IS WHAT YOU NEED
-# =========================
-
-# Friendly aliases so nobody types the wrong thing and gets 404
-@app.get("/avpt", include_in_schema=False)
-def avpt_root():
-    return RedirectResponse("/avpt/request", status_code=307)
-
-@app.get("/avpt/production", include_in_schema=False)
-def avpt_production_alias():
-    return RedirectResponse("/avpt/request", status_code=307)
-
-@app.get("/avpt/intake", include_in_schema=False)
-def avpt_intake_alias():
-    return RedirectResponse("/avpt/request", status_code=307)
-
-@app.get("/avpt/request", response_class=HTMLResponse)
-def avpt_request_page(request: Request):
-    return templates.TemplateResponse("avpt_request.html", {"request": request, "year": datetime.utcnow().year})
-
-@app.post("/avpt/request")
-def avpt_request_submit(
+@app.post("/intake/production")
+def intake_production_submit(
+    request: Request,
     company_name: str = Form(...),
     contact_name: str = Form(...),
     email: str = Form(...),
     phone: str = Form(""),
+    city: str = Form(...),
+    event_type: str = Form(...),
+    event_date: str = Form(...),
+    crew_needed: str = Form(...),
+    budget_range: str = Form(...),
+    scope_clarity: str = Form(...),
+    po_ready: str = Form(...),
+    coi_required: str = Form(...),
+    timeline: str = Form(...),
+    notes: str = Form(""),
+):
+    payload = dict(
+        company_name=company_name,
+        contact_name=contact_name,
+        email=email,
+        phone=phone,
+        city=city,
+        event_type=event_type,
+        event_date=event_date,
+        crew_needed=crew_needed,
+        budget_range=budget_range,
+        scope_clarity=scope_clarity,
+        po_ready=po_ready,
+        coi_required=coi_required,
+        timeline=timeline,
+        notes=notes,
+        created_at=now_iso(),
+    )
+    flags = risk_flags_production(payload)
 
-    project_type: str = Form(""),
-    venue_name: str = Form(""),
-    venue_city: str = Form(""),
-    venue_state: str = Form(""),
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO production_intakes (
+            company_name, contact_name, email, phone, city, event_type, event_date, crew_needed,
+            budget_range, scope_clarity, po_ready, coi_required, timeline, notes, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        company_name, contact_name, email, phone, city, event_type, event_date, crew_needed,
+        budget_range, scope_clarity, po_ready, coi_required, timeline, notes, payload["created_at"]
+    ))
+    pid = cur.lastrowid
+    conn.commit()
+    conn.close()
 
-    date_start: str = Form(""),
-    date_end: str = Form(""),
-    call_time: str = Form(""),
+    # Store flags in session-less way: render results from computed flags (no persistence needed for v1)
+    return templates.TemplateResponse(
+        "results.html",
+        {
+            "request": request,
+            "year": datetime.utcnow().year,
+            "lane": "production",
+            "record_id": pid,
+            "headline": "Production Intake Received",
+            "subhead": "We extracted operational risks + routing signals.",
+            "flags": flags,
+            "next_actions": [
+                {"label": "Open Production Dashboard", "href": f"/dash/production?id={pid}"},
+                {"label": "Create a Job Request (Matching v1)", "href": f"/dash/production?id={pid}#jobs"},
+                {"label": "View Services", "href": "/services"},
+            ],
+        },
+    )
 
-    crew_roles_needed: str = Form(""),
-    labor_count: str = Form(""),
-    gear_needed: str = Form(""),
+# --------------------
+# Intake: Labor/Tech (LMT worker lane)
+# --------------------
+@app.get("/intake/labor", response_class=HTMLResponse)
+def intake_labor_page(request: Request):
+    return templates.TemplateResponse("intake_labor.html", {"request": request, "year": datetime.utcnow().year})
 
-    truck_size: str = Form(""),
-    lift_gate: str = Form(""),
+@app.post("/intake/labor")
+def intake_labor_submit(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    home_city: str = Form(...),
+    roles: str = Form(...),
+    experience_level: str = Form(...),
+    availability_days: str = Form(...),
+    has_transport: str = Form(...),
+    has_certs: str = Form(...),
+    has_llc: str = Form(...),
+    has_insurance: str = Form(...),
+    rate_min: str = Form(...),
+    notes: str = Form(""),
+):
+    payload = dict(
+        name=name,
+        email=email,
+        phone=phone,
+        home_city=home_city,
+        roles=roles,
+        experience_level=experience_level,
+        availability_days=availability_days,
+        has_transport=has_transport,
+        has_certs=has_certs,
+        has_llc=has_llc,
+        has_insurance=has_insurance,
+        rate_min=rate_min,
+        notes=notes,
+        created_at=now_iso(),
+    )
+    flags = risk_flags_labor(payload)
 
-    budget_range: str = Form(""),
-    union_status: str = Form(""),
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO labor_intakes (
+            name, email, phone, home_city, roles, experience_level, availability_days,
+            has_transport, has_certs, has_llc, has_insurance, rate_min, notes, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name, email, phone, home_city, roles, experience_level, availability_days,
+        has_transport, has_certs, has_llc, has_insurance, rate_min, notes, payload["created_at"]
+    ))
+    lid = cur.lastrowid
+
+    # Upsert worker into workers table (so matching works immediately)
+    cur.execute("""
+        INSERT INTO workers (
+            labor_intake_id, name, email, phone, home_city, roles, experience_level,
+            availability_days, has_transport, has_certs, has_llc, has_insurance, rate_min, status, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', ?)
+    """, (
+        lid, name, email, phone, home_city, roles, experience_level,
+        availability_days, has_transport, has_certs, has_llc, has_insurance, rate_min, payload["created_at"]
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return templates.TemplateResponse(
+        "results.html",
+        {
+            "request": request,
+            "year": datetime.utcnow().year,
+            "lane": "labor",
+            "record_id": lid,
+            "headline": "Labor / Tech Intake Received",
+            "subhead": "We extracted readiness risks + match signals.",
+            "flags": flags,
+            "next_actions": [
+                {"label": "Open Labor Dashboard", "href": f"/dash/labor?id={lid}"},
+                {"label": "View Services", "href": "/services"},
+                {"label": "Join Contributor Track", "href": "/contributor"},
+            ],
+        },
+    )
+
+# --------------------
+# Dashboards
+# --------------------
+@app.get("/dash/production", response_class=HTMLResponse)
+def dash_production(request: Request, id: int):
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM production_intakes WHERE id = ? LIMIT 1", (id,))
+    prod = cur.fetchone()
+    if not prod:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Production intake not found")
+
+    cur.execute("SELECT * FROM jobs WHERE production_intake_id = ? ORDER BY id DESC", (id,))
+    jobs = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return templates.TemplateResponse(
+        "dash_production.html",
+        {"request": request, "year": datetime.utcnow().year, "prod": dict(prod), "jobs": jobs},
+    )
+
+@app.post("/dash/production/create-job")
+def create_job(
+    production_intake_id: int = Form(...),
+    title: str = Form(...),
+    role_needed: str = Form(...),
+    city: str = Form(...),
+    event_date: str = Form(...),
+    call_time: str = Form(...),
+    hours_est: str = Form(...),
+    rate_offer: str = Form(...),
+    truck_size: str = Form(...),
+    liftgate_needed: str = Form(...),
     notes: str = Form(""),
 ):
     conn = db()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO avpt_requests (
-            company_name, contact_name, email, phone,
-            project_type, venue_name, venue_city, venue_state,
-            date_start, date_end, call_time,
-            crew_roles_needed, labor_count, gear_needed,
-            truck_size, lift_gate,
-            budget_range, union_status, notes,
-            created_at
+        INSERT INTO jobs (
+            production_intake_id, title, role_needed, city, event_date, call_time,
+            hours_est, rate_offer, liftgate_needed, truck_size, notes, status, created_at
         )
-        VALUES (?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?,
-                ?, ?, ?,
-                ?, ?,
-                ?, ?, ?,
-                ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
     """, (
-        company_name, contact_name, email, phone,
-        project_type, venue_name, venue_city, venue_state,
-        date_start, date_end, call_time,
-        crew_roles_needed, labor_count, gear_needed,
-        truck_size, lift_gate,
-        budget_range, union_status, notes,
-        now_iso()
+        production_intake_id, title, role_needed, city, event_date, call_time,
+        hours_est, rate_offer, liftgate_needed, truck_size, notes, now_iso()
     ))
     conn.commit()
     conn.close()
+    return RedirectResponse(url=f"/dash/production?id={production_intake_id}#jobs", status_code=303)
 
-    return RedirectResponse("/avpt/thanks", status_code=303)
-
-@app.get("/avpt/thanks", response_class=HTMLResponse)
-def avpt_thanks(request: Request):
-    return templates.TemplateResponse("avpt_thanks.html", {"request": request, "year": datetime.utcnow().year})
-
-@app.get("/admin/avpt-dashboard", response_class=HTMLResponse)
-def avpt_admin_dashboard(request: Request, k: Optional[str] = None, key: Optional[str] = None):
-    require_admin(k, key)
+@app.get("/dash/labor", response_class=HTMLResponse)
+def dash_labor(request: Request, id: int):
     conn = db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM avpt_requests ORDER BY id DESC LIMIT 500")
-    rows = [dict(r) for r in cur.fetchall()]
+    cur.execute("SELECT * FROM labor_intakes WHERE id = ? LIMIT 1", (id,))
+    labor = cur.fetchone()
+    if not labor:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Labor intake not found")
+
+    # show recent open jobs (for the worker to browse)
+    cur.execute("SELECT * FROM jobs WHERE status='open' ORDER BY id DESC LIMIT 25")
+    jobs = [dict(r) for r in cur.fetchall()]
     conn.close()
-    return templates.TemplateResponse("avpt_dashboard.html", {"request": request, "requests": rows, "year": datetime.utcnow().year})
-
-# =========================
-# Stripe Checkout
-# =========================
-def require_env():
-    if STARTUP_URL_ERROR:
-        return JSONResponse(
-            {"error": STARTUP_URL_ERROR, "hint": "Fix SUCCESS_URL and CANCEL_URL env vars to valid https:// URLs."},
-            status_code=500
-        )
-    missing = []
-    if not STRIPE_SECRET_KEY:
-        missing.append("STRIPE_SECRET_KEY")
-    if not STRIPE_PRICE_ID:
-        missing.append("STRIPE_PRICE_ID")
-    if not SUCCESS_URL:
-        missing.append("SUCCESS_URL")
-    if not CANCEL_URL:
-        missing.append("CANCEL_URL")
-    if missing:
-        return JSONResponse({"error": "Missing environment variables", "missing": missing}, status_code=500)
-    return None
-
-@app.get("/checkout")
-def checkout(ref: Optional[str] = None):
-    err = require_env()
-    if err:
-        return err
-
-    try:
-        session = stripe.checkout.Session.create(
-            mode="subscription",
-            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
-            success_url=f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=CANCEL_URL,
-            metadata={"ref": ref or ""} if ref else None
-        )
-        return RedirectResponse(session.url, status_code=303)
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.get("/success", response_class=HTMLResponse)
-def success(request: Request, session_id: Optional[str] = None):
-    token = None
-    email = None
-    dashboard_link = None
-
-    if session_id and STRIPE_SECRET_KEY:
-        try:
-            s = stripe.checkout.Session.retrieve(session_id, expand=["customer", "subscription"])
-            if s:
-                details = s.get("customer_details") or {}
-                email = details.get("email")
-                customer_id = str(s.get("customer") or "")
-                subscription_id = str(s.get("subscription") or "")
-
-                if email:
-                    upsert_subscriber_active(email, customer_id, subscription_id)
-                    token = issue_magic_link(email, hours=24)
-                    base = str(request.base_url).rstrip("/")
-                    dashboard_link = f"{base}/dashboard?token={token}"
-
-                    if EMAIL_USER and EMAIL_PASS:
-                        send_email(
-                            email,
-                            "Your Nautical Compass Access Link",
-                            f"Welcome.\n\nYour access link (valid 24 hours):\n{dashboard_link}\n"
-                        )
-        except Exception as e:
-            print("Success page Stripe fetch failed:", e)
 
     return templates.TemplateResponse(
-        "success.html",
-        {"request": request, "token": token, "email": email, "dashboard_link": dashboard_link, "year": datetime.utcnow().year}
+        "dash_labor.html",
+        {"request": request, "year": datetime.utcnow().year, "labor": dict(labor), "jobs": jobs},
     )
 
-@app.get("/cancel", response_class=HTMLResponse)
-def cancel(request: Request):
-    return templates.TemplateResponse("cancel.html", {"request": request, "year": datetime.utcnow().year})
-
-# =========================
-# Stripe Webhook
-# =========================
-@app.post("/stripe/webhook")
-async def stripe_webhook(request: Request):
-    if not STRIPE_WEBHOOK_SECRET:
-        raise HTTPException(status_code=500, detail="Missing STRIPE_WEBHOOK_SECRET")
-
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature")
-
-    try:
-        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Webhook signature error: {e}")
-
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        customer_id = str(session.get("customer") or "")
-        customer_email = (session.get("customer_details", {}) or {}).get("email")
-        subscription_id = str(session.get("subscription") or "")
-
-        if customer_email:
-            upsert_subscriber_active(customer_email, customer_id, subscription_id)
-            token = issue_magic_link(customer_email, hours=24)
-
-            base = str(request.base_url).rstrip("/")
-            link = f"{base}/dashboard?token={token}"
-
-            if EMAIL_USER and EMAIL_PASS:
-                send_email(
-                    customer_email,
-                    "Your Nautical Compass Access Link",
-                    f"Welcome.\n\nYour access link (valid 24 hours):\n{link}\n"
-                )
-
-    if event["type"] == "customer.subscription.deleted":
-        sub = event["data"]["object"]
-        sub_id = str(sub.get("id") or "")
-
-        conn = db()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE subscribers
-            SET status='canceled', updated_at=?
-            WHERE stripe_subscription_id=?
-        """, (now_iso(), sub_id))
-        conn.commit()
-        conn.close()
-
-    return {"received": True}
-
-@app.post("/webhook/stripe")
-async def stripe_webhook_alias(request: Request):
-    return await stripe_webhook(request)
-
-# =========================
-# Dashboard (Subscriber)
-# =========================
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, token: str):
-    email, err = require_subscriber_token(token)
-    if err:
-        return err
-    return templates.TemplateResponse("dashboard.html", {"request": request, "email": email, "token": token, "year": datetime.utcnow().year})
-
-# =========================
-# Contributor Intake + Admin
-# =========================
-@app.get("/contributor", response_class=HTMLResponse)
-def contributor_page(request: Request):
-    return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
-
-@app.post("/contributor")
-def submit_contributor(
-    name: str = Form(...),
-    email: str = Form(...),
-    phone: str = Form(""),
-    company: str = Form(""),
-    website: str = Form(""),
-
-    primary_role: str = Form(...),
-    contribution_track: str = Form(...),
-    position_interest: str = Form(""),
-    comp_plan: str = Form(""),
-    director_owner: str = Form("Duece"),
-
-    assets: str = Form(""),
-    regions: str = Form(""),
-    capacity: str = Form(""),
-    alignment: str = Form(""),
-    message: str = Form(""),
-
-    fit_access: str = Form(""),
-    fit_build_goal: str = Form(""),
-    fit_opportunity: str = Form(""),
-    fit_authority: str = Form(""),
-    fit_lane: str = Form(""),
-    fit_no_conditions: str = Form(""),
-    fit_visibility: str = Form(""),
-    fit_why_you: str = Form(""),
-):
-    # Build pydantic object for scoring
-    f = ContributorForm(
-        name=name,
-        email=email,
-        phone=phone,
-        company=company,
-        website=website,
-        primary_role=primary_role,
-        contribution_track=contribution_track,
-        position_interest=position_interest,
-        comp_plan=comp_plan,
-        director_owner=director_owner,
-        assets=assets,
-        regions=regions,
-        capacity=capacity,
-        alignment=alignment,
-        message=message,
-        fit_access=fit_access,
-        fit_build_goal=fit_build_goal,
-        fit_opportunity=fit_opportunity,
-        fit_authority=fit_authority,
-        fit_lane=fit_lane,
-        fit_no_conditions=fit_no_conditions,
-        fit_visibility=fit_visibility,
-        fit_why_you=fit_why_you,
-    )
-
-    score = _score_contributor(f)
-    rail = _assign_rail(f, score)
-
+# --------------------
+# Matching v1
+# --------------------
+@app.get("/matching/run")
+def run_matching(job_id: int):
     conn = db()
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO contributors (
-            name, email, phone, company, website,
-            primary_role,
-            contribution_track, position_interest, comp_plan, director_owner,
-            assets, regions, capacity, alignment, message,
-            fit_access, fit_build_goal, fit_opportunity, fit_authority,
-            fit_lane, fit_no_conditions, fit_visibility, fit_why_you,
-            score, rail, status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?,
-                ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?)
-    """, (
-        f.name, str(f.email), f.phone, f.company, f.website,
-        f.primary_role,
-        f.contribution_track, f.position_interest, f.comp_plan, f.director_owner,
-        f.assets, f.regions, f.capacity, f.alignment, f.message,
-        f.fit_access, f.fit_build_goal, f.fit_opportunity, f.fit_authority,
-        f.fit_lane, f.fit_no_conditions, f.fit_visibility, f.fit_why_you,
-        score, rail, "new", now_iso()
-    ))
-    conn.commit()
+
+    cur.execute("SELECT * FROM jobs WHERE id = ? LIMIT 1", (job_id,))
+    job = cur.fetchone()
+    if not job:
+        conn.close()
+        return JSONResponse({"error": "Job not found"}, status_code=404)
+
+    cur.execute("SELECT * FROM workers WHERE status='available' ORDER BY id DESC LIMIT 200")
+    workers = [dict(r) for r in cur.fetchall()]
     conn.close()
 
-    return JSONResponse({"status": "Contributor submission received", "rail_assigned": rail, "score": score})
+    scored = []
+    for w in workers:
+        s = score_worker_for_job(w, dict(job))
+        scored.append({"score": s, "worker": w})
+
+    scored.sort(key=lambda x: x["score"], reverse=True)
+    top = scored[:25]
+
+    return {"job": dict(job), "matches": top}
+
+# --------------------
+# Contributor (kept as existing public form route)
+# --------------------
+@app.get("/contributor", response_class=HTMLResponse)
+def contributor_page(request: Request):
+    # If you already have contributor_intake.html, keep it.
+    # If not, create it later — this route is here so your nav doesn't dead-end.
+    file_path = TEMPLATES_DIR / "contributor_intake.html"
+    if file_path.exists():
+        return templates.TemplateResponse("contributor_intake.html", {"request": request, "year": datetime.utcnow().year})
+    return HTMLResponse(
+        "<h2>Contributor Intake (Coming Online)</h2><p>This lane is ready; template will be added next.</p>",
+        status_code=200
+    )
+
+# --------------------
+# Admin dashboards (do not expose publicly; requires k=ADMIN_KEY)
+# --------------------
+@app.get("/admin/leads-dashboard", response_class=HTMLResponse)
+def admin_leads_dashboard(request: Request, k: Optional[str] = None):
+    require_admin(k)
+    # Minimal placeholder so button doesn't dead-end.
+    return HTMLResponse("<h2>Leads Dashboard</h2><p>Wired. (We’ll render leads table next.)</p>")
+
+# --------------------
+# Dev token route (so you can test access without paying)
+# --------------------
+@app.get("/dev/generate-token")
+def dev_generate_token(email: str, key: str, request: Request):
+    if not DEV_TOKEN_ENABLED:
+        return JSONResponse({"error": "Dev token route disabled"}, status_code=403)
+    if not DEV_TOKEN_KEY:
+        return JSONResponse({"error": "Dev token not set (missing DEV_TOKEN_KEY env var)"}, status_code=500)
+    if _clean(key) != DEV_TOKEN_KEY:
+        return JSONResponse({"error": "Bad key"}, status_code=401)
+
+    email = _clean(email).lower()
+    if not email or "@" not in email:
+        return JSONResponse({"error": "Invalid email"}, status_code=400)
+
+    token = issue_magic_link(email, hours=24)
+    base = str(request.base_url).rstrip("/")
+    return {
+        "email": email,
+        "token": token,
+        "dashboard": f"{base}/dashboard?token={token}",
+        "production_intake": f"{base}/intake/production",
+        "labor_intake": f"{base}/intake/labor",
+    }
+
+# --------------------
+# Subscriber dashboard (placeholder, so token links never dead-end)
+# --------------------
+@app.get("/dashboard", response_class=HTMLResponse)
+def subscriber_dashboard(request: Request, token: str):
+    email = validate_magic_link(token)
+    if not email:
+        return HTMLResponse("Invalid or expired link.", status_code=401)
+
+    # This is your NC subscriber lane placeholder.
+    # We keep it simple and wired.
+    return HTMLResponse(
+        f"<h2>Subscriber Dashboard</h2><p>Authorized: <b>{email}</b></p>"
+        f"<p><a href='/services'>Services</a> · <a href='/intake/production'>Production Intake</a> · <a href='/intake/labor'>Labor Intake</a></p>",
+        status_code=200
+    )
+
+# --------------------
+# Favicon
+# --------------------
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    ico = STATIC_DIR / "favicon.ico"
+    if ico.exists():
+        return FileResponse(str(ico), media_type="image/x-icon")
+    return JSONResponse({"error": "favicon.ico missing in /static"}, status_code=404)
