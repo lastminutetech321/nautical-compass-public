@@ -1,35 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Dashboard • Nautical Compass{% endblock %}
-
+{% block title %}NC Dashboard{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Subscriber Dashboard</h2>
-  <p class="muted">Authorized email: <strong>{{ email }}</strong></p>
+  <h2>Nautical Compass — Subscriber Dashboard</h2>
+  <p class="muted">Logged in as {{ email }}</p>
 
-  <div class="grid grid-2" style="margin-top:14px;">
-    <div class="card">
-      <h3>Legal Intake</h3>
-      <p class="muted">Submit a subscriber intake (risk flags + routing).</p>
-      <a class="btn btn-primary" href="/intake/legal?token={{ token }}">Open Legal Intake</a>
-    </div>
-
-    <div class="card">
-      <h3>Services</h3>
-      <p class="muted">Browse entry points and catalog.</p>
-      <a class="btn" href="/services">Open Services</a>
-    </div>
-  </div>
-
-  <details class="dropdown" style="margin-top:16px;">
-    <summary>Quick Links (expand)</summary>
-    <div class="dropdown-body">
-      <div class="grid">
-        <div><a href="/intake/production">AVPT Production Intake</a></div>
-        <div><a href="/intake/labor">LMT Labor Intake</a></div>
-        <div><a href="/partner">Partner Intake</a></div>
-        <div><a href="/lead">Lead Intake</a></div>
+  <div class="tiles">
+    <div class="tile">
+      <div class="tile-kicker">NC Legal Intake</div>
+      <h3>Start an intake</h3>
+      <p class="muted">Structured questions → risk flags → next-step outputs.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Open Legal Intake</a>
       </div>
     </div>
-  </details>
+
+    <div class="tile">
+      <div class="tile-kicker">Operations</div>
+      <h3>AVPT/LMT lanes</h3>
+      <p class="muted">If you’re using AV + trades workflows, start in Solutions.</p>
+      <div class="btnrow">
+        <a class="btn" href="/services#av">Go to AVPT/LMT</a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
