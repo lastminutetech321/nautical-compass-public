@@ -2,29 +2,37 @@
 {% block title %}Home • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>One Hall. Many Doors.</h2>
-  <p class="muted">
-    Nautical Compass routes people into the right lane fast — legal, production, labor, partners —
-    and shows “risk flags” so decisions are clear and mistakes are harder to make.
+<section class="hero">
+  <h1>One hall. Many doors.</h1>
+  <p class="lead">
+    Nautical Compass is a structured intake + routing system that turns complex situations into clear next steps.
+    We serve legal workflows (NC) and operational workflows for AV + trades (AVPT/LMT) with the same principle:
+    <strong>make it hard to make mistakes.</strong>
   </p>
 
-  <div class="grid grid-2" style="margin-top:16px;">
-    <div class="card">
-      <h3>Production Companies (AVPT Client Lane)</h3>
-      <p class="muted">Request crews, set requirements, avoid scope/payment failures.</p>
-      <a class="btn btn-primary" href="/intake/production">Start Production Intake</a>
+  <div class="tiles">
+    <div class="tile">
+      <div class="tile-kicker">Legal & Professional</div>
+      <h3>NC — Intake → Risk Flags → Next Steps</h3>
+      <p class="muted">For disputes, contracts, records requests, and document strategy.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/services#legal">Explore NC</a>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Labor / Techs (LMT Worker Lane)</h3>
-      <p class="muted">Declare roles + readiness. Get matched to open requests.</p>
-      <a class="btn btn-primary" href="/intake/labor">Start Labor Intake</a>
+    <div class="tile">
+      <div class="tile-kicker">AV + Trades Operations</div>
+      <h3>AVPT/LMT — Requests ↔ Labor ↔ Logistics</h3>
+      <p class="muted">For production companies and technicians. Built for speed and clarity under pressure.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/services#av">Explore AVPT/LMT</a>
+      </div>
     </div>
   </div>
 
-  <div class="btnrow" style="margin-top:16px;">
-    <a class="btn" href="/services">Browse Services</a>
+  <div class="callout">
+    <strong>How we’re different:</strong> We don’t just “collect info.”
+    We structure the situation, surface risks early, and route people into the right lane with repeatable outcomes.
   </div>
-</div>
+</section>
 {% endblock %}
