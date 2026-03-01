@@ -1,42 +1,90 @@
 {% extends "base.html" %}
-{% block title %}Services • Nautical Compass{% endblock %}
+{% block title %}Solutions • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Services</h2>
-  <p class="muted">Curated list + full catalog psychology. Clear. No confusion.</p>
+  <h2>Solutions</h2>
+  <p class="muted">
+    Choose a lane. Each lane has a structured intake, risk flags, and a dashboard so work stays organized.
+  </p>
 
-  <h3>Start Here (Most Requested)</h3>
-  <ul>
-    <li>Legal Intake Strategy</li>
-    <li>Contract Review & Risk Mapping</li>
-    <li>Demand Letter Drafting</li>
-    <li>Arbitration Package Assembly</li>
-    <li>Records Requests (FOIA / CPRA-style)</li>
-  </ul>
+  <div class="section" id="legal">
+    <h3>Legal & Professional (NC)</h3>
+    <p class="muted">
+      NC helps you organize facts, build a clean narrative, identify risk flags, and generate the next steps
+      (letters, packets, timelines, records requests).
+    </p>
 
-  <details class="dropdown">
-    <summary>Full Catalog (expand)</summary>
-    <div class="dropdown-body">
-      <div class="grid">
-        <div><span class="badge">Strategy</span> Standing + Capacity framing</div>
-        <div><span class="badge">Strategy</span> Risk flags + decision tree</div>
-        <div><span class="badge">Disputes</span> Billing/chargeback structuring</div>
-        <div><span class="badge">Records</span> Records request packet</div>
-        <div><span class="badge">Drafting</span> Notices + demand letters</div>
-        <div><span class="badge">Build</span> Evidence organization rails</div>
-        <div><span class="badge">AVPT</span> Production intake + job matching</div>
-        <div><span class="badge">LMT</span> Worker intake + readiness scoring</div>
+    <ul class="bullets">
+      <li><strong>Structured legal intake</strong> (guides you to what matters)</li>
+      <li><strong>Risk flags</strong> (missing docs, weak timeline, standing gaps, etc.)</li>
+      <li><strong>Outputs</strong> (draft-ready strategy + organized packet scaffolds)</li>
+    </ul>
+
+    <div class="btnrow" id="access">
+      <a class="btn btn-gold" href="/checkout">Get Access (NC)</a>
+      <a class="btn" href="/lead">Ask a Question</a>
+    </div>
+  </div>
+
+  <hr class="hr">
+
+  <div class="section" id="av">
+    <h3>AV + Trades Operations (AVPT + LMT)</h3>
+    <p class="muted">
+      AVPT is the <strong>production/client lane</strong>. LMT is the <strong>labor/tech lane</strong>.
+      Same engine, two doors.
+    </p>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="tile-kicker">AVPT (Production / Client)</div>
+        <h3>Request crew + logistics</h3>
+        <p class="muted">
+          Capture the job correctly: roles, call times, truck needs, dock/liftgate, union requirements, payment terms.
+        </p>
+        <div class="btnrow">
+          <a class="btn btn-primary" href="/intake/production">Start Production Intake</a>
+          <a class="btn" href="/dash/production">Production Dashboard</a>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-kicker">LMT (Labor / Tech)</div>
+        <h3>Set availability + readiness</h3>
+        <p class="muted">
+          Roles, certs, W-9 readiness, transport mode (includes <strong>Public Transit</strong>), last-minute readiness.
+        </p>
+        <div class="btnrow">
+          <a class="btn btn-primary" href="/intake/labor">Start Labor Intake</a>
+          <a class="btn" href="/dash/labor">Labor Dashboard</a>
+        </div>
       </div>
     </div>
-  </details>
+  </div>
 
-  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+  <hr class="hr">
 
-  <h3>Fast Lanes</h3>
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/intake/production">Production Intake</a>
-    <a class="btn btn-primary" href="/intake/labor">Labor Intake</a>
+  <div class="section" id="disclaimer">
+    <h3>Disclaimer</h3>
+    <p class="muted">
+      Nautical Compass provides structured information, workflow organization, and document strategy.
+      It is not a law firm and does not provide legal representation.
+    </p>
+  </div>
+
+  <div class="section" id="privacy">
+    <h3>Privacy</h3>
+    <p class="muted">
+      Data is used to generate your outputs and improve routing. Admin dashboards are key-gated.
+    </p>
+  </div>
+
+  <div class="section" id="terms">
+    <h3>Terms</h3>
+    <p class="muted">
+      Access tiers apply to tools and dashboards. Users remain responsible for decisions and filings.
+    </p>
   </div>
 </div>
 {% endblock %}
