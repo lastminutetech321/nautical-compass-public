@@ -1,82 +1,100 @@
 {% extends "base.html" %}
-{% block title %}Production Intake • AVPT{% endblock %}
+{% block title %}Production Intake • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Production Company Intake (AVPT)</h2>
-  <p class="muted">This is not a “form.” It generates risk flags + an execution route.</p>
+  <h2>Production Intake (AVPT Client Lane)</h2>
+  <p class="muted">This intake extracts the data needed to scope, staff, and prevent failures.</p>
 
-  <form method="post" action="/intake/production">
-    <div class="label">Contact Name</div>
-    <input name="name" required />
-
-    <div class="label">Contact Email</div>
-    <input name="email" type="email" required />
-
-    <div class="label">Contact Phone (optional)</div>
-    <input name="phone" />
-
-    <div class="label">Company (optional)</div>
-    <input name="company" />
-
-    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-    <div class="label">Show Name (optional)</div>
-    <input name="show_name" />
-
-    <div class="label">Show Date</div>
-    <input name="show_date" placeholder="YYYY-MM-DD" />
-
-    <div class="label">Venue / Location</div>
-    <input name="venue" placeholder="Venue name + city" />
-
+  <form class="form" method="post" action="/intake/production">
     <div class="grid grid-2">
       <div>
-        <div class="label">Load-in</div>
-        <input name="load_in" placeholder="e.g., 9:00 AM" />
+        <label class="label">Company Name</label>
+        <input name="company_name" required>
       </div>
       <div>
-        <div class="label">Show Time</div>
-        <input name="show_time" placeholder="e.g., 6:00 PM" />
+        <label class="label">Contact Name</label>
+        <input name="contact_name" required>
       </div>
       <div>
-        <div class="label">Strike Time</div>
-        <input name="strike_time" placeholder="e.g., 11:00 PM" />
+        <label class="label">Email</label>
+        <input name="email" type="email" required>
       </div>
       <div>
-        <div class="label">Estimated Crew Count</div>
-        <input name="crew_count" placeholder="e.g., 12" />
+        <label class="label">Phone</label>
+        <input name="phone">
+      </div>
+      <div>
+        <label class="label">City</label>
+        <input name="city" required>
+      </div>
+      <div>
+        <label class="label">Event Type</label>
+        <select name="event_type" required>
+          <option>Corporate</option>
+          <option>Concert</option>
+          <option>Tradeshow</option>
+          <option>Private</option>
+          <option>One-off</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Event Date</label>
+        <input name="event_date" placeholder="YYYY-MM-DD" required>
+      </div>
+      <div>
+        <label class="label">Crew Needed (roles)</label>
+        <input name="crew_needed" placeholder="A1, V1, L1, Stagehands, etc" required>
+      </div>
+      <div>
+        <label class="label">Budget Range</label>
+        <select name="budget_range" required>
+          <option>Low</option>
+          <option>Mid</option>
+          <option>High</option>
+          <option>Premium</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Scope Clarity</label>
+        <select name="scope_clarity" required>
+          <option>Clear</option>
+          <option>Somewhat clear</option>
+          <option>Unclear</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">PO / Authorization Ready?</label>
+        <select name="po_ready" required>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">COI Required?</label>
+        <select name="coi_required" required>
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Timeline</label>
+        <select name="timeline" required>
+          <option>Standard (1-2 weeks)</option>
+          <option>Rush (24-48h)</option>
+          <option>Emergency (same-day)</option>
+        </select>
       </div>
     </div>
 
-    <div class="label">Departments Needed</div>
-    <input name="departments" placeholder="Audio, Video, LED, Lighting, Rigging, Carpenters..." />
+    <div>
+      <label class="label">Notes</label>
+      <textarea name="notes" placeholder="Venue, power constraints, load-in/out, special constraints…"></textarea>
+    </div>
 
-    <div class="label">Gear Needed</div>
-    <textarea name="gear_needed" placeholder="LED wall size, processors, comms, consoles, distro, etc."></textarea>
-
-    <div class="label">Complexity</div>
-    <select name="complexity">
-      <option value="">Select…</option>
-      <option value="standard">Standard corporate</option>
-      <option value="led-heavy">LED-heavy / high integration</option>
-      <option value="broadcast">Broadcast / streaming</option>
-      <option value="festival">Festival / large footprint</option>
-    </select>
-
-    <div class="label">Budget Range (optional)</div>
-    <select name="budget_range">
-      <option value="">Select…</option>
-      <option value="low">Low</option>
-      <option value="mid">Mid</option>
-      <option value="high">High</option>
-    </select>
-
-    <div class="label">Notes</div>
-    <textarea name="notes" placeholder="Constraints, deadlines, client expectations, anything that can blow up a show…"></textarea>
-
-    <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Generate Risk Flags + Route</button>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit Production Intake</button>
       <a class="btn" href="/services">Back</a>
     </div>
   </form>
