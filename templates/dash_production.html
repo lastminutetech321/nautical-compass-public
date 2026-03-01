@@ -1,83 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Production Dashboard • Nautical Compass{% endblock %}
-
+{% block title %}AVPT Dashboard{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Production Dashboard</h2>
-  <p class="muted"><b>{{ prod.company_name }}</b> · {{ prod.city }} · Event: {{ prod.event_type }} · Date: {{ prod.event_date }}</p>
+  <h2>AVPT — Production Dashboard</h2>
 
-  <div class="grid grid-2" style="margin-top:12px;">
-    <div class="card">
-      <h3>Intake Summary</h3>
-      <ul>
-        <li><b>Contact:</b> {{ prod.contact_name }} ({{ prod.email }})</li>
-        <li><b>Crew Needed:</b> {{ prod.crew_needed }}</li>
-        <li><b>Budget:</b> {{ prod.budget_range }}</li>
-        <li><b>Scope:</b> {{ prod.scope_clarity }}</li>
-        <li><b>PO Ready:</b> {{ prod.po_ready }}</li>
-        <li><b>COI Required:</b> {{ prod.coi_required }}</li>
-        <li><b>Timeline:</b> {{ prod.timeline }}</li>
-      </ul>
+  {% if mode == "public" %}
+    <p class="muted">
+      This is the production/client lane. It standardizes job requests so fulfillment is fast, fair, and repeatable.
+    </p>
+    <div class="btnrow">
+      <a class="btn btn-primary" href="/intake/production">Create a Production Request</a>
+      <a class="btn" href="/services#av">Back</a>
+    </div>
+  {% else %}
+    <p class="muted">Admin view: latest production requests.</p>
+    <div class="btnrow">
+      <a class="btn" href="/dashboards?k={{k}}">Back to Director Dashboard</a>
     </div>
 
-    <div class="card">
-      <h3>Actions</h3>
-      <p class="muted">Create a job request. Then run Matching v1.</p>
-      <a class="btn btn-primary" href="#jobs">Create Job</a>
-      <a class="btn" href="/services">Back to Services</a>
-    </div>
-  </div>
-
-  <div class="card" id="jobs" style="margin-top:16px;">
-    <h3>Create Job Request (Matching v1)</h3>
-
-    <form method="post" action="/dash/production/create-job">
-      <input type="hidden" name="production_intake_id" value="{{ prod.id }}">
-
-      <div class="grid grid-2">
-        <div><label class="label">Job Title</label><input name="title" required></div>
-        <div><label class="label">Role Needed</label><input name="role_needed" placeholder="A2 / V1 / L1 / Stagehand" required></div>
-        <div><label class="label">City</label><input name="city" value="{{ prod.city }}" required></div>
-        <div><label class="label">Event Date</label><input name="event_date" value="{{ prod.event_date }}" required></div>
-        <div><label class="label">Call Time</label><input name="call_time" placeholder="07:00" required></div>
-        <div><label class="label">Hours Est.</label><input name="hours_est" placeholder="10" required></div>
-        <div><label class="label">Rate Offer</label><input name="rate_offer" placeholder="$55/hr" required></div>
-        <div><label class="label">Truck Size</label><input name="truck_size" placeholder="Sprinter / 16ft / 26ft" required></div>
-        <div><label class="label">Lift Gate Needed</label>
-          <select name="liftgate_needed" required>
-            <option>No</option>
-            <option>Yes</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label class="label">Notes</label>
-        <textarea name="notes" placeholder="Load-in notes, power, special constraints…"></textarea>
-      </div>
-
-      <div class="btnrow">
-        <button class="btn btn-primary" type="submit">Create Job</button>
-      </div>
-    </form>
-
-    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-    <h3>Jobs</h3>
-    {% if jobs and jobs|length > 0 %}
-      <ul>
-        {% for j in jobs %}
-          <li style="margin-bottom:10px;">
-            <b>#{{ j.id }}</b> — {{ j.title }} · Role: {{ j.role_needed }} · {{ j.city }} · {{ j.event_date }}
-            <div style="margin-top:6px;">
-              <a class="btn btn-primary" href="/matching/run?job_id={{ j.id }}">Run Matching v1</a>
-            </div>
-          </li>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Company</th><th>Event</th><th>City</th><th>State</th><th>Created</th><th>Results</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.company_name }}</td>
+            <td>{{ r.event_name }}</td>
+            <td>{{ r.city }}</td>
+            <td>{{ r.state }}</td>
+            <td class="muted">{{ r.created_at }}</td>
+            <td><a href="/results?type=production&id={{ r.id }}">Open</a></td>
+          </tr>
         {% endfor %}
-      </ul>
-    {% else %}
-      <p class="muted">No jobs yet. Create one above.</p>
-    {% endif %}
-  </div>
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
