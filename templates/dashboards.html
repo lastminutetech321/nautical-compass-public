@@ -1,37 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Director / Operator Dashboard • Nautical Compass{% endblock %}
-
+{% block title %}Director / Operator Dashboard{% endblock %}
 {% block content %}
 <div class="card">
   <h2>Director / Operator Dashboard</h2>
   <p class="muted">Internal oversight: rails, people, scoreboards, routing.</p>
 
-  <ul>
-    <li>Contributor dashboard (admin)</li>
-    <li>Partner dashboard (admin)</li>
-    <li>People dashboard (operators / staff)</li>
-  </ul>
-
-  {% set k = request.query_params.get('k') or request.query_params.get('key') or '' %}
-
-  {% if not k %}
+  {% if not admin_ok %}
     <div class="alert bad">
       <strong>Admin key missing.</strong><br>
       This page needs <code>?k=ADMIN_KEY</code> in the URL to open admin dashboards.
-      <div class="micro" style="margin-top:8px;">
+      <div class="muted" style="margin-top:8px;">
         Example: <code>/dashboards?k=YOUR_ADMIN_KEY</code>
       </div>
     </div>
   {% endif %}
 
   <div class="btnrow" style="margin-top:14px;">
-    <a class="btn btn-primary" href="/admin/contributors-dashboard?k={{ k }}">Contributors Admin</a>
-    <a class="btn" href="/admin/partners-dashboard?k={{ k }}">Partners Admin</a>
-    <a class="btn" href="/admin/people-dashboard?k={{ k }}">People Admin</a>
+    <a class="btn btn-primary" href="/dash/production{% if k %}?k={{k}}{% endif %}">Production Dashboard</a>
+    <a class="btn btn-primary" href="/dash/labor{% if k %}?k={{k}}{% endif %}">Labor Dashboard</a>
+    <a class="btn" href="/dash/public">Public Dashboard</a>
   </div>
 
-  <div style="margin-top:14px;" class="muted">
-    Note: this page expects you to load it with <code>?k=ADMIN_KEY</code> in the URL for admin links.
-  </div>
+  <hr class="hr">
+
+  <p class="muted">
+    Tip: Keep this link saved with your key: <code>/dashboards?k=ADMIN_KEY</code>.
+  </p>
 </div>
 {% endblock %}
