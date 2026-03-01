@@ -1,93 +1,93 @@
 {% extends "base.html" %}
-{% block title %}Labor Intake • Nautical Compass{% endblock %}
-
+{% block title %}LMT Labor Intake{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Labor / Tech Intake (LMT Worker Lane)</h2>
-  <p class="muted">This intake extracts readiness + matching signals without feeling like paperwork.</p>
+  <h2>LMT — Labor / Tech Intake</h2>
+  <p class="muted">
+    Built for speed: you give the essentials once — then your profile is ready to match.
+    Missing onboarding documents show as risk flags (so you don’t get stuck later).
+  </p>
 
-  <form class="form" method="post" action="/intake/labor">
-    <div class="grid grid-2">
+  <form method="post" action="/intake/labor" class="form">
+    <div class="grid2">
       <div>
-        <label class="label">Name</label>
-        <input name="name" required>
+        <label>Full name</label>
+        <input name="full_name" required>
       </div>
       <div>
-        <label class="label">Email</label>
+        <label>Email</label>
         <input name="email" type="email" required>
       </div>
+    </div>
+
+    <div class="grid2">
       <div>
-        <label class="label">Phone</label>
+        <label>Phone</label>
         <input name="phone">
       </div>
       <div>
-        <label class="label">Home City</label>
-        <input name="home_city" required>
-      </div>
-      <div>
-        <label class="label">Roles (comma separated)</label>
-        <input name="roles" placeholder="A2, A1, V1, L1, Stagehand…" required>
-      </div>
-      <div>
-        <label class="label">Experience Level</label>
-        <select name="experience_level" required>
-          <option>Entry</option>
-          <option>Intermediate</option>
-          <option>Advanced</option>
-          <option>Lead</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Availability (days/week)</label>
-        <select name="availability_days" required>
-          <option>0-2</option>
-          <option>3</option>
-          <option>4-5</option>
-          <option>6-7</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Transport</label>
-        <select name="has_transport" required>
-          <option>Yes</option>
-          <option>No</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Certs (OSHA/rigging/etc)</label>
-        <select name="has_certs" required>
-          <option>No</option>
-          <option>Yes</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">LLC / Business Setup</label>
-        <select name="has_llc" required>
-          <option>No</option>
-          <option>Yes</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Insurance (COI/Pro coverage)</label>
-        <select name="has_insurance" required>
-          <option>No</option>
-          <option>Yes</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Minimum Rate</label>
-        <input name="rate_min" placeholder="$45/hr" required>
+        <label>Experience level</label>
+        <input name="experience_level" placeholder="Entry / Mid / Senior">
       </div>
     </div>
 
-    <div>
-      <label class="label">Notes</label>
-      <textarea name="notes" placeholder="Special skills, limitations, preferred venues…"></textarea>
+    <div class="grid2">
+      <div>
+        <label>Home city</label>
+        <input name="home_city">
+      </div>
+      <div>
+        <label>Home state</label>
+        <input name="home_state" placeholder="DC / MD / VA...">
+      </div>
     </div>
+
+    <label>Roles you can execute</label>
+    <textarea name="roles" rows="3" placeholder="A2, V1, Stagehand, Rigger, LED Tech..."></textarea>
+
+    <label>Certifications (optional)</label>
+    <input name="certs" placeholder="OSHA10, Forklift, Rigging, Audio cert...">
+
+    <hr class="hr">
+
+    <div class="grid2">
+      <label class="check"><input type="checkbox" name="w9_ready"> W-9 ready</label>
+      <label class="check"><input type="checkbox" name="id_ready"> Government ID ready</label>
+    </div>
+
+    <div class="grid2">
+      <label class="check"><input type="checkbox" name="has_llc"> I have an LLC</label>
+      <label class="check"><input type="checkbox" name="has_insurance"> I have pro insurance</label>
+    </div>
+
+    <hr class="hr">
+
+    <label>Transportation</label>
+    <select name="transport_mode">
+      <option value="">Select...</option>
+      <option>Car</option>
+      <option>Rideshare</option>
+      <option>Public Transit</option>
+      <option>Truck / Van</option>
+    </select>
+
+    <div class="grid2">
+      <label class="check"><input type="checkbox" name="can_travel"> Can travel for shows</label>
+      <label class="check"><input type="checkbox" name="last_minute_ok"> Last-minute / emergency calls OK</label>
+    </div>
+
+    <label>Availability (next 7 days)</label>
+    <textarea name="availability_next_7" rows="3" placeholder="Example: Wed-Fri after 5pm, Sat all day, Sun unavailable..."></textarea>
+
+    <label>Preferred rate (optional)</label>
+    <input name="preferred_rate" placeholder="$ / hour or day rate">
+
+    <label>Notes</label>
+    <textarea name="notes" rows="4"></textarea>
 
     <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit Labor Intake</button>
-      <a class="btn" href="/services">Back</a>
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn" href="/services#av">Back</a>
     </div>
   </form>
 </div>
