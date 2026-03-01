@@ -1,37 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Results • Nautical Compass{% endblock %}
-
 {% block content %}
 <div class="card">
-  <h2>{{ headline }}</h2>
-  <p class="muted">{{ subhead }}</p>
+  <h2>Results</h2>
+  <p class="muted">{{ title }} • ID #{{ record["id"] }}</p>
 
+  <div class="callout">
+    <strong>Next step:</strong>
+    Fix the high-severity risk flags first — that prevents delays, disputes, and failed fulfillment.
+  </div>
+
+  <h3>Risk Flags</h3>
   {% if flags and flags|length > 0 %}
-    <h3>Risk Flags (v1)</h3>
-    <div class="grid" style="margin-top:10px;">
+    <div class="flags">
       {% for f in flags %}
-        <div class="card">
-          <div class="badge">{{ f.severity }}</div>
-          <h4 style="margin:10px 0 6px;">{{ f.code }} — {{ f.title }}</h4>
-          <p class="muted" style="margin:0;">{{ f.why }}</p>
+        <div class="flag flag-{{ f.severity }}">
+          <div class="flag-top">
+            <span class="badge">{{ f.severity|upper }}</span>
+            <strong>{{ f.title }}</strong>
+          </div>
+          <div class="muted">{{ f.description }}</div>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <div class="alert ok">No risk flags detected.</div>
+    <p class="muted">No major risk flags detected.</p>
   {% endif %}
 
-  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+  <hr class="hr">
 
-  <h3>Next Actions</h3>
+  <h3>Summary (what we captured)</h3>
+  <pre class="pre">{{ record | tojson(indent=2) }}</pre>
+
   <div class="btnrow">
-    {% for a in next_actions %}
-      <a class="btn btn-primary" href="{{ a.href }}">{{ a.label }}</a>
-    {% endfor %}
+    <a class="btn btn-primary" href="/services">Back to Solutions</a>
+    {% if type == "production" %}
+      <a class="btn" href="/intake/production">Submit another request</a>
+      <a class="btn" href="/dash/production">Production Dashboard</a>
+    {% else %}
+      <a class="btn" href="/intake/labor">Update labor profile</a>
+      <a class="btn" href="/dash/labor">Labor Dashboard</a>
+    {% endif %}
   </div>
-
-  <p class="muted" style="margin-top:14px;">
-    Lane: <b>{{ lane }}</b> · Record: <b>#{{ record_id }}</b>
-  </p>
 </div>
 {% endblock %}
