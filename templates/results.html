@@ -3,131 +3,35 @@
 
 {% block content %}
 <div class="card">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-    <div>
-      <h2 style="margin:0 0 6px;">Results</h2>
-      <div class="muted" style="line-height:1.6;">
-        Intake #<strong>{{ intake_id }}</strong> · Service: <strong>{{ service_requested }}</strong>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <a class="btn" href="/dashboard?token={{ token }}">Dashboard</a>
-      <a class="btn" href="/intake-form?token={{ token }}">New Intake</a>
-
-      {% if mode == "basic" %}
-        <a class="btn btn-primary" href="/results?id={{ intake_id }}&token={{ token }}&mode=court">Switch to Court-Ready</a>
-      {% else %}
-        <a class="btn btn-primary" href="/results?id={{ intake_id }}&token={{ token }}&mode=basic">Switch to Basic</a>
-      {% endif %}
-    </div>
-  </div>
-
-  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-  <!-- =========================
-       RISK FLAGS v1
-       ========================= -->
-  <h3 style="margin:0 0 10px;">Risk Flags</h3>
+  <h2>{{ headline }}</h2>
+  <p class="muted">{{ subhead }}</p>
 
   {% if flags and flags|length > 0 %}
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+    <h3>Risk Flags (v1)</h3>
+    <div class="grid" style="margin-top:10px;">
       {% for f in flags %}
-        <div class="alert {% if f.severity == 'high' %}bad{% elif f.severity == 'medium' %}{% else %}ok{% endif %}">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <div style="font-weight:900;">{{ f.title }}</div>
-            <span class="badge">{{ f.severity|upper }}</span>
-          </div>
-          <div class="muted" style="margin-top:8px;line-height:1.55;">
-            <div><strong>Why:</strong> {{ f.why }}</div>
-            <div style="margin-top:6px;"><strong>Fix:</strong> {{ f.fix }}</div>
-          </div>
+        <div class="card">
+          <div class="badge">{{ f.severity }}</div>
+          <h4 style="margin:10px 0 6px;">{{ f.code }} — {{ f.title }}</h4>
+          <p class="muted" style="margin:0;">{{ f.why }}</p>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <div class="alert ok">
-      <strong>No risk flags detected.</strong>
-      <div class="muted" style="margin-top:6px;">This means your intake has enough baseline detail to proceed cleanly.</div>
-    </div>
+    <div class="alert ok">No risk flags detected.</div>
   {% endif %}
 
   <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
 
-  <!-- =========================
-       LEGAL SPINE (BASIC vs COURT)
-       ========================= -->
-  <h3 style="margin:0 0 10px;">What the system is doing</h3>
-  <p class="muted" style="margin-top:0;line-height:1.6;">
-    You’re seeing the system translate your intake into a structured legal strategy skeleton:
-    elements → required facts → risk flags → next action.
-  </p>
-
-  {% for s in spine %}
-    <details class="dropdown" open>
-      <summary>
-        <span>{{ s.title }}</span>
-        <span class="badge">{% if mode == "court" %}COURT-READY{% else %}BASIC{% endif %}</span>
-      </summary>
-      <div class="dropdown-body">
-
-        {% if mode == "basic" %}
-          <ul style="margin:0;padding-left:18px;">
-            {% for line in s.basic %}
-              <li style="margin:6px 0;line-height:1.6;">{{ line }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;">
-            {% for r in s.court_ready %}
-              <div class="card" style="padding:14px;border-radius:12px;">
-                <div style="font-weight:900;">Rule</div>
-                <div class="muted" style="margin-top:6px;line-height:1.6;">{{ r.rule }}</div>
-                <div style="margin-top:10px;">
-                  <span class="badge">Citation</span>
-                  <span class="muted" style="margin-left:8px;">{{ r.cite }}</span>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        <hr style="margin:16px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-        <div style="font-weight:900;margin-bottom:8px;">Facts you must have / plead</div>
-        <ul style="margin:0;padding-left:18px;">
-          {% for f in s.facts_needed %}
-            <li style="margin:6px 0;line-height:1.6;">{{ f }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </details>
-  {% endfor %}
-
-  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
-
-  <h3 style="margin:0 0 10px;">Next action</h3>
-  <div class="grid grid-2">
-    <div class="card">
-      <div style="font-weight:900;">If you got High/Medium flags</div>
-      <div class="muted" style="margin-top:8px;line-height:1.6;">
-        Fix the flagged items first, then re-submit intake with stronger facts. That prevents wasted motion later.
-      </div>
-      <div style="margin-top:12px;">
-        <a class="btn btn-primary" href="/intake-form?token={{ token }}">Fix + Resubmit</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-weight:900;">If flags are clean</div>
-      <div class="muted" style="margin-top:8px;line-height:1.6;">
-        Proceed to document collection and drafting. Next we wire: uploads + evidence mapping + deliverable generator.
-      </div>
-      <div style="margin-top:12px;">
-        <a class="btn" href="/dashboard?token={{ token }}">Go to Dashboard</a>
-      </div>
-    </div>
+  <h3>Next Actions</h3>
+  <div class="btnrow">
+    {% for a in next_actions %}
+      <a class="btn btn-primary" href="{{ a.href }}">{{ a.label }}</a>
+    {% endfor %}
   </div>
 
+  <p class="muted" style="margin-top:14px;">
+    Lane: <b>{{ lane }}</b> · Record: <b>#{{ record_id }}</b>
+  </p>
 </div>
 {% endblock %}
