@@ -1,33 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Lead Intake • Nautical Compass{% endblock %}
-
+{% block title %}Contact • Nautical Compass{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>General Inquiry (Public)</h2>
-  <p class="muted">Use this if you’re not sure which lane to enter yet.</p>
+  <h2>General Inquiry</h2>
+  <p class="muted">Short message. We’ll route it correctly.</p>
 
-  <form method="post" action="/lead">
-    <div class="label">Name</div>
-    <input name="name" required />
+  <form method="post" action="/lead" class="form">
+    <label>Name</label>
+    <input name="name" required>
 
-    <div class="label">Email</div>
-    <input name="email" type="email" required />
+    <label>Email</label>
+    <input name="email" type="email" required>
 
-    <div class="label">Phone</div>
-    <input name="phone" />
+    <label>Phone (optional)</label>
+    <input name="phone">
 
-    <div class="label">Company (optional)</div>
-    <input name="company" />
+    <label>Company (optional)</label>
+    <input name="company">
 
-    <div class="label">Interest</div>
-    <input name="interest" placeholder="Legal / Production / Labor / Partner / Sponsor" />
+    <label>What are you trying to solve?</label>
+    <input name="interest" placeholder="Legal intake, production staffing, partnerships…">
 
-    <div class="label">Message</div>
-    <textarea name="message"></textarea>
+    <label>Message</label>
+    <textarea name="message" rows="5" placeholder="Give the short version."></textarea>
 
-    <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/services">Back</a>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Send</button>
+      <a class="btn" href="/services">Back to Solutions</a>
     </div>
   </form>
 </div>
