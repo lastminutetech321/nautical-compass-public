@@ -1,17 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Public Dashboard{% endblock %}
+{% block title %}Dashboards • Public{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Public Dashboard</h2>
-  <p class="muted">For consumers outside AV. Start here if you’re not sure.</p>
-  <ul>
-    <li>Clear services menu</li>
-    <li>Lead intake for non-members</li>
-    <li>Examples of what the system produces</li>
-  </ul>
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/services">View Services</a>
-    <a class="btn" href="/intake/public">Public Intake</a>
+  <h2>Dashboards</h2>
+  <p class="muted">
+    Each lane has its own dashboard because each lane needs different controls, different data,
+    and different risk flags.
+  </p>
+
+  <div class="tiles">
+    <div class="tile">
+      <div class="tile-kicker">AVPT — Production / Client</div>
+      <h3>Job request clarity</h3>
+      <p class="muted">Roles, schedule, truck/dock/liftgate, union, payment terms.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/intake/production">Start Production Intake</a>
+        <a class="btn" href="/dash/production">View Dashboard</a>
+      </div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-kicker">LMT — Labor / Tech</div>
+      <h3>Readiness + availability</h3>
+      <p class="muted">Roles, certs, W-9 readiness, transport mode, last-minute readiness.</p>
+      <div class="btnrow">
+        <a class="btn btn-primary" href="/intake/labor">Start Labor Intake</a>
+        <a class="btn" href="/dash/labor">View Dashboard</a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
