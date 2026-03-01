@@ -1,38 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Partner Intake • Nautical Compass{% endblock %}
-
+{% block title %}Partner • Nautical Compass{% endblock %}
 {% block content %}
 <div class="card">
-  <h2>Partner / Manufacturer Intake</h2>
-  <p class="muted">Vendor + manufacturer lane (LED, processors, logistics, rentals, coverage).</p>
+  <h2>Partner Intake</h2>
+  <p class="muted">Manufacturers, integrators, venues, staffing vendors, insurers, and platform partners.</p>
 
-  <form method="post" action="/partner">
-    <div class="label">Name</div>
-    <input name="name" required />
+  <form method="post" action="/partner" class="form">
+    <label>Name</label>
+    <input name="name" required>
 
-    <div class="label">Email</div>
-    <input name="email" type="email" required />
+    <label>Email</label>
+    <input name="email" type="email" required>
 
-    <div class="label">Company</div>
-    <input name="company" />
+    <label>Company</label>
+    <input name="company">
 
-    <div class="label">Role</div>
-    <input name="role" placeholder="Regional sales, rental house, manufacturer rep…" />
+    <label>Role</label>
+    <input name="role" placeholder="Manufacturer / Venue / Integrator / Sponsor…">
 
-    <div class="label">Product Type</div>
-    <input name="product_type" placeholder="LED panels, processors, comms, distro, staging…" />
+    <label>Product type</label>
+    <input name="product_type" placeholder="LED, Audio, Labor network, Insurance…">
 
-    <div class="label">Website</div>
-    <input name="website" />
+    <label>Website</label>
+    <input name="website">
 
-    <div class="label">Regions Covered</div>
-    <input name="regions" placeholder="DMV, East Coast, National…" />
+    <label>Regions</label>
+    <input name="regions" placeholder="DMV, Mid-Atlantic, Nationwide…">
 
-    <div class="label">Message</div>
-    <textarea name="message"></textarea>
+    <label>Message</label>
+    <textarea name="message" rows="5"></textarea>
 
-    <div class="btnrow" style="margin-top:16px;">
-      <button class="btn btn-primary" type="submit">Submit Partner Intake</button>
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit</button>
       <a class="btn" href="/services">Back</a>
     </div>
   </form>
