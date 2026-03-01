@@ -1,45 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>{% block title %}Nautical Compass{% endblock %}</title>
-
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/static/styles.css" />
-  {% block head %}{% endblock %}
+  <link rel="icon" href="/favicon.ico"/>
+  <link rel="stylesheet" href="/static/styles.css"/>
 </head>
-
 <body>
-  <header class="nav">
-    <div class="nav-inner">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
       <a class="brand" href="/">
-        <span class="brand-badge">NC</span>
-        <span>Nautical Compass</span>
+        <span class="brand-mark">NC</span>
+        <span class="brand-text">Nautical Compass</span>
       </a>
-
-      <nav class="nav-links">
+      <nav class="nav">
         <a href="/services">Services</a>
-        <a href="/intake/production">AVPT (Production)</a>
-        <a href="/intake/labor">LMT (Labor)</a>
-        <a href="/partner">Partner</a>
-        <a href="/lead">Lead</a>
-        <a class="btn btn-primary" href="/checkout">Subscribe</a>
+        <a href="/intake/production">Production</a>
+        <a href="/intake/labor">Labor</a>
+        <a href="/contributor">Contributors</a>
       </nav>
     </div>
   </header>
 
-  {% block hero %}{% endblock %}
-
-  <main class="container">
+  <main class="wrap main">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
-    <div>© {{ year if year else "" }} Nautical Compass</div>
-    <div class="muted">One engine · Many doors · Risk flags · Clean routing</div>
+    <div class="wrap footer-inner">
+      <div class="muted">© {{ year }} Nautical Compass</div>
+      <div class="muted">One hall · many doors · structured rails</div>
+    </div>
   </footer>
-
-  {% block scripts %}{% endblock %}
 </body>
 </html>
