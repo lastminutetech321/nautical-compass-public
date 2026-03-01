@@ -4,39 +4,39 @@
 {% block content %}
 <div class="card">
   <h2>Services</h2>
-  <p class="muted">Clear entry points. No confusion. Each lane routes you to the right system.</p>
+  <p class="muted">Curated list + full catalog psychology. Clear. No confusion.</p>
 
-  <h3>Fast Entry Points</h3>
-  <div class="grid">
-    <div><span class="badge">NC</span> Subscriber Legal Intake (risk flags + plan)</div>
-    <div><span class="badge">AVPT</span> Production Company Intake (staff + constraints)</div>
-    <div><span class="badge">LMT</span> Labor / Tech Intake (role + routing)</div>
-    <div><span class="badge">Partners</span> Manufacturer / Vendor intake</div>
-  </div>
+  <h3>Start Here (Most Requested)</h3>
+  <ul>
+    <li>Legal Intake Strategy</li>
+    <li>Contract Review & Risk Mapping</li>
+    <li>Demand Letter Drafting</li>
+    <li>Arbitration Package Assembly</li>
+    <li>Records Requests (FOIA / CPRA-style)</li>
+  </ul>
 
   <details class="dropdown">
     <summary>Full Catalog (expand)</summary>
     <div class="dropdown-body">
       <div class="grid">
-        <div><span class="badge">NC</span> Standing + Capacity framing</div>
-        <div><span class="badge">NC</span> Demand letter structuring</div>
-        <div><span class="badge">NC</span> Evidence organization</div>
-        <div><span class="badge">AVPT</span> Staffing + department leads</div>
-        <div><span class="badge">AVPT</span> Compliance verification</div>
-        <div><span class="badge">LMT</span> Rapid fill / dispatch</div>
-        <div><span class="badge">Partners</span> Manufacturer access routing</div>
-        <div><span class="badge">Sponsor</span> Paid access lanes</div>
+        <div><span class="badge">Strategy</span> Standing + Capacity framing</div>
+        <div><span class="badge">Strategy</span> Risk flags + decision tree</div>
+        <div><span class="badge">Disputes</span> Billing/chargeback structuring</div>
+        <div><span class="badge">Records</span> Records request packet</div>
+        <div><span class="badge">Drafting</span> Notices + demand letters</div>
+        <div><span class="badge">Build</span> Evidence organization rails</div>
+        <div><span class="badge">AVPT</span> Production intake + job matching</div>
+        <div><span class="badge">LMT</span> Worker intake + readiness scoring</div>
       </div>
-      <p class="muted" style="margin-top:10px;">
-        Coming soon: expanded catalog (63+) as “capabilities map” without overwhelming users.
-      </p>
     </div>
   </details>
 
-  <div class="btnrow" style="margin-top:16px;">
-    <a class="btn" href="/intake/production">Production Intake</a>
-    <a class="btn" href="/intake/labor">Labor Intake</a>
-    <a class="btn btn-primary" href="/checkout">Subscribe</a>
+  <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.10)">
+
+  <h3>Fast Lanes</h3>
+  <div class="btnrow">
+    <a class="btn btn-primary" href="/intake/production">Production Intake</a>
+    <a class="btn btn-primary" href="/intake/labor">Labor Intake</a>
   </div>
 </div>
 {% endblock %}
