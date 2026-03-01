@@ -1,36 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Nautical Compass{% endblock %}</title>
-  <link rel="icon" href="/favicon.ico"/>
-  <link rel="stylesheet" href="/static/styles.css"/>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <header class="topbar">
-    <div class="wrap topbar-inner">
-      <a class="brand" href="/">
-        <span class="brand-mark">NC</span>
-        <span class="brand-text">Nautical Compass</span>
-      </a>
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">NC</div>
+        <div class="brand-text">
+          <div class="brand-name">Nautical Compass</div>
+          <div class="brand-sub">Clear rails for complex systems</div>
+        </div>
+      </div>
+
       <nav class="nav">
-        <a href="/services">Services</a>
-        <a href="/intake/production">Production</a>
-        <a href="/intake/labor">Labor</a>
-        <a href="/contributor">Contributors</a>
+        <a href="/">Home</a>
+        <a href="/services">Solutions</a>
+        <a href="/dash/public">Dashboards</a>
+        <a href="/lead">Contact</a>
+        <a class="btn btn-gold" href="/services#access">Get Access</a>
       </nav>
     </div>
   </header>
 
-  <main class="wrap main">
+  <main class="wrap">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
-    <div class="wrap footer-inner">
-      <div class="muted">© {{ year }} Nautical Compass</div>
-      <div class="muted">One hall · many doors · structured rails</div>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-title">Nautical Compass</div>
+        <div class="muted">Structured intake • clear rails • fewer mistakes</div>
+      </div>
+
+      <div>
+        <div class="footer-title">Links</div>
+        <div class="footer-links">
+          <a href="/services">Solutions</a>
+          <a href="/lead">General Inquiry</a>
+          <a href="/partner">Partner</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-title">Legal</div>
+        <div class="footer-links">
+          <a href="/services#disclaimer">Disclaimer</a>
+          <a href="/services#privacy">Privacy</a>
+          <a href="/services#terms">Terms</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom muted">
+      © {{ year }} Nautical Compass • Powered by CVCS Consulting
     </div>
   </footer>
 </body>
