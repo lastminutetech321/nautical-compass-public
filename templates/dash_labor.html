@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Labor Dashboard • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Labor Dashboard</h2>
+  <p class="muted"><b>{{ labor.name }}</b> · {{ labor.home_city }} · Roles: {{ labor.roles }}</p>
+
+  <div class="grid grid-2" style="margin-top:12px;">
+    <div class="card">
+      <h3>Readiness Snapshot</h3>
+      <ul>
+        <li><b>Experience:</b> {{ labor.experience_level }}</li>
+        <li><b>Availability:</b> {{ labor.availability_days }} days/week</li>
+        <li><b>Transport:</b> {{ labor.has_transport }}</li>
+        <li><b>Certs:</b> {{ labor.has_certs }}</li>
+        <li><b>LLC:</b> {{ labor.has_llc }}</li>
+        <li><b>Insurance:</b> {{ labor.has_insurance }}</li>
+        <li><b>Min Rate:</b> {{ labor.rate_min }}</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Actions</h3>
+      <p class="muted">Browse open requests. Matching happens on the production side for now.</p>
+      <a class="btn" href="/services">Back to Services</a>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Recent Open Jobs</h3>
+    {% if jobs and jobs|length > 0 %}
+      <ul>
+        {% for j in jobs %}
+          <li style="margin-bottom:10px;">
+            <b>#{{ j.id }}</b> — {{ j.title }} · Role: {{ j.role_needed }} · {{ j.city }} · {{ j.event_date }} · {{ j.rate_offer }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No open jobs yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
