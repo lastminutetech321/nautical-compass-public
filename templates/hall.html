@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nautical Compass • Hallway</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/static/hallway.css" />
+
+  <!-- Three.js via importmap (no build step) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+
+<body>
+  <header class="hc-topbar">
+    <div class="hc-wrap hc-topbar-inner">
+      <div class="hc-brand">
+        <div class="hc-badge">NC</div>
+        <div class="hc-brandtext">
+          <div class="hc-title">Nautical Compass</div>
+          <div class="hc-sub">One hall. Many doors. Pick your lane.</div>
+        </div>
+      </div>
+
+      <nav class="hc-nav">
+        <a class="hc-link" href="/services">Services</a>
+        <a class="hc-link" href="/lead">Lead</a>
+        <a class="hc-link" href="/partner">Partners</a>
+        <a class="hc-btn" href="/checkout">Subscribe</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hc-stage">
+    <div id="webglMount" class="hc-canvas" aria-label="3D hallway navigation"></div>
+
+    <!-- Overlay UI -->
+    <div class="hc-overlay">
+      <div class="hc-hint">
+        <div class="hc-pill">Tap a door</div>
+        <div class="hc-pill">Drag to look</div>
+        <div class="hc-pill">Scroll to move</div>
+        <div class="hc-pill">Double-tap: center view</div>
+      </div>
+
+      <div id="doorTooltip" class="hc-tooltip" style="display:none;">
+        <div class="hc-tooltip-title" id="doorTitle">Door</div>
+        <div class="hc-tooltip-desc" id="doorDesc">Description</div>
+        <div class="hc-tooltip-actions">
+          <button class="hc-btn-sm" id="doorEnterBtn">Enter</button>
+          <button class="hc-btn-sm hc-ghost" id="doorCloseBtn">Close</button>
+        </div>
+      </div>
+
+      <!-- WebGL fallback -->
+      <div id="fallback" class="hc-fallback" style="display:none;">
+        <h2>Open the Hallway Doors</h2>
+        <p>Your device/browser blocked 3D. Use the links below:</p>
+        <div class="hc-grid">
+          <a class="hc-card" href="/services">
+            <div class="hc-card-title">Services</div>
+            <div class="hc-card-desc">See the full catalog + emergency guides.</div>
+          </a>
+          <a class="hc-card" href="/checkout">
+            <div class="hc-card-title">Subscribe</div>
+            <div class="hc-card-desc">Unlock subscriber intake + dashboard access.</div>
+          </a>
+          <a class="hc-card" href="/contributor">
+            <div class="hc-card-title">Contributor</div>
+            <div class="hc-card-desc">Operators, builders, sales, supply, sponsors.</div>
+          </a>
+          <a class="hc-card" href="/partner">
+            <div class="hc-card-title">Partner</div>
+            <div class="hc-card-desc">Manufacturers + vendors + strategic partners.</div>
+          </a>
+          <a class="hc-card" href="/lead">
+            <div class="hc-card-title">Public Lead</div>
+            <div class="hc-card-desc">General inquiry — no subscription required.</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="hc-footer">
+    <div class="hc-wrap hc-footer-inner">
+      <div class="hc-muted">© {{ year if year else "" }} Nautical Compass</div>
+      <div class="hc-muted">Unified ecosystem navigation • 3D hallway UI</div>
+    </div>
+  </footer>
+
+  <script type="module" src="/static/hallway.js"></script>
+</body>
+</html>
