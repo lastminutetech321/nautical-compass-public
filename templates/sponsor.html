@@ -3,51 +3,47 @@
 
 {% block content %}
 <div class="card">
-  <h2>Sponsor Access</h2>
+  <div class="eyebrow">Sponsor lane</div>
+  <h2>Sponsor / Manufacturer Access</h2>
   <p class="muted">
-    Sponsor access is for manufacturers, vendors, and enterprise partners who want priority placement,
-    structured intake, and a direct lane into the ecosystem.
+    This is a structured pathway for sponsors, manufacturers, and vendors to plug into our ecosystem without confusion.
+    You’ll see exactly how we route opportunities, what we track, and what you receive.
   </p>
 
-  <div class="tiles">
-    <div class="tile">
-      <div class="tile-kicker">What you get</div>
-      <ul class="bullets">
-        <li>Priority partner routing (review queue)</li>
-        <li>Structured sponsor intake + requirements capture</li>
-        <li>Optional: product catalog lane + regional targeting</li>
-        <li>Optional: co-branded “verified partner” badge</li>
+  <div class="grid two" style="margin-top:14px;">
+    <div class="panel">
+      <h3>What you get</h3>
+      <ul class="clean">
+        <li><b>Vendor visibility</b> inside the platform lanes that match your product.</li>
+        <li><b>Qualified inbound</b> leads via structured intake (not random DMs).</li>
+        <li><b>Proof trail</b> of requests, quotes, and outcomes.</li>
+        <li><b>Escalation rails</b> for urgent needs or VIP jobs.</li>
       </ul>
     </div>
 
-    <div class="tile">
-      <div class="tile-kicker">Best for</div>
-      <ul class="bullets">
-        <li>LED / AV manufacturers</li>
-        <li>Labor networks & staffing vendors</li>
-        <li>Venues & integrators</li>
-        <li>Insurance / compliance providers</li>
+    <div class="panel">
+      <h3>What we need from you</h3>
+      <ul class="clean">
+        <li>Company name + primary contact</li>
+        <li>Product categories (LED, rigging, staging, logistics, etc.)</li>
+        <li>Regions served + typical lead time</li>
+        <li>Minimum order / pricing structure (optional)</li>
       </ul>
     </div>
   </div>
 
-  <hr class="hr">
+  <div class="callout">
+    <b>Note:</b> This is not “pay for a directory.”
+    Sponsors are integrated because their capabilities solve real bottlenecks. We route demand to the right supply.
+  </div>
 
-  <h3>Start</h3>
-  <p class="muted">
-    If you already have a sponsor checkout link, use it below. If not, submit a partner intake and we’ll route you.
+  <div class="btnrow" style="margin-top:16px;">
+    <a class="btn btn-primary" href="/partner">Start Partner Intake</a>
+    <a class="btn" href="/lead">Ask a Question</a>
+  </div>
+
+  <p class="fineprint" style="margin-top:14px;">
+    Your submission is reviewed for fit + capacity. If approved, you’ll receive the next-step onboarding packet.
   </p>
-
-  <div class="btnrow" style="margin-top:12px;">
-    <!-- If your main.py already has /sponsor/checkout wired, this button will work -->
-    <a class="btn btn-gold" href="/sponsor/checkout">Continue to Sponsor Checkout</a>
-    <a class="btn" href="/partner">Partner Intake</a>
-    <a class="btn" href="/services">Back to Solutions</a>
-  </div>
-
-  <div class="callout" style="margin-top:16px;">
-    <strong>Note:</strong> Sponsor access is positioned as an internal lane into the ecosystem —
-    not a “3rd-party service.” Your offer is implemented because it’s requested and structured for your needs.
-  </div>
 </div>
 {% endblock %}
