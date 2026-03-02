@@ -1,49 +1,56 @@
 {% extends "base.html" %}
-{% block title %}Sponsor • Nautical Compass{% endblock %}
+{% block title %}Sponsor / Manufacturer • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="card">
-  <div class="eyebrow">Sponsor lane</div>
+  <div class="eyebrow">Sponsor Lane</div>
   <h2>Sponsor / Manufacturer Access</h2>
   <p class="muted">
-    This is a structured pathway for sponsors, manufacturers, and vendors to plug into our ecosystem without confusion.
-    You’ll see exactly how we route opportunities, what we track, and what you receive.
+    This is a structured pathway for sponsors and manufacturers to connect with our ecosystem.
+    You’ll see exactly what we route, what we request, and what you get back.
   </p>
 
-  <div class="grid two" style="margin-top:14px;">
+  <div class="grid2" style="margin-top:14px;">
     <div class="panel">
       <h3>What you get</h3>
-      <ul class="clean">
-        <li><b>Vendor visibility</b> inside the platform lanes that match your product.</li>
-        <li><b>Qualified inbound</b> leads via structured intake (not random DMs).</li>
-        <li><b>Proof trail</b> of requests, quotes, and outcomes.</li>
-        <li><b>Escalation rails</b> for urgent needs or VIP jobs.</li>
+      <ul class="list">
+        <li><b>Qualified demand</b> routed to your category (LED, staging, power, logistics, etc.)</li>
+        <li><b>Clean spec intake</b> (so your team doesn’t chase missing details)</li>
+        <li><b>Decision-ready summaries</b> (risk flags + recommended next steps)</li>
+        <li><b>Repeatable quoting rails</b> you can reuse with other clients</li>
       </ul>
     </div>
 
     <div class="panel">
-      <h3>What we need from you</h3>
-      <ul class="clean">
-        <li>Company name + primary contact</li>
-        <li>Product categories (LED, rigging, staging, logistics, etc.)</li>
-        <li>Regions served + typical lead time</li>
-        <li>Minimum order / pricing structure (optional)</li>
+      <h3>What we request</h3>
+      <ul class="list">
+        <li>Primary product categories + service regions</li>
+        <li>Lead time windows + minimum order requirements</li>
+        <li>Preferred comms + escalation contact</li>
+        <li>Any compliance / insurance requirements you enforce</li>
       </ul>
     </div>
   </div>
 
-  <div class="callout">
-    <b>Note:</b> This is not “pay for a directory.”
-    Sponsors are integrated because their capabilities solve real bottlenecks. We route demand to the right supply.
+  <div class="divider"></div>
+
+  <h3>How this works</h3>
+  <ol class="steps">
+    <li><b>Partner Intake</b> → you submit your capability profile (2–4 minutes).</li>
+    <li><b>Routing + risk flags</b> → we normalize requests into clean specs.</li>
+    <li><b>Match + intro</b> → you receive only relevant opportunities.</li>
+  </ol>
+
+  <div class="divider"></div>
+
+  <div class="note">
+    <b>Important:</b> This is not “third-party random leads.”
+    It’s a controlled intake + routing system where the request is structured around your actual requirements.
   </div>
 
   <div class="btnrow" style="margin-top:16px;">
-    <a class="btn btn-primary" href="/partner">Start Partner Intake</a>
-    <a class="btn" href="/lead">Ask a Question</a>
+    <a class="btn btn-primary" href="/partner">Submit Partner Intake</a>
+    <a class="btn" href="/services">Back to Services</a>
   </div>
-
-  <p class="fineprint" style="margin-top:14px;">
-    Your submission is reviewed for fit + capacity. If approved, you’ll receive the next-step onboarding packet.
-  </p>
 </div>
 {% endblock %}
