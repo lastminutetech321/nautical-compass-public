@@ -262,3 +262,54 @@ textarea{
 }
 .footer a{color:var(--muted)}
 .footer a:hover{color:var(--text)}
+
+/* --- CLICK FIX: prevent invisible overlays from blocking taps --- */
+.hero,
+.hero * {
+  pointer-events: auto;
+}
+
+/* If you use pseudo-elements for glow/gradients, they must not capture clicks */
+.hero::before,
+.hero::after,
+.topbar::before,
+.topbar::after,
+.nav::before,
+.nav::after,
+body::before,
+body::after {
+  pointer-events: none !important;
+}
+
+/* If your Hall/Doors page uses a full-screen layer, disable its hitbox */
+.hall-bg,
+.hall-overlay,
+.scene,
+.scene-overlay,
+.lights,
+.lamp-glow,
+.door-glow {
+  pointer-events: none !important;
+}
+
+/* Keep actual clickable items clickable */
+.hall a,
+.hall button,
+.hall .door,
+.hall .door a,
+.hall .door button,
+.nav a,
+.topbar a,
+.btn {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 50;
+}
+
+/* Ensure your nav is on top */
+.nav,
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
