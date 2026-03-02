@@ -1,39 +1,12 @@
-(function () {
-  const doors = Array.from(document.querySelectorAll(".door"));
-  const titleEl = document.getElementById("laneTitle");
-  const descEl = document.getElementById("laneDesc");
-  const goEl = document.getElementById("laneGo");
-  const eyebrowEl = document.getElementById("laneEyebrow");
-
-  function setActive(btn) {
-    doors.forEach(d => d.classList.remove("is-active"));
-    btn.classList.add("is-active");
-
-    const title = btn.getAttribute("data-title") || "Lane";
-    const desc = btn.getAttribute("data-desc") || "";
-    const go = btn.getAttribute("data-go") || "#";
-    const lane = btn.getAttribute("data-lane") || "lane";
-
-    eyebrowEl.textContent = "Lane • " + lane.toUpperCase();
-    titleEl.textContent = title;
-    descEl.textContent = desc;
-
-    goEl.href = go;
-    goEl.style.pointerEvents = "auto";
-    goEl.style.opacity = "1";
-  }
-
-  doors.forEach(btn => {
-    btn.addEventListener("click", () => setActive(btn));
-    btn.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        setActive(btn);
-      }
+document.addEventListener("DOMContentLoaded", () => {
+  const doors = document.querySelectorAll("[data-href]");
+  doors.forEach((d) => {
+    d.addEventListener("click", () => {
+      doors.forEach(x => x.classList.remove("on"));
+      d.classList.add("on");
+      const href = d.getAttribute("data-href");
+      // small delay so the “lamp” effect is visible
+      setTimeout(() => { window.location.href = href; }, 180);
     });
   });
-
-  // Auto-select the featured door on first load (nice wow)
-  const featured = document.querySelector(".door--feature");
-  if (featured) setActive(featured);
-})();
+});
