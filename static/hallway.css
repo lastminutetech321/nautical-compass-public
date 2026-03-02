@@ -1,232 +1,128 @@
-:root{
-  --bg:#0b1220;
-  --line:rgba(255,255,255,.10);
-  --text:#e7eefc;
-  --muted:#a9b7d6;
-  --accent:#b88a2a;
-  --accent2:#e0b354;
-  --panel:rgba(5,9,20,.78);
-  --shadow:0 18px 40px rgba(0,0,0,.35);
-  --radius:16px;
-  --radius-sm:12px;
-  --max:1100px;
-  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-}
+/* Hallway scene (premium, lightweight) */
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  font-family:var(--font);
-  color:var(--text);
+.hall-wrap{ max-width:1060px; margin:0 auto; padding:18px; }
+.hall-hero{ margin:10px 0 14px; }
+.hall-title{ margin:6px 0 8px; }
+.hall-sub{ max-width:720px; }
+
+.hall-scene{
+  position:relative;
+  margin-top:14px;
+  padding:22px 18px 26px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(184,138,42,.25), transparent 55%),
-    linear-gradient(180deg, var(--bg), #050914);
+    /* wall gradient */
+    linear-gradient(180deg, rgba(245,246,248,.12), rgba(245,246,248,.02)),
+    /* vignette */
+    radial-gradient(900px 320px at 50% 30%, rgba(255,255,255,.10), transparent 60%),
+    /* floor */
+    linear-gradient(180deg, transparent 0 58%, rgba(0,0,0,.18) 58% 100%);
   overflow:hidden;
 }
 
-/* Topbar */
-.hc-topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  backdrop-filter: blur(12px);
-  background: var(--panel);
-  border-bottom:1px solid var(--line);
-}
-.hc-wrap{
-  max-width:var(--max);
-  margin:0 auto;
-  padding:0 16px;
-}
-.hc-topbar-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 0;
-  gap:10px;
-}
-.hc-brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.hc-badge{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  display:grid;
-  place-items:center;
-  font-weight:900;
-  color:#0b1220;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-}
-.hc-title{ font-weight:900; letter-spacing:.3px; }
-.hc-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-.hc-nav{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.hc-link{
-  color: rgba(231,238,252,.85);
-  text-decoration:none;
-  font-weight:700;
-  padding:8px 10px;
-  border-radius:10px;
-  transition:.2s ease;
-}
-.hc-link:hover{
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-}
-.hc-btn{
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:10px 14px;
-  border-radius:12px;
-  font-weight:900;
-  color:#0b1220;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  box-shadow: var(--shadow);
-  transition:.2s ease;
-}
-.hc-btn:hover{ filter:brightness(1.05); }
-
-/* Stage */
-.hc-stage{
-  position:relative;
-  width:100%;
-  height:calc(100vh - 62px);
-}
-.hc-canvas{
+/* Floor reflection line */
+.hall-scene::after{
+  content:"";
   position:absolute;
-  inset:0;
-}
-
-/* Overlay UI */
-.hc-overlay{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-.hc-hint{
-  position:absolute;
-  left:12px;
-  bottom:16px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  pointer-events:none;
-}
-.hc-pill{
-  pointer-events:none;
-  font-size:12px;
-  color: rgba(231,238,252,.85);
-  border:1px solid var(--line);
-  background: rgba(0,0,0,.20);
-  padding:6px 10px;
-  border-radius:999px;
-}
-
-.hc-tooltip{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(520px, calc(100% - 28px));
-  border:1px solid var(--line);
-  background: rgba(10,16,30,.92);
-  border-radius:18px;
-  padding:16px 16px 14px;
-  box-shadow: 0 26px 70px rgba(0,0,0,.55);
-  pointer-events:auto;
-}
-.hc-tooltip-title{
-  font-weight:900;
-  font-size:18px;
-  margin-bottom:6px;
-}
-.hc-tooltip-desc{
-  color: var(--muted);
-  line-height:1.55;
-  font-size:13px;
-}
-.hc-tooltip-actions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-  justify-content:flex-end;
-}
-
-.hc-btn-sm{
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  font-weight:900;
-  border-radius:12px;
-  padding:10px 12px;
-  cursor:pointer;
-  transition:.2s ease;
-}
-.hc-btn-sm:hover{ background: rgba(255,255,255,.10); }
-.hc-btn-sm.hc-ghost{
-  background: transparent;
-}
-
-/* Footer */
-.hc-footer{
-  position:fixed;
   left:0; right:0;
-  bottom:0;
-  z-index:40;
-  background: rgba(5,9,20,.65);
-  border-top:1px solid var(--line);
-  backdrop-filter: blur(10px);
-}
-.hc-footer-inner{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 0;
-}
-.hc-muted{
-  color: rgba(169,183,214,.85);
-  font-size:12px;
+  top:58%;
+  height:1px;
+  background: rgba(255,255,255,.10);
 }
 
-/* Fallback */
-.hc-fallback{
+/* Doors layout */
+.door{
+  position:relative;
+  width: 170px;
+  height: 310px;
+  border:0;
+  background: transparent;
+  cursor:pointer;
+  padding:0;
+  margin: 10px 14px;
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  outline:none;
+}
+
+@media (max-width: 820px){
+  .door{ width: 150px; height: 300px; margin: 10px 10px; }
+}
+
+/* Lamp above door */
+.lamp{
   position:absolute;
-  inset:0;
-  padding:18px;
-  overflow:auto;
-  background: rgba(5,9,20,.88);
-  pointer-events:auto;
+  top:2px;
+  width:44px;
+  height:14px;
+  border-radius:10px;
+  background: rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
-.hc-fallback h2{ margin:10px 0 6px; }
-.hc-fallback p{ color: var(--muted); margin:0 0 14px; }
-.hc-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap:12px;
+
+/* Light cone (off by default) */
+.beam{
+  position:absolute;
+  top:16px;
+  width: 160px;
+  height: 220px;
+  opacity:0;
+  transform: translateY(-6px);
+  transition: opacity .25s ease, transform .25s ease;
+  background: conic-gradient(from 180deg at 50% 0%, rgba(255,255,255,.0), rgba(255,255,255,.22), rgba(255,255,255,.0));
+  filter: blur(0.2px);
+  clip-path: polygon(50% 0%, 90% 100%, 10% 100%);
+  pointer-events:none;
 }
-.hc-card{
-  text-decoration:none;
-  color: var(--text);
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.04);
-  border-radius:18px;
-  padding:14px;
-  transition:.2s ease;
+
+/* Door SVG color defaults (white doors) */
+.door-svg svg rect{ fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.18); stroke-width: 2; }
+.door-svg svg .panel{ fill: rgba(255,255,255,.03); stroke: rgba(255,255,255,.14); }
+.door-svg svg .inset{ fill: rgba(255,255,255,.02); stroke: rgba(255,255,255,.12); }
+.door-svg svg .knob{ fill: rgba(255,255,255,.30); }
+
+/* Featured door (one red door) */
+.door--feature .door-svg svg rect{ fill: rgba(168,36,36,.30); stroke: rgba(255,140,140,.32); }
+.door--feature .door-svg svg .panel{ fill: rgba(168,36,36,.22); stroke: rgba(255,140,140,.26); }
+.door--feature .door-svg svg .inset{ fill: rgba(168,36,36,.14); stroke: rgba(255,140,140,.22); }
+.door--feature .door-svg svg .knob{ fill: rgba(255,220,220,.55); }
+
+/* Label */
+.door-label{
+  margin-top:10px;
+  text-align:center;
+  line-height:1.15;
 }
-.hc-card:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 18px 45px rgba(0,0,0,.45);
+.door-label-title{
+  display:block;
+  font-weight:700;
+  color: rgba(238,242,247,.85);
+  letter-spacing:.2px;
 }
-.hc-card-title{ font-weight:900; margin-bottom:4px; }
-.hc-card-desc{ color: var(--muted); font-size:13px; line-height:1.5; }
+.door-label-sub{
+  display:block;
+  font-size:12px;
+  color: rgba(238,242,247,.60);
+  margin-top:3px;
+}
+
+/* Active glow */
+.door.is-active .beam{ opacity:1; transform: translateY(0); }
+.door.is-active .lamp{
+  background: rgba(255,255,255,.35);
+  box-shadow: 0 0 22px rgba(255,255,255,.18), 0 18px 60px rgba(0,0,0,.35);
+}
+.door.is-active .door-label-title{
+  color: rgba(238,242,247,.95);
+  text-shadow: 0 0 18px rgba(255,255,255,.14);
+}
+
+/* Panel under hallway */
+.hall-panel{ margin-top:14px; }
+.lane-title{
+  margin:6px 0 8px;
+}
