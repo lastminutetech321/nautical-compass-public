@@ -1,38 +1,120 @@
 {% extends "base.html" %}
-{% block title %}Home • Nautical Compass{% endblock %}
+{% block title %}Nautical Compass{% endblock %}
 
-{% block content %}
-<section class="hero">
-  <h1>One hall. Many doors.</h1>
-  <p class="lead">
-    Nautical Compass is a structured intake + routing system that turns complex situations into clear next steps.
-    We serve legal workflows (NC) and operational workflows for AV + trades (AVPT/LMT) with the same principle:
-    <strong>make it hard to make mistakes.</strong>
-  </p>
+{% block hero %}
+<section class="hero hero-ocean">
+  <div class="hero-overlay"></div>
 
-  <div class="tiles">
-    <div class="tile">
-      <div class="tile-kicker">Legal & Professional</div>
-      <h3>NC — Intake → Risk Flags → Next Steps</h3>
-      <p class="muted">For disputes, contracts, records requests, and document strategy.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/services#legal">Explore NC</a>
+  <div class="hero-wrap">
+    <div class="hero-left">
+      <div class="kicker">CAPTAIN’S VIEW</div>
+
+      <h1 class="h-title">
+        One system.<br />
+        Many doors.<br />
+        Zero confusion.
+      </h1>
+
+      <p class="h-sub">
+        Nautical Compass is the front door to a multi-lane ecosystem:
+        legal navigation (NC), AV & trades coordination (AVPT), last-minute labor dispatch (LMT),
+        and partner/sponsor rails — all delivered as a clean, guided experience.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/dashboards">Enter the Hall</a>
+        <a class="btn" href="/services">See Services</a>
+      </div>
+
+      <div class="hero-note">
+        <span class="badge">Built for speed</span>
+        <span class="muted">Intakes extract what matters, surface risk flags, then route you to the right lane.</span>
       </div>
     </div>
 
-    <div class="tile">
-      <div class="tile-kicker">AV + Trades Operations</div>
-      <h3>AVPT/LMT — Requests ↔ Labor ↔ Logistics</h3>
-      <p class="muted">For production companies and technicians. Built for speed and clarity under pressure.</p>
-      <div class="btnrow">
-        <a class="btn btn-primary" href="/services#av">Explore AVPT/LMT</a>
+    <div class="hero-right">
+      <div class="glass-card moist">
+        <div class="card-top">
+          <div class="northstar">
+            <div class="star"></div>
+            <div class="star-glow"></div>
+          </div>
+          <div>
+            <div class="card-title">Your Next Step</div>
+            <div class="muted small">Pick your lane. The system routes the rest.</div>
+          </div>
+        </div>
+
+        <div class="lane-grid">
+          <a class="lane" href="/intake/production">
+            <div class="lane-title">Production Company</div>
+            <div class="lane-sub">Request labor · logistics · job details</div>
+          </a>
+
+          <a class="lane" href="/intake/labor">
+            <div class="lane-title">Labor / Tech</div>
+            <div class="lane-sub">Availability · skills · compliance</div>
+          </a>
+
+          <a class="lane" href="/services">
+            <div class="lane-title">Legal / NC</div>
+            <div class="lane-sub">Strategy · templates · structured execution</div>
+          </a>
+
+          <a class="lane" href="/partner">
+            <div class="lane-title">Partner / Manufacturer</div>
+            <div class="lane-sub">Inventory · regions · integration</div>
+          </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="quote">
+          <div class="quote-mark">“</div>
+          <div class="quote-text">
+            Vessels get lost when the interface lies.
+            This system tells the truth — and shows the next move.
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="callout">
-    <strong>How we’re different:</strong> We don’t just “collect info.”
-    We structure the situation, surface risks early, and route people into the right lane with repeatable outcomes.
   </div>
 </section>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h2>What we deliver</h2>
+    <p class="muted">
+      Guided intake → risk flags → clear routing → action steps. No “mystery platform.”
+      Users see what’s happening and why.
+    </p>
+    <ul class="clean-list">
+      <li><span class="dot"></span>Intake that feels simple but captures serious detail</li>
+      <li><span class="dot"></span>Risk flags that prevent costly mistakes</li>
+      <li><span class="dot"></span>Dashboards that match each role</li>
+      <li><span class="dot"></span>Clean rails for partners, sponsors, and contributors</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Who this serves</h2>
+    <p class="muted">
+      Different lanes, same structure — built for people under pressure.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Production</span>
+      <span class="pill">Labor / Tech</span>
+      <span class="pill">Manufacturers</span>
+      <span class="pill">Sponsors</span>
+      <span class="pill">Consumers</span>
+    </div>
+
+    <div class="btnrow" style="margin-top:14px;">
+      <a class="btn btn-primary" href="/dashboards">Open Dashboards</a>
+      <a class="btn" href="/lead">General Inquiry</a>
+    </div>
+  </div>
+</div>
 {% endblock %}
