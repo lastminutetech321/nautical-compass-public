@@ -1,71 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Hall • Nautical Compass{% endblock %}
-
-{% block head_extra %}
-<link rel="stylesheet" href="/static/hallway.css">
-<script defer src="/static/hallway.js"></script>
-{% endblock %}
+{% block title %}Hallway • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="hall-wrap">
-  <div class="hall-hero">
-    <div class="eyebrow">One hall. Many doors.</div>
-    <h2>Pick your lane</h2>
-    <p class="muted">
-      Each door is a guided intake + routing path. You’ll see what happens next before you submit anything.
+<div class="hall-hero">
+  <div class="hall-hero__veil"></div>
+
+  <div class="hall-hero__inner">
+    <div class="hall-kicker">One hall. Many doors.</div>
+    <h1 class="hall-title">Pick your lane</h1>
+    <p class="hall-sub">
+      Each door is a guided intake + routing path. Click a door, see what happens next, and move with clarity.
     </p>
-  </div>
 
-  <div class="hall-grid">
-    <div class="door" data-href="/services">
-      <div class="lamp"></div>
-      <div class="door-title">Legal / Compliance (NC)</div>
-      <div class="door-sub">Organize your situation → generate the next steps → build a clean packet.</div>
-      <div class="door-cta">
-        <span>See services + examples</span>
-        <span class="pill">Open</span>
-      </div>
+    <div class="hall-grid">
+
+      <!-- NC -->
+      <a class="door-card" href="/services" data-door="nc">
+        <div class="door-top">
+          <div class="door-lamp" aria-hidden="true"></div>
+          <div class="door-title">Legal / Compliance (NC)</div>
+        </div>
+        <div class="door-body">
+          Organize your situation → surface risks → get the right next steps.
+        </div>
+        <div class="door-cta">Explore services</div>
+      </a>
+
+      <!-- AVPT -->
+      <a class="door-card" href="/intake/production" data-door="avpt">
+        <div class="door-top">
+          <div class="door-lamp" aria-hidden="true"></div>
+          <div class="door-title">AV Production Company (AVPT)</div>
+        </div>
+        <div class="door-body">
+          Create a job request with details that reduce mistakes, delays, and re-work.
+        </div>
+        <div class="door-cta">Start a production request</div>
+      </a>
+
+      <!-- LMT -->
+      <a class="door-card" href="/intake/labor" data-door="lmt">
+        <div class="door-top">
+          <div class="door-lamp" aria-hidden="true"></div>
+          <div class="door-title">Labor / Tech (LMT)</div>
+        </div>
+        <div class="door-body">
+          Build your worker profile + availability → route into the right gigs.
+        </div>
+        <div class="door-cta">Join the labor pool</div>
+      </a>
+
+      <!-- Partner -->
+      <a class="door-card" href="/partner" data-door="partner">
+        <div class="door-top">
+          <div class="door-lamp" aria-hidden="true"></div>
+          <div class="door-title">Partner / Manufacturer</div>
+        </div>
+        <div class="door-body">
+          Define capability + regions → get routed opportunities that match requirements.
+        </div>
+        <div class="door-cta">Partner intake</div>
+      </a>
+
+      <!-- Sponsor -->
+      <a class="door-card" href="/sponsor" data-door="sponsor">
+        <div class="door-top">
+          <div class="door-lamp" aria-hidden="true"></div>
+          <div class="door-title">Sponsor Access</div>
+        </div>
+        <div class="door-body">
+          Controlled sponsor lane with clear deliverables, routing, and accountability.
+        </div>
+        <div class="door-cta">View sponsor terms</div>
+      </a>
+
     </div>
 
-    <div class="door" data-href="/intake/production">
-      <div class="lamp"></div>
-      <div class="door-title">AV Production Company (AVPT)</div>
-      <div class="door-sub">Create a job request with the details that reduce mistakes, delays, and re-work.</div>
-      <div class="door-cta">
-        <span>Start a request</span>
-        <span class="pill">Open</span>
-      </div>
-    </div>
-
-    <div class="door" data-href="/intake/labor">
-      <div class="lamp"></div>
-      <div class="door-title">Labor / Tech (LMT)</div>
-      <div class="door-sub">Build your worker profile + availability → route to the right gigs.</div>
-      <div class="door-cta">
-        <span>Join the labor pool</span>
-        <span class="pill">Open</span>
-      </div>
-    </div>
-
-    <div class="door" data-href="/partner">
-      <div class="lamp"></div>
-      <div class="door-title">Partner / Manufacturer</div>
-      <div class="door-sub">Define capability + regions → get routed opportunities that match your requirements.</div>
-      <div class="door-cta">
-        <span>Partner intake</span>
-        <span class="pill">Open</span>
-      </div>
-    </div>
-
-    <div class="door" data-href="/sponsor">
-      <div class="lamp"></div>
-      <div class="door-title">Sponsor Access</div>
-      <div class="door-sub">Controlled sponsor lane with clear deliverables and clean routing.</div>
-      <div class="door-cta">
-        <span>Sponsor terms</span>
-        <span class="pill">Open</span>
-      </div>
+    <div class="hall-note">
+      Built for clarity under pressure. Click a door → we guide the next step before you submit anything.
     </div>
   </div>
 </div>
+
+<script src="/static/hallway.js"></script>
 {% endblock %}
