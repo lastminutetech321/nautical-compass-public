@@ -1,24 +1,21 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{% block title %}Nautical Compass{% endblock %}</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="/static/favicon.png?v=4" />
-  <link rel="icon" href="/static/favicon.ico?v=4" />
+  <!-- Favicon (put your file at /static/favicon.ico or /static/favicon.png) -->
+  <link rel="icon" href="/static/favicon.ico?v=3"/>
+  <link rel="apple-touch-icon" href="/static/favicon.png?v=3"/>
 
-  <!-- Main styles (cache-busted) -->
-  <link rel="stylesheet" href="/static/styles.css?v=4" />
+  <!-- Main styles -->
+  <link rel="stylesheet" href="/static/styles.css?v=3"/>
 
   {% block head %}{% endblock %}
 </head>
 
 <body>
-  <!-- Top Nav -->
   <header class="nav glass moist">
     <div class="nav-inner">
       <a class="brand" href="/">
@@ -38,19 +35,14 @@
     </div>
   </header>
 
-  <!-- Page Content -->
   <main>
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-row">
-      <div>© 2026 Nautical Compass</div>
-      <div>One system • Many lanes • Built for clarity under pressure</div>
-    </div>
-    <div class="footer-row" style="margin-top:10px;">
-      <div class="footer-links">
+      <div>© 2026 Nautical Compass • One system • Many lanes • Built for clarity under pressure</div>
+      <div class="small">
         <a href="/services">Solutions</a> •
         <a href="/lead">General Inquiry</a> •
         <a href="/partner">Partner</a> •
