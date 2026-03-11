@@ -1,17 +1,18 @@
-<!-- templates/base.html (FULL REPLACE) -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+
   <title>{% block title %}Nautical Compass{% endblock %}</title>
 
   <!-- Favicon -->
-  <link rel="icon" href="/static/favicon.ico" />
+  <link rel="icon" href="/static/favicon.ico?v=8" />
+  <link rel="apple-touch-icon" href="/static/favicon.png?v=8" />
 
-  <!-- ✅ Primary stylesheet (cache-busted) -->
-  <link rel="stylesheet" href="/static/styles.css?v=20260310-1" />
+  <!-- Core CSS (cache-busted) -->
+  <link rel="stylesheet" href="/static/styles.css?v=8" />
 
   {% block head %}{% endblock %}
 </head>
@@ -32,25 +33,22 @@
         <a href="/lead">Lead Intake</a>
         <a href="/partner">Partners</a>
         <a href="/sponsor">Sponsors</a>
-        <a class="tab-primary" href="/checkout">Get Access</a>
       </nav>
+
+      <a class="btn tab-primary" href="/checkout">Get Access</a>
     </div>
   </header>
 
   <!-- PAGE -->
-  <main class="container">
+  <main>
     {% block content %}{% endblock %}
   </main>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-row">
+      <div>© 2026 Nautical Compass • One system • Many lanes • Built for clarity under pressure</div>
       <div>
-        © 2026 Nautical Compass<br>
-        <span class="muted">One system • Many lanes • Built for clarity under pressure</span>
-      </div>
-
-      <div class="footer-links">
         <a href="/services">Solutions</a> •
         <a href="/lead">General Inquiry</a> •
         <a href="/partner">Partner</a> •
@@ -60,9 +58,9 @@
     </div>
   </footer>
 
-  <!-- ✅ Global hard override: kill “purple/blue link” look everywhere -->
+  <!-- Global link color kill-switch (prevents neon purple/blue defaults) -->
   <style>
-    a, a:visited { color: rgba(238,243,255,.90); }
+    a:visited { color: rgba(238,243,255,.90); }
     a:hover { color: rgba(238,243,255,.98); }
     a:active { color: rgba(238,243,255,.98); }
   </style>
