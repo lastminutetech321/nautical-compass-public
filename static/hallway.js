@@ -22,8 +22,6 @@
   }
 
   function ensureLamp(door) {
-    // If template already includes <span class="lamp"></span>, we use it.
-    // If not, we create it as the first child.
     let lamp = door.querySelector(".lamp");
     if (!lamp) {
       lamp = document.createElement("span");
@@ -51,7 +49,6 @@
   function pulseDoor(door) {
     clearActive();
     door.classList.add(ACTIVE_CLASS);
-
     window.setTimeout(() => {
       door.classList.remove(ACTIVE_CLASS);
     }, 900);
@@ -77,7 +74,6 @@
     ensureTitle(door);
     addHoverFlicker(door);
 
-    // On click: pulse quickly but do NOT prevent navigation.
     door.addEventListener(
       "click",
       () => {
@@ -86,7 +82,6 @@
       { passive: true }
     );
 
-    // Keyboard Enter/Space gives same glow
     door.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         pulseDoor(door);
@@ -100,10 +95,11 @@
 
     doors.forEach(wireDoor);
 
-    // Optional: /hall#avpt pulses that door on load
     const hash = (window.location.hash || "").replace("#", "");
     if (hash) {
-      const match = doors.find((d) => d.id === hash || d.dataset.lane === hash);
+      const match = doors.find(
+        (d) => d.id === hash || d.dataset.lane === hash
+      );
       if (match) pulseDoor(match);
     }
   }
