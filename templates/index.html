@@ -2,100 +2,68 @@
 {% block title %}Nautical Compass{% endblock %}
 
 {% block content %}
+<section class="hero">
+  <!-- THIS DIV IS WHAT MAKES THE PHOTO SHOW -->
+  <div class="hero-ocean boat-motion">
+    <div class="glass-haze"></div>
 
-<section class="hero hero-ocean boat-motion">
-  <!-- Optional wet-glass haze -->
-  <div class="glass-haze"></div>
+    <div class="hero-wrap">
+      <div class="glass-card glass moist">
+        <div class="kicker">CAPTAIN’S VIEW</div>
+        <h1 class="h-title">One system.<br>Many doors.<br>Zero confusion.</h1>
 
-  <div class="hero-wrap">
-    <div>
-      <div class="kicker">CAPTAIN’S VIEW</div>
+        <p class="h-sub">
+          Nautical Compass is the front door to a multi-lane ecosystem: legal navigation (NC),
+          AV &amp; trades coordination (AVPT), last-minute labor dispatch (LMT), and partner/sponsor rails —
+          delivered as a clean, guided experience.
+        </p>
 
-      <h1 class="h-title">
-        One system.<br/>
-        Many doors.<br/>
-        Zero confusion.
-      </h1>
-
-      <p class="h-sub">
-        Nautical Compass is the front door to a multi-lane ecosystem:
-        legal navigation (NC), AV & trades coordination (AVPT), last-minute labor dispatch (LMT),
-        and partner/sponsor rails — delivered as a clean, guided experience.
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/hall">Enter the Hall</a>
-        <a class="btn" href="/services">See Services</a>
-      </div>
-
-      <div class="hero-note">
-        <span class="badge">Built for speed</span>
-        <span class="muted">Intakes extract what matters, surface risk flags, then route you to the right lane.</span>
-      </div>
-    </div>
-
-    <div class="glass-card glass moist">
-      <div class="card-top">
-        <div class="northstar">
-          <div class="star-glow"></div>
-          <div class="star"></div>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/hall">Enter the Hall</a>
+          <a class="btn" href="/services">See Services</a>
         </div>
-        <div>
-          <div class="card-title">Your Next Step</div>
-          <div class="muted small">Pick your lane. The system routes the rest.</div>
+
+        <div class="hero-note">
+          <span class="badge">Built for speed</span>
+          <span class="muted">Intakes extract what matters, surface risk flags, then route you to the right lane.</span>
         </div>
       </div>
 
-      <div class="lane-grid">
-        <a class="lane" href="/intake/production">
-          <div class="lane-title">Production Company</div>
-          <div class="lane-sub">Request crew • logistics • job details</div>
-        </a>
-        <a class="lane" href="/intake/labor">
-          <div class="lane-title">Labor / Tech</div>
-          <div class="lane-sub">Profile • availability • dispatch matching</div>
-        </a>
-        <a class="lane" href="/partner">
-          <div class="lane-title">Partner / Manufacturer</div>
-          <div class="lane-sub">Capabilities • regions • routing</div>
-        </a>
-        <a class="lane" href="/sponsor">
-          <div class="lane-title">Sponsor</div>
-          <div class="lane-sub">Terms • deliverables • access</div>
-        </a>
-      </div>
+      <div class="glass-card glass moist">
+        <div class="card-top">
+          <div class="northstar" aria-hidden="true">
+            <div class="star-glow"></div>
+            <div class="star"></div>
+          </div>
+          <div>
+            <div class="card-title">Your Next Step</div>
+            <div class="muted small">Pick your lane. The system routes the rest.</div>
+          </div>
+        </div>
 
-      <div class="divider"></div>
+        <div class="lane-grid">
+          <a class="lane" href="/intake/production">
+            <div class="lane-title">Production Company</div>
+            <div class="lane-sub">Request crew · logistics · job details</div>
+          </a>
 
-      <div class="quote">
-        <div class="quote-mark">“</div>
-        <div class="quote-text">
-          One hall. Many doors. Same method — fewer mistakes, clearer outcomes.
+          <a class="lane" href="/intake/labor">
+            <div class="lane-title">Labor / Tech</div>
+            <div class="lane-sub">Profile · availability · dispatch matching</div>
+          </a>
+
+          <a class="lane" href="/partner">
+            <div class="lane-title">Partners</div>
+            <div class="lane-sub">Capabilities · regions · routing</div>
+          </a>
+
+          <a class="lane" href="/sponsor">
+            <div class="lane-title">Sponsors</div>
+            <div class="lane-sub">Structured access · deliverables</div>
+          </a>
         </div>
       </div>
     </div>
   </div>
 </section>
-
-<div class="container grid grid-2">
-  <div class="card">
-    <h2 style="margin:0 0 10px;">Who this serves</h2>
-    <p class="muted" style="margin:0 0 10px;">Different lanes, same structure — built for people under pressure.</p>
-    <div class="btnrow">
-      <a class="btn btn-primary" href="/dashboards">Open Dashboards</a>
-      <a class="btn" href="/lead">General Inquiry</a>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2 style="margin:0 0 10px;">How it works</h2>
-    <ul class="clean-list">
-      <li><span class="dot"></span><span><strong>Intake</strong> collects only what matters.</span></li>
-      <li><span class="dot"></span><span><strong>Risk flags</strong> surface missing info early.</span></li>
-      <li><span class="dot"></span><span><strong>Routing</strong> sends you to the right next step.</span></li>
-      <li><span class="dot"></span><span><strong>Dashboards</strong> keep actions role-specific.</span></li>
-    </ul>
-  </div>
-</div>
-
 {% endblock %}
