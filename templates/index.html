@@ -3,19 +3,21 @@
 
 {% block content %}
 <section class="hero">
-  <!-- THIS DIV IS WHAT MAKES THE PHOTO SHOW -->
   <div class="hero-ocean boat-motion">
     <div class="glass-haze"></div>
+    <div class="hero-overlay"></div>
 
     <div class="hero-wrap">
-      <div class="glass-card glass moist">
-        <div class="kicker">CAPTAIN’S VIEW</div>
-        <h1 class="h-title">One system.<br>Many doors.<br>Zero confusion.</h1>
+      <!-- LEFT: intro panel (glass card) -->
+      <div class="hero-panel glass moist">
+        <div class="kicker">CAPTAIN'S VIEW</div>
+
+        <h1 class="h-title">One system.<br/>Many doors.<br/>Zero confusion.</h1>
 
         <p class="h-sub">
-          Nautical Compass is the front door to a multi-lane ecosystem: legal navigation (NC),
-          AV &amp; trades coordination (AVPT), last-minute labor dispatch (LMT), and partner/sponsor rails —
-          delivered as a clean, guided experience.
+          Nautical Compass is the front door to a multi-lane ecosystem:
+          legal navigation (NC), AV & trades coordination (AVPT), last-minute labor dispatch (LMT),
+          and partner/sponsor rails — delivered as a clean, guided experience.
         </p>
 
         <div class="hero-actions">
@@ -29,9 +31,10 @@
         </div>
       </div>
 
+      <!-- RIGHT: next step panel -->
       <div class="glass-card glass moist">
         <div class="card-top">
-          <div class="northstar" aria-hidden="true">
+          <div class="northstar">
             <div class="star-glow"></div>
             <div class="star"></div>
           </div>
@@ -46,21 +49,27 @@
             <div class="lane-title">Production Company</div>
             <div class="lane-sub">Request crew · logistics · job details</div>
           </a>
-
           <a class="lane" href="/intake/labor">
             <div class="lane-title">Labor / Tech</div>
             <div class="lane-sub">Profile · availability · dispatch matching</div>
           </a>
-
           <a class="lane" href="/partner">
             <div class="lane-title">Partners</div>
             <div class="lane-sub">Capabilities · regions · routing</div>
           </a>
-
           <a class="lane" href="/sponsor">
             <div class="lane-title">Sponsors</div>
             <div class="lane-sub">Structured access · deliverables</div>
           </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="quote">
+          <div class="quote-mark">“</div>
+          <div class="quote-text">
+            One hall. Many doors. Pick your lane — the rails handle the rest.
+          </div>
         </div>
       </div>
     </div>
