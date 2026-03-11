@@ -1,51 +1,38 @@
-// hallway.js — "lamp above the door" + light-on-click + title glow
-// Works with plain HTML/CSS. No frameworks. Safe.
+// hallway.js — lamp above the door + light-on-click + title glow (reliable)
+// No frameworks. Mobile-safe.
 //
-// Expected HTML structure per door (examples):
+// Expected per door:
 // <a class="door" data-lane="nc" href="/services">
 //   <span class="lamp"></span>
 //   <span class="door-title">Legal / Compliance (NC)</span>
 //   <span class="door-sub">Intake → Risk Flags → Next Steps</span>
 // </a>
-//
-// This script:
-// - Adds a subtle "lamp flicker" on hover/focus
-// - On click/tap: turns lamp "on" + glows the title for a moment
-// - Keeps it mobile-friendly (tap = click)
-// - Does NOT block navigation (it triggers instantly, then lets link go)
 
 (function () {
   const ACTIVE_CLASS = "door-active";
+  const HOVER_CLASS = "door-hover";
 
   function allDoors() {
     return Array.from(document.querySelectorAll(".door"));
   }
 
   function ensureLamp(door) {
-    // If template already includes <span class="lamp"></span>, we use it.
-    // If not, we create it as the first child.
     let lamp = door.querySelector(".lamp");
     if (!lamp) {
       lamp = document.createElement("span");
       lamp.className = "lamp";
-      // place lamp first so it appears above title
       door.insertBefore(lamp, door.firstChild);
     }
     return lamp;
   }
 
   function ensureTitle(door) {
-    // If template already includes .door-title, we use it.
-    // Else we try to find a heading-like element.
-    let title = door.querySelector(".door-title");
-    if (!title) {
-      // fallback: first strong/h3/h2 within
-      title =
-        door.querySelector("h3, h2, strong, b") ||
-        door.querySelector(".title") ||
-        null;
-    }
-    return title;
+    return (
+      door.querySelector(".door-title") ||
+      door.querySelector("h3, h2, strong, b") ||
+      door.querySelector(".title") ||
+      null
+    );
   }
 
   function clearActive() {
@@ -53,53 +40,54 @@
   }
 
   function pulseDoor(door) {
-    // brief lamp-on effect + title glow
     clearActive();
     door.classList.add(ACTIVE_CLASS);
 
-    // remove after a moment so repeated taps feel responsive
     window.setTimeout(() => {
       door.classList.remove(ACTIVE_CLASS);
     }, 900);
   }
 
-  function addHoverFlicker(door) {
-    // tiny lamp shimmer on hover/focus, without "strobing"
-    // We just toggle a class briefly.
-    let t = null;
-
-    function flicker() {
-      if (t) window.clearTimeout(t);
-      door.classList.add("door-hover");
-      t = window.setTimeout(() => {
-        door.classList.remove("door-hover");
-      }, 350);
-    }
-
-    door.addEventListener("mouseenter", flicker, { passive: true });
-    door.addEventListener("focus", flicker, { passive: true });
+  function flickerDoor(door) {
+    door.classList.add(HOVER_CLASS);
+    window.setTimeout(() => {
+      door.classList.remove(HOVER_CLASS);
+    }, 350);
   }
 
   function wireDoor(door) {
     ensureLamp(door);
     ensureTitle(door);
-    addHoverFlicker(door);
 
-    // On click: pulse quickly but do NOT prevent navigation.
-    // For touch devices: click fires on tap.
-    door.addEventListener(
-      "click",
-      () => {
-        pulseDoor(door);
-        // no preventDefault
-      },
-      { passive: true }
-    );
+    // hover/focus shimmer
+    door.addEventListener("mouseenter", () => flickerDoor(door), { passive: true });
+    door.addEventListener("focus", () => flickerDoor(door), { passive: true });
 
-    // Keyboard Enter/Space gives same glow
+    // Click/tap: SHOW lamp + title glow, then navigate.
+    door.addEventListener("click", (e) => {
+      const href = door.getAttribute("href");
+      if (!href) return;
+
+      // Let user see the effect before route.
+      e.preventDefault();
+      pulseDoor(door);
+
+      // Navigate after a tiny delay (fast but visible).
+      window.setTimeout(() => {
+        window.location.href = href;
+      }, 220);
+    });
+
+    // Keyboard support
     door.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
+        const href = door.getAttribute("href");
+        if (!href) return;
+        e.preventDefault();
         pulseDoor(door);
+        window.setTimeout(() => {
+          window.location.href = href;
+        }, 220);
       }
     });
   }
@@ -110,18 +98,14 @@
 
     doors.forEach(wireDoor);
 
-    // Optional: if URL hash matches a door id, highlight it on load
-    // Example: /hall#avpt
+    // optional: /hall#avpt highlights that door on load
     const hash = (window.location.hash || "").replace("#", "");
     if (hash) {
-      const match = doors.find(
-        (d) => d.id === hash || d.dataset.lane === hash
-      );
+      const match = doors.find((d) => d.id === hash || d.dataset.lane === hash);
       if (match) pulseDoor(match);
     }
   }
 
-  // Run when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
