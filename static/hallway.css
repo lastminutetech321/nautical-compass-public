@@ -1,128 +1,128 @@
-// hallway.js — "lamp above the door" + light-on-click + title glow
-// Works with plain HTML/CSS. No frameworks. Safe.
-//
-// Expected HTML structure per door (examples):
-// <a class="door" data-lane="nc" href="/services">
-//   <span class="lamp"></span>
-//   <span class="door-title">Legal / Compliance (NC)</span>
-//   <span class="door-sub">Intake → Risk Flags → Next Steps</span>
-// </a>
-//
-// This script:
-// - Adds a subtle "lamp flicker" on hover/focus
-// - On click/tap: turns lamp "on" + glows the title for a moment
-// - Keeps it mobile-friendly (tap = click)
-// - Does NOT block navigation (it triggers instantly, then lets link go)
+/* hallway.css — "WOW doors" for /hall */
+/* This file ONLY styles the hallway grid + doors. */
 
-(function () {
-  const ACTIVE_CLASS = "door-active";
+.hall-wrap{ max-width:1100px; margin:0 auto; padding:28px 18px 40px; }
+.hall-hero{ margin-bottom:18px; }
+.hall-hero .eyebrow{ letter-spacing:.12em; text-transform:uppercase; font-size:12px; opacity:.78; }
+.hall-hero h1{ margin:8px 0 6px; font-size:40px; line-height:1.1; }
+.hall-foot{ margin-top:14px; font-size:13px; opacity:.78; }
 
-  function allDoors() {
-    return Array.from(document.querySelectorAll(".door"));
-  }
+.hall-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:14px;
+}
 
-  function ensureLamp(door) {
-    // If template already includes <span class="lamp"></span>, we use it.
-    // If not, we create it as the first child.
-    let lamp = door.querySelector(".lamp");
-    if (!lamp) {
-      lamp = document.createElement("span");
-      lamp.className = "lamp";
-      // place lamp first so it appears above title
-      door.insertBefore(lamp, door.firstChild);
-    }
-    return lamp;
-  }
+@media (max-width: 980px){
+  .hall-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hall-hero h1{ font-size:34px; }
+}
+@media (max-width: 640px){
+  .hall-grid{ grid-template-columns: 1fr; }
+  .hall-hero h1{ font-size:30px; }
+}
 
-  function ensureTitle(door) {
-    // If template already includes .door-title, we use it.
-    // Else we try to find a heading-like element.
-    let title = door.querySelector(".door-title");
-    if (!title) {
-      // fallback: first strong/h3/h2 within
-      title =
-        door.querySelector("h3, h2, strong, b") ||
-        door.querySelector(".title") ||
-        null;
-    }
-    return title;
-  }
+.door{
+  position:relative;
+  display:block;
+  padding:18px 16px 14px;
+  border-radius:16px;
+  text-decoration:none;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  transform: translateZ(0);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  overflow:hidden;
+}
 
-  function clearActive() {
-    allDoors().forEach((d) => d.classList.remove(ACTIVE_CLASS));
-  }
+/* soft highlight sweep */
+.door:before{
+  content:"";
+  position:absolute;
+  inset:-40% -60%;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), transparent 50%);
+  transform: rotate(12deg);
+  pointer-events:none;
+  opacity:.55;
+}
 
-  function pulseDoor(door) {
-    // brief lamp-on effect + title glow
-    clearActive();
-    door.classList.add(ACTIVE_CLASS);
+.door:hover,
+.door:focus{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.075);
+  outline:none;
+}
 
-    // remove after a moment so repeated taps feel responsive
-    window.setTimeout(() => {
-      door.classList.remove(ACTIVE_CLASS);
-    }, 900);
-  }
+/* LAMP */
+.door .lamp{
+  position:absolute;
+  top:12px;
+  left:14px;
+  width:14px;
+  height:14px;
+  border-radius:999px;
+  background: rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  transition: box-shadow .2s ease, background .2s ease, transform .2s ease;
+}
 
-  function addHoverFlicker(door) {
-    // tiny lamp shimmer on hover/focus, without "strobing"
-    // We just toggle a class briefly.
-    let t = null;
+.door.door-hover .lamp{
+  background: rgba(255,255,255,.28);
+  box-shadow: 0 0 16px rgba(255,255,255,.18);
+  transform: translateY(-1px);
+}
 
-    function flicker() {
-      if (t) window.clearTimeout(t);
-      door.classList.add("door-hover");
-      t = window.setTimeout(() => {
-        door.classList.remove("door-hover");
-      }, 350);
-    }
+.door.door-active .lamp{
+  background: rgba(255,255,255,.38);
+  box-shadow: 0 0 26px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.14);
+}
 
-    door.addEventListener("mouseenter", flicker);
-    door.addEventListener("focus", flicker);
-    // Mobile: give a light flicker on touchstart too (doesn't block click)
-    door.addEventListener("touchstart", flicker, { passive: true });
-  }
+/* TEXT (off-white, not neon) */
+.door-title{
+  display:block;
+  margin-top:18px;
+  font-size:18px;
+  font-weight:800;
+  color: rgba(255,255,255,.92);
+  transition: text-shadow .2s ease, color .2s ease;
+}
 
-  function wireDoor(door) {
-    ensureLamp(door);
-    ensureTitle(door);
-    addHoverFlicker(door);
+.door-sub{
+  display:block;
+  margin-top:6px;
+  font-size:14px;
+  color: rgba(255,255,255,.78);
+}
 
-    // On click: pulse quickly but do NOT prevent navigation.
-    // For touch devices: click fires on tap.
-    door.addEventListener("click", () => {
-      pulseDoor(door);
-      // no preventDefault
-    });
+.door-meta{
+  display:block;
+  margin-top:10px;
+  font-size:12.5px;
+  color: rgba(255,255,255,.62);
+}
 
-    // Keyboard Enter/Space gives same glow
-    door.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        pulseDoor(door);
-      }
-    });
-  }
+.door-cta{
+  display:inline-block;
+  margin-top:12px;
+  font-size:13px;
+  color: rgba(255,255,255,.90);
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+}
 
-  function init() {
-    const doors = allDoors();
-    if (!doors.length) return;
+/* title glow on click */
+.door.door-active .door-title{
+  color: rgba(255,255,255,.98);
+  text-shadow: 0 0 22px rgba(255,255,255,.28);
+}
 
-    doors.forEach(wireDoor);
-
-    // Optional: if URL hash matches a door id, highlight it on load
-    // Example: /hall#avpt
-    const hash = (window.location.hash || "").replace("#", "");
-    if (hash) {
-      const match = doors.find(
-        (d) => d.id === hash || d.dataset.lane === hash
-      );
-      if (match) pulseDoor(match);
-    }
-  }
-
-  // Run when DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
+/* IMPORTANT: prevent default purple link styling inside doors */
+.door, .door:visited { color: rgba(255,255,255,.92); }
+.door:hover { color: rgba(255,255,255,.98); }
