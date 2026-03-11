@@ -1,22 +1,29 @@
-// hallway.js — lamp above the door + light-on-click + title glow (reliable)
-// No frameworks. Mobile-safe.
+// hallway.js — "lamp above the door" + light-on-click + title glow
+// Works with plain HTML/CSS. No frameworks. Safe.
 //
-// Expected per door:
+// Expected HTML structure per door (examples):
 // <a class="door" data-lane="nc" href="/services">
 //   <span class="lamp"></span>
 //   <span class="door-title">Legal / Compliance (NC)</span>
 //   <span class="door-sub">Intake → Risk Flags → Next Steps</span>
 // </a>
+//
+// This script:
+// - Adds a subtle "lamp flicker" on hover/focus
+// - On click/tap: turns lamp "on" + glows the title for a moment
+// - Keeps it mobile-friendly (tap = click)
+// - Does NOT block navigation (it triggers instantly, then lets link go)
 
 (function () {
   const ACTIVE_CLASS = "door-active";
-  const HOVER_CLASS = "door-hover";
 
   function allDoors() {
     return Array.from(document.querySelectorAll(".door"));
   }
 
   function ensureLamp(door) {
+    // If template already includes <span class="lamp"></span>, we use it.
+    // If not, we create it as the first child.
     let lamp = door.querySelector(".lamp");
     if (!lamp) {
       lamp = document.createElement("span");
@@ -27,12 +34,14 @@
   }
 
   function ensureTitle(door) {
-    return (
-      door.querySelector(".door-title") ||
-      door.querySelector("h3, h2, strong, b") ||
-      door.querySelector(".title") ||
-      null
-    );
+    let title = door.querySelector(".door-title");
+    if (!title) {
+      title =
+        door.querySelector("h3, h2, strong, b") ||
+        door.querySelector(".title") ||
+        null;
+    }
+    return title;
   }
 
   function clearActive() {
@@ -48,46 +57,39 @@
     }, 900);
   }
 
-  function flickerDoor(door) {
-    door.classList.add(HOVER_CLASS);
-    window.setTimeout(() => {
-      door.classList.remove(HOVER_CLASS);
-    }, 350);
+  function addHoverFlicker(door) {
+    let t = null;
+
+    function flicker() {
+      if (t) window.clearTimeout(t);
+      door.classList.add("door-hover");
+      t = window.setTimeout(() => {
+        door.classList.remove("door-hover");
+      }, 350);
+    }
+
+    door.addEventListener("mouseenter", flicker, { passive: true });
+    door.addEventListener("focus", flicker, { passive: true });
   }
 
   function wireDoor(door) {
     ensureLamp(door);
     ensureTitle(door);
+    addHoverFlicker(door);
 
-    // hover/focus shimmer
-    door.addEventListener("mouseenter", () => flickerDoor(door), { passive: true });
-    door.addEventListener("focus", () => flickerDoor(door), { passive: true });
+    // On click: pulse quickly but do NOT prevent navigation.
+    door.addEventListener(
+      "click",
+      () => {
+        pulseDoor(door);
+      },
+      { passive: true }
+    );
 
-    // Click/tap: SHOW lamp + title glow, then navigate.
-    door.addEventListener("click", (e) => {
-      const href = door.getAttribute("href");
-      if (!href) return;
-
-      // Let user see the effect before route.
-      e.preventDefault();
-      pulseDoor(door);
-
-      // Navigate after a tiny delay (fast but visible).
-      window.setTimeout(() => {
-        window.location.href = href;
-      }, 220);
-    });
-
-    // Keyboard support
+    // Keyboard Enter/Space gives same glow
     door.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
-        const href = door.getAttribute("href");
-        if (!href) return;
-        e.preventDefault();
         pulseDoor(door);
-        window.setTimeout(() => {
-          window.location.href = href;
-        }, 220);
       }
     });
   }
@@ -98,7 +100,7 @@
 
     doors.forEach(wireDoor);
 
-    // optional: /hall#avpt highlights that door on load
+    // Optional: /hall#avpt pulses that door on load
     const hash = (window.location.hash || "").replace("#", "");
     if (hash) {
       const match = doors.find((d) => d.id === hash || d.dataset.lane === hash);
