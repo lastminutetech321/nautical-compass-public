@@ -201,7 +201,7 @@ a{ color:inherit; text-decoration:none; }
 
 /* =========================================================
    CAPTAIN HERO (REAL IMAGE + BOAT MOTION + CABIN GLARE)
-   IMPORTANT: Requires file at /static/captain.jpg
+   IMPORTANT: Requires file at /static/captains.jpg
    ========================================================= */
 
 .hero{
@@ -226,7 +226,7 @@ a{ color:inherit; text-decoration:none; }
   background:
     radial-gradient(900px 450px at 75% 15%, rgba(224,179,84,.14), transparent 55%),
     linear-gradient(180deg, rgba(10,16,28,.05), rgba(5,9,20,.86)),
-    url("/static/captain.jpg");
+    url("/static/captains.jpg");
   background-size: cover;
   background-position: center;
   transform: translate3d(0,0,0) scale(1.06);
