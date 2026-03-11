@@ -1,112 +1,150 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Nautical Compass{% endblock %}</title>
+<meta charset="UTF-8">
+<title>Nautical Compass</title>
 
-  <link rel="icon" href="/static/favicon.ico" />
-  <link rel="stylesheet" href="/static/styles.css?v={{ v|default(1) }}" />
-  {% block head %}{% endblock %}
+<style>
+
+body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color:white;
+
+    /* Real background image (replace with water scene) */
+    background-image:url("background-water.jpg");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+}
+
+/* main layout */
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:30px;
+    padding:40px;
+}
+
+/* clear glass panel */
+
+.glass-panel{
+    position:relative;
+
+    padding:30px;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,0.03);
+
+    border:1px solid rgba(255,255,255,0.45);
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.2);
+}
+
+/* polished glass highlight */
+
+.glass-panel::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:60%;
+
+    border-radius:18px;
+
+    background:linear-gradient(
+        120deg,
+        rgba(255,255,255,0.45),
+        rgba(255,255,255,0.05),
+        rgba(255,255,255,0.01)
+    );
+
+    pointer-events:none;
+}
+
+/* bronze headers */
+
+.panel-title{
+    font-size:20px;
+    letter-spacing:1px;
+
+    color:#d6a25a;
+
+    margin-bottom:20px;
+}
+
+/* content area */
+
+.panel-body{
+    font-size:14px;
+    line-height:1.6;
+    opacity:.9;
+}
+
+/* navigation bar */
+
+.navbar{
+    height:70px;
+    display:flex;
+    align-items:center;
+    padding:0 40px;
+
+    background:rgba(0,0,0,.35);
+
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+
+.logo{
+    font-size:20px;
+    color:#d6a25a;
+}
+
+</style>
 </head>
 
 <body>
 
-<header class="nav glass moist">
-  <div class="nav-inner">
-    <a class="brand" href="/">
-      <div class="brand-badge">NC</div>
-      <div class="brand-text">Nautical Compass</div>
-    </a>
+<div class="navbar">
+    <div class="logo">Nautical Compass</div>
+</div>
 
-    <nav class="nav-links">
-      <a href="/hall">Hall</a>
-      <a href="/services">Services</a>
-      <a href="/dashboards">Dashboards</a>
-      <a href="/lead">Lead Intake</a>
-      <a href="/partner">Partners</a>
-      <a href="/sponsor">Sponsors</a>
-      <a class="tab-primary" href="/checkout">Get Access</a>
-    </nav>
-  </div>
+<div class="dashboard">
 
-  <!-- Sound toggle row -->
-  <div class="soundbar">
-    <button id="soundToggle" class="soundbtn" type="button" aria-pressed="false">
-      Sound: Off
-    </button>
-    <span class="soundhint">Ocean ambience (tap to enable)</span>
-  </div>
-</header>
+    <div class="glass-panel">
+        <div class="panel-title">Case Dock</div>
+        <div class="panel-body">
+            Active legal matters and filings appear here.
+        </div>
+    </div>
 
-<!-- Audio (default OFF; only plays after tap) -->
-<audio id="oceanAudio" preload="none" loop>
-  <!-- Put a real file here: static/ocean.mp3 -->
-  <source src="/static/ocean.mp3" type="audio/mpeg">
-</audio>
+    <div class="glass-panel">
+        <div class="panel-title">Signal Dock</div>
+        <div class="panel-body">
+            Alerts, notices, and incoming signals.
+        </div>
+    </div>
 
-<main>
-  {% block content %}{% endblock %}
-</main>
+    <div class="glass-panel">
+        <div class="panel-title">Equity Engine</div>
+        <div class="panel-body">
+            Equity analysis and strategic tools.
+        </div>
+    </div>
 
-<footer class="footer">
-  <div class="footer-row">
-    <div>© 2026 Nautical Compass</div>
-    <div class="muted">One system · Many lanes · Built for clarity under pressure</div>
-  </div>
+    <div class="glass-panel">
+        <div class="panel-title">Navigator AI</div>
+        <div class="panel-body">
+            AI assistant guidance and commands.
+        </div>
+    </div>
 
-  <div class="muted footer-links">
-    <a href="/services">Solutions</a> ·
-    <a href="/lead">General Inquiry</a> ·
-    <a href="/partner">Partner</a> ·
-    <a href="/privacy">Privacy</a> ·
-    <a href="/terms">Terms</a>
-  </div>
-</footer>
-
-<script>
-(function () {
-  const btn = document.getElementById("soundToggle");
-  const audio = document.getElementById("oceanAudio");
-  if (!btn || !audio) return;
-
-  // default OFF always; remember last choice
-  const saved = localStorage.getItem("nc_sound") || "off";
-  let on = saved === "on";
-
-  function render() {
-    btn.textContent = on ? "Sound: On" : "Sound: Off";
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  }
-
-  async function setOn(next) {
-    on = next;
-    localStorage.setItem("nc_sound", on ? "on" : "off");
-    render();
-    try {
-      if (on) {
-        audio.volume = 0.35;
-        await audio.play(); // works only after user gesture on iOS
-      } else {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-    } catch (e) {
-      on = false;
-      localStorage.setItem("nc_sound", "off");
-      render();
-    }
-  }
-
-  render();
-
-  btn.addEventListener("click", function () {
-    setOn(!on);
-  });
-})();
-</script>
-
-{% block scripts %}{% endblock %}
+</div>
 
 </body>
 </html>
