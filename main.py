@@ -1,158 +1,138 @@
 import os
-import logging
-from pathlib import Path
-from fastapi import FastAPI, Request, Form, Query
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+import time
+from typing import Optional
+
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.status import HTTP_302_FOUND
 
-# ----------------------------
-# Setup
-# ----------------------------
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("nautical-compass")
+app = FastAPI()
 
-BASE_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "static"
+# --- Static + Templates (CRITICAL) ---
+# Must exist as folders in repo:
+#   /static
+#   /templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-app = FastAPI(title="Nautical Compass Intake", version="0.1.0")
+# --- Helpers ---
+def nocache_template(request: Request, template_name: str, context: dict):
+    # Cache-buster token so your iPad doesn't show old CSS/JS
+    ctx = dict(context)
+    ctx["request"] = request
+    ctx["v"] = int(time.time())
+    return templates.TemplateResponse(template_name, ctx)
 
-# Mount static if folder exists (prevents crashes if missing)
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-    logger.info("Static mounted: %s", STATIC_DIR)
-else:
-    logger.warning("Static folder not found at %s (site will still run, but no assets).", STATIC_DIR)
-
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-# ----------------------------
-# Global safety net (prevents 500 loops)
-# ----------------------------
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
-    return JSONResponse(
-        status_code=500,
-        content={"error": "server_error", "path": request.url.path},
-    )
-
-# ----------------------------
-# Health check (use this in DO health checks)
-# ----------------------------
-@app.get("/health")
-def health():
-    return {"ok": True}
-
-# ----------------------------
-# Core pages
-# ----------------------------
+# --- Pages ---
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    # Make sure templates/index.html exists
-    return templates.TemplateResponse("index.html", {"request": request})
+    return nocache_template(request, "index.html", {})
 
 @app.get("/services", response_class=HTMLResponse)
 def services(request: Request):
-    return templates.TemplateResponse("services.html", {"request": request})
+    # If you already have templates/services.html, it will render.
+    # If not, create it later.
+    return nocache_template(request, "services.html", {})
 
 @app.get("/hall", response_class=HTMLResponse)
 def hall(request: Request):
-    # Make sure templates/hall.html exists
-    return templates.TemplateResponse("hall.html", {"request": request})
+    return nocache_template(request, "hall.html", {})
 
-# ----------------------------
-# Lead intake (simple)
-# ----------------------------
 @app.get("/lead", response_class=HTMLResponse)
 def lead_page(request: Request):
-    return templates.TemplateResponse("lead_intake.html", {"request": request})
+    return nocache_template(request, "lead_intake.html", {})
 
 @app.post("/lead")
 def lead_submit(
-    name: str = Form(None),
-    email: str = Form(None),
-    phone: str = Form(None),
-    message: str = Form(None),
+    name: str = Form(""),
+    email: str = Form(""),
+    phone: str = Form(""),
+    message: str = Form(""),
 ):
-    # Keep simple: log + return ok (don’t break prod)
-    logger.info("Lead: name=%s email=%s phone=%s", name, email, phone)
-    return RedirectResponse(url="/lead/thanks", status_code=HTTP_302_FOUND)
+    # Keep simple for now (no DB). You can wire storage later.
+    return RedirectResponse(url="/lead/thanks", status_code=303)
 
 @app.get("/lead/thanks", response_class=HTMLResponse)
 def lead_thanks(request: Request):
-    return templates.TemplateResponse("lead_thanks.html", {"request": request})
+    return nocache_template(request, "lead_thanks.html", {})
 
-# ----------------------------
-# Partner intake
-# ----------------------------
 @app.get("/partner", response_class=HTMLResponse)
 def partner_page(request: Request):
-    return templates.TemplateResponse("partner_intake.html", {"request": request})
+    return nocache_template(request, "partner_intake.html", {})
 
 @app.post("/partner")
 def partner_submit(
-    company: str = Form(None),
-    contact: str = Form(None),
-    email: str = Form(None),
-    phone: str = Form(None),
-    message: str = Form(None),
+    company: str = Form(""),
+    contact: str = Form(""),
+    email: str = Form(""),
+    phone: str = Form(""),
+    notes: str = Form(""),
 ):
-    logger.info("Partner: company=%s contact=%s email=%s", company, contact, email)
-    return RedirectResponse(url="/partner/thanks", status_code=HTTP_302_FOUND)
+    return RedirectResponse(url="/partner/thanks", status_code=303)
 
 @app.get("/partner/thanks", response_class=HTMLResponse)
 def partner_thanks(request: Request):
-    return templates.TemplateResponse("partner_thanks.html", {"request": request})
+    return nocache_template(request, "partner_thanks.html", {})
 
-# ----------------------------
-# Sponsor page (checkout handled elsewhere if needed)
-# ----------------------------
 @app.get("/sponsor", response_class=HTMLResponse)
 def sponsor_page(request: Request):
-    return templates.TemplateResponse("sponsor.html", {"request": request})
+    return nocache_template(request, "sponsor.html", {})
 
-# ----------------------------
-# AVPT + LMT intakes (HTML forms)
-# ----------------------------
+# --- Intake pages (AVPT/LMT) ---
 @app.get("/intake/production", response_class=HTMLResponse)
 def intake_production(request: Request):
-    return templates.TemplateResponse("intake_production.html", {"request": request})
+    return nocache_template(request, "intake_production.html", {})
 
 @app.post("/intake/production")
-def submit_production(request: Request):
-    # Don’t blow up if form changes — accept and route
-    return RedirectResponse(url="/dash/production", status_code=HTTP_302_FOUND)
+def submit_production():
+    return JSONResponse({"ok": True})
 
 @app.get("/intake/labor", response_class=HTMLResponse)
 def intake_labor(request: Request):
-    return templates.TemplateResponse("intake_labor.html", {"request": request})
+    return nocache_template(request, "intake_labor.html", {})
 
 @app.post("/intake/labor")
-def submit_labor(request: Request):
-    return RedirectResponse(url="/dash/labor", status_code=HTTP_302_FOUND)
+def submit_labor():
+    return JSONResponse({"ok": True})
 
-# ----------------------------
-# Dashboards
-# ----------------------------
+# --- Dashboards (FIXES "detail not found") ---
 @app.get("/dashboards", response_class=HTMLResponse)
 def dashboards(request: Request):
-    return templates.TemplateResponse("dashboards.html", {"request": request})
+    # This file exists in your repo screenshots: templates/dashboards_hub.html
+    return nocache_template(request, "dashboards_hub.html", {})
 
 @app.get("/dash/production", response_class=HTMLResponse)
 def dash_production(request: Request):
-    return templates.TemplateResponse("dash_production.html", {"request": request})
+    return nocache_template(request, "dash_production.html", {})
 
 @app.get("/dash/labor", response_class=HTMLResponse)
 def dash_labor(request: Request):
-    return templates.TemplateResponse("dash_labor.html", {"request": request})
+    return nocache_template(request, "dash_labor.html", {})
 
-# ----------------------------
-# Run locally (DO uses its own start command)
-# ----------------------------
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", "8080"))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+# --- Simple results route used by your OpenAPI ---
+@app.get("/results", response_class=HTMLResponse)
+def results(request: Request, lane: str, id: int):
+    return nocache_template(request, "results.html", {"lane": lane, "id": id})
+
+# --- Payments placeholders (safe stubs) ---
+@app.get("/checkout")
+def checkout(ref: Optional[str] = None):
+    # Wire Stripe later. Keep endpoint alive.
+    return JSONResponse({"ok": True, "ref": ref})
+
+@app.get("/success", response_class=HTMLResponse)
+def success(request: Request, session_id: Optional[str] = None):
+    return nocache_template(request, "success.html", {"session_id": session_id})
+
+@app.get("/cancel", response_class=HTMLResponse)
+def cancel(request: Request):
+    return nocache_template(request, "cancel.html", {})
+
+@app.post("/stripe/webhook")
+def stripe_webhook():
+    return JSONResponse({"ok": True})
+
+@app.post("/webhook/stripe")
+def stripe_webhook_alias():
+    return JSONResponse({"ok": True})
