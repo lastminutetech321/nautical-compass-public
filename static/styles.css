@@ -32,9 +32,9 @@ body{
     linear-gradient(180deg, var(--bg), #050914);
 }
 
-/* kill default purple/blue link behavior everywhere */
-a, a:visited { color: rgba(255,255,255,.88); text-decoration:none; }
-a:hover { color: rgba(255,255,255,.96); }
+a{ color:inherit; text-decoration:none; }
+a,a:visited{ color: rgba(255,255,255,.88); }
+a:hover{ color: rgba(255,255,255,.96); }
 
 .muted{ color:var(--muted); }
 .small{ font-size:13px; }
@@ -45,7 +45,7 @@ a:hover { color: rgba(255,255,255,.96); }
   padding:20px;
 }
 
-/* ---------------- GLASS ---------------- */
+/* --- GLASS --- */
 .glass{
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -75,13 +75,14 @@ a:hover { color: rgba(255,255,255,.96); }
   100%{ transform: translate3d(-2%, -1%, 0) }
 }
 
-/* ---------------- NAV ---------------- */
+/* --- NAV --- */
 .nav{
   position:sticky;
   top:0;
   z-index:20;
   border-bottom:1px solid var(--line);
 }
+
 .nav-inner{
   max-width:var(--max);
   margin:0 auto;
@@ -99,6 +100,7 @@ a:hover { color: rgba(255,255,255,.96); }
   font-weight:900;
   letter-spacing:.3px;
 }
+
 .brand-badge{
   width:36px;
   height:36px;
@@ -109,6 +111,7 @@ a:hover { color: rgba(255,255,255,.96); }
   font-weight:900;
   color:#0b1220;
 }
+
 .brand-text{ opacity:.95; }
 
 .nav-links{
@@ -137,7 +140,29 @@ a:hover { color: rgba(255,255,255,.96); }
 }
 .tab-primary:hover{ filter:brightness(1.03); }
 
-/* ---------------- BUTTONS ---------------- */
+/* --- Sound bar --- */
+.soundbar{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 8px 20px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.soundbtn{
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  font-weight:900;
+}
+.soundhint{
+  color: rgba(255,255,255,.70);
+  font-size:13px;
+}
+
+/* --- Buttons --- */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -153,6 +178,7 @@ a:hover { color: rgba(255,255,255,.96); }
   transition:.18s ease;
 }
 .btn:hover{ background: rgba(255,255,255,.09); }
+
 .btn-primary{
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
   border:none;
@@ -160,67 +186,22 @@ a:hover { color: rgba(255,255,255,.96); }
 }
 .btn-primary:hover{ filter:brightness(1.04); }
 
-.btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
-
-/* ---------------- CARDS ---------------- */
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:22px;
-  box-shadow:var(--shadow);
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-.card:hover{
-  transform: translateY(-4px);
-  box-shadow: 0 22px 50px rgba(0,0,0,.45);
-}
-
-.badge{
-  display:inline-flex;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  color:var(--muted);
-  background: rgba(255,255,255,.06);
-  font-weight:900;
-  font-size:12px;
-}
-
-/* ---------------- FOOTER ---------------- */
-.footer{
-  max-width:var(--max);
-  margin:30px auto 40px;
-  padding:0 20px;
-  color:var(--muted);
-  font-size:13px;
-}
-.footer-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-/* =========================================================
-   CAPTAIN HERO (REAL IMAGE + BOAT MOTION + CABIN GLARE)
-   Requires: /static/captain.jpg
-   ========================================================= */
-
+/* --- HERO (Captain) --- */
 .hero{
   position:relative;
-  padding: 34px 20px 18px;
+  padding: 12px 0 0;
   overflow:hidden;
 }
 
 .hero-ocean{
   position:relative;
-  min-height: 540px;
+  min-height: 560px;
   overflow:hidden;
   background:none;
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
+/* IMPORTANT: file MUST exist at static/captain.jpg */
 .hero-ocean.boat-motion::before{
   content:"";
   position:absolute;
@@ -230,7 +211,7 @@ a:hover { color: rgba(255,255,255,.96); }
     linear-gradient(180deg, rgba(10,16,28,.05), rgba(5,9,20,.86)),
     url("/static/captain.jpg");
   background-size: cover;
-  background-position: center;
+  background-position: 72% 55%; /* keeps wheel visible */
   transform: translate3d(0,0,0) scale(1.06);
   will-change: transform, background-position;
   animation: boatSway 10.5s ease-in-out infinite;
@@ -238,7 +219,7 @@ a:hover { color: rgba(255,255,255,.96); }
   pointer-events:none;
 }
 
-/* glare sweep */
+/* Apple-glass-ish glare sweep */
 .hero-ocean.boat-motion::after{
   content:"";
   position:absolute;
@@ -261,6 +242,15 @@ a:hover { color: rgba(255,255,255,.96); }
   animation: cabinGlare 8.0s ease-in-out infinite;
 }
 
+.hero-overlay{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(700px 300px at 60% 30%, rgba(0,0,0,.15), transparent 55%),
+    linear-gradient(180deg, rgba(5,9,20,.25), rgba(5,9,20,.78));
+  pointer-events:none;
+}
+
 .hero-ocean .glass-haze{
   position:absolute;
   inset:0;
@@ -281,13 +271,24 @@ a:hover { color: rgba(255,255,255,.96); }
   grid-template-columns: 1.1fr .9fr;
   gap:18px;
   align-items:stretch;
-  padding: 36px 0 30px;
+  padding: 36px 20px 30px;
 }
 
 @media(max-width:980px){
   .hero-wrap{ grid-template-columns:1fr; }
-  .hero-ocean{ min-height: 640px; }
-  .hero-ocean.boat-motion::after{ opacity:.10; }
+  .hero-ocean{ min-height: 680px; }
+  .hero-ocean.boat-motion::before{
+    background-position: 50% 58%;
+  }
+}
+
+.hero-panel{
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  background: rgba(10,16,28,.60);
+  border: 1px solid rgba(255,255,255,.12);
+  max-width: 560px;
 }
 
 .kicker{
@@ -310,6 +311,7 @@ a:hover { color: rgba(255,255,255,.96); }
   line-height:1.06;
   text-shadow: 0 14px 40px rgba(0,0,0,.40);
 }
+
 .h-sub{
   margin:0;
   color: rgba(238,243,255,.88);
@@ -326,12 +328,109 @@ a:hover { color: rgba(255,255,255,.96); }
   margin-top:16px;
 }
 
+.hero-note{
+  margin-top:14px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.glass-card{
+  border-radius: var(--radius);
+  padding:18px;
+  box-shadow: var(--shadow);
+}
+
+.card-top{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.card-title{ font-weight:900; font-size:18px; }
+
+.northstar{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.05);
+  position:relative;
+}
+
+.star{
+  width:12px;
+  height:12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  transform: rotate(45deg);
+  border-radius:3px;
+}
+
+.star-glow{
+  position:absolute;
+  inset:-14px;
+  background: radial-gradient(circle, rgba(224,179,84,.25), transparent 55%);
+  filter: blur(2px);
+}
+
+.lane-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+@media(max-width:980px){
+  .lane-grid{ grid-template-columns: 1fr; }
+}
+
+.lane{
+  padding:12px 12px;
+  border-radius: var(--radius-sm);
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.lane:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.07);
+  box-shadow: 0 18px 40px rgba(0,0,0,.32);
+}
+.lane-title{ font-weight:900; }
+.lane-sub{ color: var(--muted); font-size:13px; margin-top:3px; }
+
+.divider{
+  height:1px;
+  background: rgba(255,255,255,.10);
+  margin:14px 0;
+}
+
+.quote{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.quote-mark{
+  font-size:26px;
+  line-height:1;
+  color: rgba(224,179,84,.85);
+  font-weight:900;
+}
+.quote-text{
+  color: rgba(238,243,255,.82);
+  line-height:1.55;
+  font-size:14px;
+}
+
+/* Motion */
 @keyframes boatSway{
-  0%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 52% 48%; }
-  25%{ transform: translate3d(0.6%, -0.9%, 0) scale(1.065) rotate(0.18deg); background-position: 50% 45%; }
-  50%{ transform: translate3d(0.9%, 0.6%, 0) scale(1.06) rotate(0.10deg); background-position: 48% 52%; }
-  75%{ transform: translate3d(-0.5%, 0.9%, 0) scale(1.065) rotate(-0.18deg); background-position: 54% 55%; }
-  100%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 52% 48%; }
+  0%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 72% 55%; }
+  25%{ transform: translate3d(0.6%, -0.9%, 0) scale(1.065) rotate(0.18deg); background-position: 70% 52%; }
+  50%{ transform: translate3d(0.9%, 0.6%, 0) scale(1.06) rotate(0.10deg); background-position: 68% 58%; }
+  75%{ transform: translate3d(-0.5%, 0.9%, 0) scale(1.065) rotate(-0.18deg); background-position: 74% 60%; }
+  100%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 72% 55%; }
 }
 
 @keyframes cabinGlare{
@@ -346,9 +445,7 @@ a:hover { color: rgba(255,255,255,.96); }
   .hero-ocean.boat-motion::after{ animation:none !important; }
 }
 
-/* =========================
-   HALLWAY DOORS
-   ========================= */
+/* --- HALL DOORS --- */
 .hall-wrap{ max-width:1100px; margin:0 auto; padding:28px 18px 40px; }
 .hall-hero{ margin-bottom:18px; }
 .hall-hero .eyebrow{ letter-spacing:.12em; text-transform:uppercase; font-size:12px; opacity:.75; }
@@ -376,8 +473,6 @@ a:hover { color: rgba(255,255,255,.96); }
   border-radius:16px;
   background: rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.10);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 18px 45px rgba(0,0,0,.35);
   transition: transform .18s ease, border-color .18s ease, background .18s ease;
   overflow:hidden;
@@ -391,8 +486,7 @@ a:hover { color: rgba(255,255,255,.96); }
   pointer-events:none;
   opacity:.55;
 }
-.door:hover,
-.door:focus{
+.door:hover,.door:focus{
   transform: translateY(-2px);
   border-color: rgba(255,255,255,.18);
   background: rgba(255,255,255,.075);
@@ -428,18 +522,8 @@ a:hover { color: rgba(255,255,255,.96); }
   color: rgba(255,255,255,.92);
   transition: text-shadow .2s ease, color .2s ease;
 }
-.door-sub{
-  display:block;
-  margin-top:6px;
-  font-size:14px;
-  color: rgba(255,255,255,.78);
-}
-.door-meta{
-  display:block;
-  margin-top:10px;
-  font-size:12.5px;
-  color: rgba(255,255,255,.62);
-}
+.door-sub{ display:block; margin-top:6px; font-size:14px; color: rgba(255,255,255,.78); }
+.door-meta{ display:block; margin-top:10px; font-size:12.5px; color: rgba(255,255,255,.62); }
 .door-cta{
   display:inline-block;
   margin-top:12px;
@@ -454,3 +538,19 @@ a:hover { color: rgba(255,255,255,.96); }
   color: rgba(255,255,255,.98);
   text-shadow: 0 0 22px rgba(255,255,255,.28);
 }
+
+/* --- Footer --- */
+.footer{
+  max-width:var(--max);
+  margin:30px auto 40px;
+  padding:0 20px;
+  color:var(--muted);
+  font-size:13px;
+}
+.footer-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.footer-links{ margin-top:10px; }
