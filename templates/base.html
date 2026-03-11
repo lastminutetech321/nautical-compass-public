@@ -6,105 +6,107 @@
   <title>{% block title %}Nautical Compass{% endblock %}</title>
 
   <link rel="icon" href="/static/favicon.ico" />
-  <link rel="stylesheet" href="/static/styles.css?v=7" />
+  <link rel="stylesheet" href="/static/styles.css?v={{ v|default(1) }}" />
   {% block head %}{% endblock %}
 </head>
+
 <body>
 
-  <header class="nav glass moist">
-    <div class="nav-inner">
-      <a class="brand" href="/">
-        <div class="brand-badge">NC</div>
-        <div class="brand-text">Nautical Compass</div>
-      </a>
+<header class="nav glass moist">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <div class="brand-badge">NC</div>
+      <div class="brand-text">Nautical Compass</div>
+    </a>
 
-      <nav class="nav-links">
-        <a href="/hall">Hall</a>
-        <a href="/services">Services</a>
-        <a href="/dashboards">Dashboards</a>
-        <a href="/lead">Lead Intake</a>
-        <a href="/partner">Partners</a>
-        <a href="/sponsor">Sponsors</a>
-        <a class="tab-primary" href="/checkout">Get Access</a>
-      </nav>
-    </div>
+    <nav class="nav-links">
+      <a href="/hall">Hall</a>
+      <a href="/services">Services</a>
+      <a href="/dashboards">Dashboards</a>
+      <a href="/lead">Lead Intake</a>
+      <a href="/partner">Partners</a>
+      <a href="/sponsor">Sponsors</a>
+      <a class="tab-primary" href="/checkout">Get Access</a>
+    </nav>
+  </div>
 
-    <!-- Sound toggle row (optional) -->
-    <div class="soundbar">
-      <button id="soundToggle" class="soundbtn" type="button" aria-pressed="false">
-        Sound: Off
-      </button>
-      <span class="soundhint">Ocean ambience (tap to enable)</span>
-    </div>
-  </header>
+  <!-- Sound toggle row -->
+  <div class="soundbar">
+    <button id="soundToggle" class="soundbtn" type="button" aria-pressed="false">
+      Sound: Off
+    </button>
+    <span class="soundhint">Ocean ambience (tap to enable)</span>
+  </div>
+</header>
 
-  <!-- Audio (default OFF; only plays after tap) -->
-  <audio id="oceanAudio" preload="none" loop>
-    <!-- Add a real file at: static/ocean.mp3 (or change this path) -->
-    <source src="/static/ocean.mp3" type="audio/mpeg">
-  </audio>
+<!-- Audio (default OFF; only plays after tap) -->
+<audio id="oceanAudio" preload="none" loop>
+  <!-- Put a real file here: static/ocean.mp3 -->
+  <source src="/static/ocean.mp3" type="audio/mpeg">
+</audio>
 
-  <main>
-    {% block content %}{% endblock %}
-  </main>
+<main>
+  {% block content %}{% endblock %}
+</main>
 
-  <footer class="footer">
-    <div class="footer-row">
-      <div>© 2026 Nautical Compass</div>
-      <div class="muted">One system · Many lanes · Built for clarity under pressure</div>
-    </div>
-    <div class="muted" style="margin-top:10px;">
-      <a href="/services">Solutions</a> ·
-      <a href="/lead">General Inquiry</a> ·
-      <a href="/partner">Partner</a> ·
-      <a href="/privacy">Privacy</a> ·
-      <a href="/terms">Terms</a>
-    </div>
-  </footer>
+<footer class="footer">
+  <div class="footer-row">
+    <div>© 2026 Nautical Compass</div>
+    <div class="muted">One system · Many lanes · Built for clarity under pressure</div>
+  </div>
 
-  <script>
-    (function () {
-      const btn = document.getElementById("soundToggle");
-      const audio = document.getElementById("oceanAudio");
-      if (!btn || !audio) return;
+  <div class="muted footer-links">
+    <a href="/services">Solutions</a> ·
+    <a href="/lead">General Inquiry</a> ·
+    <a href="/partner">Partner</a> ·
+    <a href="/privacy">Privacy</a> ·
+    <a href="/terms">Terms</a>
+  </div>
+</footer>
 
-      // default OFF always; remember last choice
-      const saved = localStorage.getItem("nc_sound") || "off";
-      let on = saved === "on";
+<script>
+(function () {
+  const btn = document.getElementById("soundToggle");
+  const audio = document.getElementById("oceanAudio");
+  if (!btn || !audio) return;
 
-      function render() {
-        btn.textContent = on ? "Sound: On" : "Sound: Off";
-        btn.setAttribute("aria-pressed", on ? "true" : "false");
+  // default OFF always; remember last choice
+  const saved = localStorage.getItem("nc_sound") || "off";
+  let on = saved === "on";
+
+  function render() {
+    btn.textContent = on ? "Sound: On" : "Sound: Off";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  async function setOn(next) {
+    on = next;
+    localStorage.setItem("nc_sound", on ? "on" : "off");
+    render();
+    try {
+      if (on) {
+        audio.volume = 0.35;
+        await audio.play(); // works only after user gesture on iOS
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
       }
-
-      async function setOn(next) {
-        on = next;
-        localStorage.setItem("nc_sound", on ? "on" : "off");
-        render();
-        try {
-          if (on) {
-            audio.volume = 0.35;
-            await audio.play(); // will only work after user gesture
-          } else {
-            audio.pause();
-            audio.currentTime = 0;
-          }
-        } catch (e) {
-          // If iOS blocks it, stay off.
-          on = false;
-          localStorage.setItem("nc_sound", "off");
-          render();
-        }
-      }
-
+    } catch (e) {
+      on = false;
+      localStorage.setItem("nc_sound", "off");
       render();
+    }
+  }
 
-      btn.addEventListener("click", function () {
-        setOn(!on);
-      });
-    })();
-  </script>
+  render();
 
-  {% block scripts %}{% endblock %}
+  btn.addEventListener("click", function () {
+    setOn(!on);
+  });
+})();
+</script>
+
+{% block scripts %}{% endblock %}
+
 </body>
 </html>
