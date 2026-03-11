@@ -1,6 +1,4 @@
-// hallway.js — "lamp above the door" + light-on-click + title glow
-// Works with plain HTML/CSS. No frameworks. Safe.
-
+// hallway.js — lamp above door + light-on-click + title glow
 (function () {
   const ACTIVE_CLASS = "door-active";
 
@@ -43,13 +41,7 @@
     ensureLamp(door);
     addHoverFlicker(door);
 
-    door.addEventListener(
-      "click",
-      () => {
-        pulseDoor(door);
-      },
-      { passive: true }
-    );
+    door.addEventListener("click", () => pulseDoor(door), { passive: true });
 
     door.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") pulseDoor(door);
@@ -59,14 +51,7 @@
   function init() {
     const doors = allDoors();
     if (!doors.length) return;
-
     doors.forEach(wireDoor);
-
-    const hash = (window.location.hash || "").replace("#", "");
-    if (hash) {
-      const match = doors.find((d) => d.id === hash || d.dataset.lane === hash);
-      if (match) pulseDoor(match);
-    }
   }
 
   if (document.readyState === "loading") {
