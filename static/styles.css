@@ -32,7 +32,10 @@ body{
     linear-gradient(180deg, var(--bg), #050914);
 }
 
-a{ color:inherit; text-decoration:none; }
+/* kill default purple/blue link behavior everywhere */
+a, a:visited { color: rgba(255,255,255,.88); text-decoration:none; }
+a:hover { color: rgba(255,255,255,.96); }
+
 .muted{ color:var(--muted); }
 .small{ font-size:13px; }
 
@@ -42,7 +45,7 @@ a{ color:inherit; text-decoration:none; }
   padding:20px;
 }
 
-/* Glass */
+/* ---------------- GLASS ---------------- */
 .glass{
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -72,7 +75,7 @@ a{ color:inherit; text-decoration:none; }
   100%{ transform: translate3d(-2%, -1%, 0) }
 }
 
-/* Nav */
+/* ---------------- NAV ---------------- */
 .nav{
   position:sticky;
   top:0;
@@ -134,7 +137,7 @@ a{ color:inherit; text-decoration:none; }
 }
 .tab-primary:hover{ filter:brightness(1.03); }
 
-/* Buttons */
+/* ---------------- BUTTONS ---------------- */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -156,9 +159,10 @@ a{ color:inherit; text-decoration:none; }
   color:#0b1220;
 }
 .btn-primary:hover{ filter:brightness(1.04); }
+
 .btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
 
-/* Cards */
+/* ---------------- CARDS ---------------- */
 .card{
   background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
   border:1px solid var(--line);
@@ -183,7 +187,7 @@ a{ color:inherit; text-decoration:none; }
   font-size:12px;
 }
 
-/* Footer */
+/* ---------------- FOOTER ---------------- */
 .footer{
   max-width:var(--max);
   margin:30px auto 40px;
@@ -198,10 +202,10 @@ a{ color:inherit; text-decoration:none; }
   flex-wrap:wrap;
 }
 
-/* =========================
-   CAPTAIN HERO (REAL IMAGE + BOAT MOTION + GLARE)
-   Uses /static/captains.png (matches your repo)
-   ========================= */
+/* =========================================================
+   CAPTAIN HERO (REAL IMAGE + BOAT MOTION + CABIN GLARE)
+   Requires: /static/captain.jpg
+   ========================================================= */
 
 .hero{
   position:relative;
@@ -217,7 +221,6 @@ a{ color:inherit; text-decoration:none; }
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
-/* moving “boat” background */
 .hero-ocean.boat-motion::before{
   content:"";
   position:absolute;
@@ -225,7 +228,7 @@ a{ color:inherit; text-decoration:none; }
   background:
     radial-gradient(900px 450px at 75% 15%, rgba(224,179,84,.14), transparent 55%),
     linear-gradient(180deg, rgba(10,16,28,.05), rgba(5,9,20,.86)),
-    url("/static/captains.png");
+    url("/static/captain.jpg");
   background-size: cover;
   background-position: center;
   transform: translate3d(0,0,0) scale(1.06);
@@ -235,7 +238,7 @@ a{ color:inherit; text-decoration:none; }
   pointer-events:none;
 }
 
-/* “Apple glass” glare sweep */
+/* glare sweep */
 .hero-ocean.boat-motion::after{
   content:"";
   position:absolute;
@@ -258,7 +261,6 @@ a{ color:inherit; text-decoration:none; }
   animation: cabinGlare 8.0s ease-in-out infinite;
 }
 
-/* optional “wet glass” haze layer */
 .hero-ocean .glass-haze{
   position:absolute;
   inset:0;
@@ -322,12 +324,6 @@ a{ color:inherit; text-decoration:none; }
   gap:10px;
   flex-wrap:wrap;
   margin-top:16px;
-}
-
-.glass-card{
-  border-radius: var(--radius);
-  padding:18px;
-  box-shadow: var(--shadow);
 }
 
 @keyframes boatSway{
@@ -402,6 +398,7 @@ a{ color:inherit; text-decoration:none; }
   background: rgba(255,255,255,.075);
   outline:none;
 }
+
 .door .lamp{
   position:absolute;
   top:12px;
@@ -422,6 +419,7 @@ a{ color:inherit; text-decoration:none; }
   background: rgba(255,255,255,.38);
   box-shadow: 0 0 26px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.14);
 }
+
 .door-title{
   display:block;
   margin-top:18px;
