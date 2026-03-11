@@ -2,11 +2,11 @@
   --bg:#0b1220;
   --bg-soft:#0f1b33;
 
-  --text:#eef3ff;         /* off-white */
-  --muted:#b7c2dd;        /* softer muted */
+  --text:#eef3ff;
+  --muted:#b7c2dd;
   --muted2:#95a4c6;
 
-  --accent:#b88a2a;       /* bronze */
+  --accent:#b88a2a;
   --accent-light:#e0b354;
   --accent-soft:rgba(184,138,42,.22);
 
@@ -42,7 +42,7 @@ a{ color:inherit; text-decoration:none; }
   padding:20px;
 }
 
-/* ---------------- GLASS ---------------- */
+/* Glass */
 .glass{
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -72,7 +72,7 @@ a{ color:inherit; text-decoration:none; }
   100%{ transform: translate3d(-2%, -1%, 0) }
 }
 
-/* ---------------- NAV ---------------- */
+/* Nav */
 .nav{
   position:sticky;
   top:0;
@@ -117,7 +117,7 @@ a{ color:inherit; text-decoration:none; }
 .nav-links a{
   padding:8px 12px;
   border-radius:999px;
-  color: rgba(255,255,255,.82); /* off-white (NOT neon) */
+  color: rgba(255,255,255,.82);
   border: 1px solid transparent;
   transition:.18s ease;
 }
@@ -134,7 +134,7 @@ a{ color:inherit; text-decoration:none; }
 }
 .tab-primary:hover{ filter:brightness(1.03); }
 
-/* ---------------- BUTTONS ---------------- */
+/* Buttons */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -156,10 +156,9 @@ a{ color:inherit; text-decoration:none; }
   color:#0b1220;
 }
 .btn-primary:hover{ filter:brightness(1.04); }
-
 .btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
 
-/* ---------------- CARDS ---------------- */
+/* Cards */
 .card{
   background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
   border:1px solid var(--line);
@@ -184,7 +183,7 @@ a{ color:inherit; text-decoration:none; }
   font-size:12px;
 }
 
-/* ---------------- FOOTER ---------------- */
+/* Footer */
 .footer{
   max-width:var(--max);
   margin:30px auto 40px;
@@ -199,10 +198,10 @@ a{ color:inherit; text-decoration:none; }
   flex-wrap:wrap;
 }
 
-/* =========================================================
-   CAPTAIN HERO (REAL IMAGE + BOAT MOTION + CABIN GLARE)
-   IMPORTANT: Requires file at /static/captains.jpg
-   ========================================================= */
+/* =========================
+   CAPTAIN HERO (REAL IMAGE + BOAT MOTION + GLARE)
+   Uses /static/captains.png (matches your repo)
+   ========================= */
 
 .hero{
   position:relative;
@@ -210,15 +209,15 @@ a{ color:inherit; text-decoration:none; }
   overflow:hidden;
 }
 
-/* Container that holds the moving image layers */
 .hero-ocean{
   position:relative;
   min-height: 540px;
   overflow:hidden;
-  background:none; /* background lives in ::before */
+  background:none;
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
+/* moving “boat” background */
 .hero-ocean.boat-motion::before{
   content:"";
   position:absolute;
@@ -226,7 +225,7 @@ a{ color:inherit; text-decoration:none; }
   background:
     radial-gradient(900px 450px at 75% 15%, rgba(224,179,84,.14), transparent 55%),
     linear-gradient(180deg, rgba(10,16,28,.05), rgba(5,9,20,.86)),
-    url("/static/captains.jpg");
+    url("/static/captains.png");
   background-size: cover;
   background-position: center;
   transform: translate3d(0,0,0) scale(1.06);
@@ -236,7 +235,7 @@ a{ color:inherit; text-decoration:none; }
   pointer-events:none;
 }
 
-/* Apple-glass-ish glare sweep (light shining in cabin) */
+/* “Apple glass” glare sweep */
 .hero-ocean.boat-motion::after{
   content:"";
   position:absolute;
@@ -259,7 +258,7 @@ a{ color:inherit; text-decoration:none; }
   animation: cabinGlare 8.0s ease-in-out infinite;
 }
 
-/* Optional: a faint “wet glass” haze layer */
+/* optional “wet glass” haze layer */
 .hero-ocean .glass-haze{
   position:absolute;
   inset:0;
@@ -271,7 +270,6 @@ a{ color:inherit; text-decoration:none; }
   filter: blur(1px);
 }
 
-/* Keep text above moving layers */
 .hero-wrap{
   position:relative;
   z-index:2;
@@ -326,104 +324,12 @@ a{ color:inherit; text-decoration:none; }
   margin-top:16px;
 }
 
-.hero-note{
-  margin-top:14px;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-/* Right panel */
 .glass-card{
   border-radius: var(--radius);
   padding:18px;
   box-shadow: var(--shadow);
 }
 
-.card-top{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  margin-bottom:12px;
-}
-
-.card-title{ font-weight:900; font-size:18px; }
-
-.northstar{
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
-  position:relative;
-}
-
-.star{
-  width:12px;
-  height:12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  transform: rotate(45deg);
-  border-radius:3px;
-}
-
-.star-glow{
-  position:absolute;
-  inset:-14px;
-  background: radial-gradient(circle, rgba(224,179,84,.25), transparent 55%);
-  filter: blur(2px);
-}
-
-.lane-grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-}
-@media(max-width:980px){
-  .lane-grid{ grid-template-columns: 1fr; }
-}
-
-.lane{
-  padding:12px 12px;
-  border-radius: var(--radius-sm);
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
-.lane:hover{
-  transform: translateY(-2px);
-  background: rgba(255,255,255,.07);
-  box-shadow: 0 18px 40px rgba(0,0,0,.32);
-}
-.lane-title{ font-weight:900; }
-.lane-sub{ color: var(--muted); font-size:13px; margin-top:3px; }
-
-.divider{
-  height:1px;
-  background: rgba(255,255,255,.10);
-  margin:14px 0;
-}
-
-.quote{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-}
-.quote-mark{
-  font-size:26px;
-  line-height:1;
-  color: rgba(224,179,84,.85);
-  font-weight:900;
-}
-.quote-text{
-  color: rgba(238,243,255,.82);
-  line-height:1.55;
-  font-size:14px;
-}
-
-/* BOAT SWAY */
 @keyframes boatSway{
   0%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 52% 48%; }
   25%{ transform: translate3d(0.6%, -0.9%, 0) scale(1.065) rotate(0.18deg); background-position: 50% 45%; }
@@ -432,7 +338,6 @@ a{ color:inherit; text-decoration:none; }
   100%{ transform: translate3d(-0.7%, -0.4%, 0) scale(1.06) rotate(-0.15deg); background-position: 52% 48%; }
 }
 
-/* GLARE SWEEP */
 @keyframes cabinGlare{
   0%{ transform: translate3d(-12%, -8%, 0) rotate(-10deg); opacity:.08; }
   35%{ transform: translate3d(6%, 2%, 0) rotate(-4deg); opacity:.18; }
@@ -442,16 +347,12 @@ a{ color:inherit; text-decoration:none; }
 
 @media (prefers-reduced-motion: reduce){
   .hero-ocean.boat-motion::before,
-  .hero-ocean.boat-motion::after{
-    animation:none !important;
-  }
+  .hero-ocean.boat-motion::after{ animation:none !important; }
 }
 
 /* =========================
    HALLWAY DOORS
-   lamp above door + light on click
    ========================= */
-
 .hall-wrap{ max-width:1100px; margin:0 auto; padding:28px 18px 40px; }
 .hall-hero{ margin-bottom:18px; }
 .hall-hero .eyebrow{ letter-spacing:.12em; text-transform:uppercase; font-size:12px; opacity:.75; }
@@ -463,7 +364,6 @@ a{ color:inherit; text-decoration:none; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap:14px;
 }
-
 @media (max-width: 980px){
   .hall-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hall-hero h1{ font-size:34px; }
@@ -478,17 +378,14 @@ a{ color:inherit; text-decoration:none; }
   display:block;
   padding:18px 16px 14px;
   border-radius:16px;
-  text-decoration:none;
   background: rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.10);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 18px 45px rgba(0,0,0,.35);
-  transform: translateZ(0);
   transition: transform .18s ease, border-color .18s ease, background .18s ease;
   overflow:hidden;
 }
-
 .door:before{
   content:"";
   position:absolute;
@@ -498,7 +395,6 @@ a{ color:inherit; text-decoration:none; }
   pointer-events:none;
   opacity:.55;
 }
-
 .door:hover,
 .door:focus{
   transform: translateY(-2px);
@@ -506,8 +402,6 @@ a{ color:inherit; text-decoration:none; }
   background: rgba(255,255,255,.075);
   outline:none;
 }
-
-/* LAMP */
 .door .lamp{
   position:absolute;
   top:12px;
@@ -517,21 +411,17 @@ a{ color:inherit; text-decoration:none; }
   border-radius:999px;
   background: rgba(255,255,255,.16);
   border:1px solid rgba(255,255,255,.22);
-  box-shadow: 0 0 0 rgba(0,0,0,0);
   transition: box-shadow .2s ease, background .2s ease, transform .2s ease;
 }
-
 .door.door-hover .lamp{
   background: rgba(255,255,255,.28);
   box-shadow: 0 0 16px rgba(255,255,255,.18);
   transform: translateY(-1px);
 }
-
 .door.door-active .lamp{
   background: rgba(255,255,255,.38);
   box-shadow: 0 0 26px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.14);
 }
-
 .door-title{
   display:block;
   margin-top:18px;
@@ -540,21 +430,18 @@ a{ color:inherit; text-decoration:none; }
   color: rgba(255,255,255,.92);
   transition: text-shadow .2s ease, color .2s ease;
 }
-
 .door-sub{
   display:block;
   margin-top:6px;
   font-size:14px;
   color: rgba(255,255,255,.78);
 }
-
 .door-meta{
   display:block;
   margin-top:10px;
   font-size:12.5px;
   color: rgba(255,255,255,.62);
 }
-
 .door-cta{
   display:inline-block;
   margin-top:12px;
@@ -565,7 +452,6 @@ a{ color:inherit; text-decoration:none; }
   border:1px solid rgba(255,255,255,.14);
   background: rgba(0,0,0,.18);
 }
-
 .door.door-active .door-title{
   color: rgba(255,255,255,.98);
   text-shadow: 0 0 22px rgba(255,255,255,.28);
