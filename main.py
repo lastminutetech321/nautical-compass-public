@@ -43,11 +43,7 @@ def lead(request: Request):
 
 
 @app.post("/lead")
-def lead_submit(
-    name: str = Form(...),
-    email: str = Form(...),
-    message: str = Form(...)
-):
+def lead_submit(name: str = Form(...), email: str = Form(...), message: str = Form(...)):
     return RedirectResponse("/lead/thanks", status_code=303)
 
 
