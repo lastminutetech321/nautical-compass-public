@@ -399,3 +399,139 @@ a{ color:inherit; text-decoration:none; }
 textarea{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+/* =========================
+   HALLWAY DOORS (WOW MODE)
+   lamp above door + light on click
+   ========================= */
+
+.hall-wrap{ max-width:1100px; margin:0 auto; padding:28px 18px 40px; }
+.hall-hero{ margin-bottom:18px; }
+.hall-hero .eyebrow{ letter-spacing:.12em; text-transform:uppercase; font-size:12px; opacity:.75; }
+.hall-hero h1{ margin:8px 0 6px; font-size:40px; line-height:1.1; }
+.hall-foot{ margin-top:14px; font-size:13px; opacity:.75; }
+
+.hall-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:14px;
+}
+
+@media (max-width: 980px){
+  .hall-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hall-hero h1{ font-size:34px; }
+}
+@media (max-width: 640px){
+  .hall-grid{ grid-template-columns: 1fr; }
+  .hall-hero h1{ font-size:30px; }
+}
+
+.door{
+  position:relative;
+  display:block;
+  padding:18px 16px 14px;
+  border-radius:16px;
+  text-decoration:none;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  transform: translateZ(0);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  overflow:hidden;
+}
+
+/* subtle shine */
+.door:before{
+  content:"";
+  position:absolute;
+  inset:-40% -60%;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), transparent 50%);
+  transform: rotate(12deg);
+  pointer-events:none;
+  opacity:.55;
+}
+
+.door:hover,
+.door:focus{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.075);
+  outline:none;
+}
+
+/* LAMP */
+.door .lamp{
+  position:absolute;
+  top:12px;
+  left:14px;
+  width:14px;
+  height:14px;
+  border-radius:999px;
+  background: rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  transition: box-shadow .2s ease, background .2s ease, transform .2s ease;
+}
+
+/* Lamp "flicker" on hover */
+.door.door-hover .lamp{
+  background: rgba(255,255,255,.28);
+  box-shadow: 0 0 16px rgba(255,255,255,.18);
+  transform: translateY(-1px);
+}
+
+/* ACTIVE: lamp turns ON + title glows */
+.door.door-active .lamp{
+  background: rgba(255,255,255,.38);
+  box-shadow: 0 0 26px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.14);
+}
+
+/* TEXT (off-white, not harsh blue/purple) */
+.door-title{
+  display:block;
+  margin-top:18px;
+  font-size:18px;
+  font-weight:700;
+  color: rgba(255,255,255,.92);
+  transition: text-shadow .2s ease, color .2s ease;
+}
+
+.door-sub{
+  display:block;
+  margin-top:6px;
+  font-size:14px;
+  color: rgba(255,255,255,.78);
+}
+
+.door-meta{
+  display:block;
+  margin-top:10px;
+  font-size:12.5px;
+  color: rgba(255,255,255,.62);
+}
+
+.door-cta{
+  display:inline-block;
+  margin-top:12px;
+  font-size:13px;
+  color: rgba(255,255,255,.85);
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+}
+
+/* title glow on click */
+.door.door-active .door-title{
+  color: rgba(255,255,255,.98);
+  text-shadow: 0 0 22px rgba(255,255,255,.28);
+}
+
+/* Keep links from looking neon */
+a, a:visited { color: rgba(255,255,255,.88); }
+a:hover { color: rgba(255,255,255,.96); }
+
+/* Reduce harsh purple/blue nav link look */
+.nav a{ color: rgba(255,255,255,.82) !important; }
+.nav a:hover{ color: rgba(255,255,255,.95) !important; }
