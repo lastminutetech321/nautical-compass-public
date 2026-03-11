@@ -2,8 +2,6 @@
 {% block title %}Hall • Nautical Compass{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="/static/hallway.css?v=3">
-
 <div class="hall-wrap">
   <div class="hall-hero">
     <div class="eyebrow">One hall. Many doors.</div>
@@ -14,7 +12,6 @@
   </div>
 
   <div class="hall-grid" role="list">
-    <!-- NC -->
     <a class="door" role="listitem" data-lane="nc" href="/services">
       <span class="lamp"></span>
       <span class="door-title">Legal / Compliance (NC)</span>
@@ -23,7 +20,6 @@
       <span class="door-cta">Enter NC</span>
     </a>
 
-    <!-- AVPT -->
     <a class="door" role="listitem" data-lane="avpt" href="/intake/production">
       <span class="lamp"></span>
       <span class="door-title">AV Production Company (AVPT)</span>
@@ -32,7 +28,6 @@
       <span class="door-cta">Start Production Request</span>
     </a>
 
-    <!-- LMT -->
     <a class="door" role="listitem" data-lane="lmt" href="/intake/labor">
       <span class="lamp"></span>
       <span class="door-title">Labor / Tech (LMT)</span>
@@ -41,7 +36,6 @@
       <span class="door-cta">Join Labor Pool</span>
     </a>
 
-    <!-- Partner -->
     <a class="door" role="listitem" data-lane="partner" href="/partner">
       <span class="lamp"></span>
       <span class="door-title">Partner / Manufacturer</span>
@@ -50,7 +44,6 @@
       <span class="door-cta">Partner Intake</span>
     </a>
 
-    <!-- Sponsor -->
     <a class="door" role="listitem" data-lane="sponsor" href="/sponsor">
       <span class="lamp"></span>
       <span class="door-title">Sponsor Access</span>
@@ -59,7 +52,6 @@
       <span class="door-cta">View Sponsor Options</span>
     </a>
 
-    <!-- Dashboards -->
     <a class="door" role="listitem" data-lane="dash" href="/dashboards">
       <span class="lamp"></span>
       <span class="door-title">Dashboards</span>
@@ -73,9 +65,8 @@
     Tip: tap a door — the lamp turns on and the title glows, then it routes you.
   </div>
 </div>
-
-<script src="/static/hallway.js?v=3"></script>
 {% endblock %}
+
 {% block scripts %}
-<script src="/static/hallway.js?v=8"></script>
+<script src="/static/hallway.js?v=4"></script>
 {% endblock %}
