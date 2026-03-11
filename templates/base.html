@@ -2,15 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>{% block title %}Nautical Compass{% endblock %}</title>
 
-  <!-- Favicon (put your file at /static/favicon.ico or /static/favicon.png) -->
-  <link rel="icon" href="/static/favicon.ico?v=3"/>
-  <link rel="apple-touch-icon" href="/static/favicon.png?v=3"/>
-
-  <!-- Main styles -->
-  <link rel="stylesheet" href="/static/styles.css?v=3"/>
+  <link rel="icon" href="/static/favicon.ico">
+  <link rel="stylesheet" href="/static/styles.css?v=7">
 
   {% block head %}{% endblock %}
 </head>
@@ -23,7 +19,7 @@
         <span class="brand-text">Nautical Compass</span>
       </a>
 
-      <nav class="nav-links" aria-label="Primary">
+      <nav class="nav-links">
         <a href="/hall">Hall</a>
         <a href="/services">Services</a>
         <a href="/dashboards">Dashboards</a>
@@ -35,22 +31,63 @@
     </div>
   </header>
 
-  <main>
-    {% block content %}{% endblock %}
-  </main>
+  <!-- Sound toggle (default OFF) -->
+  <div style="max-width:1100px;margin:10px auto 0;padding:0 20px;">
+    <button id="soundToggle" class="btn" type="button" aria-pressed="false">
+      🔇 Sound: Off
+    </button>
+    <span class="small muted" style="margin-left:10px;">Ocean ambience (tap to enable)</span>
+  </div>
+
+  {% block content %}{% endblock %}
 
   <footer class="footer">
     <div class="footer-row">
-      <div>© 2026 Nautical Compass • One system • Many lanes • Built for clarity under pressure</div>
-      <div class="small">
-        <a href="/services">Solutions</a> •
-        <a href="/lead">General Inquiry</a> •
-        <a href="/partner">Partner</a> •
-        <a href="/privacy">Privacy</a> •
+      <div>© 2026 Nautical Compass • One system • Many lanes</div>
+      <div>
+        <a href="/services">Solutions</a> ·
+        <a href="/lead">General Inquiry</a> ·
+        <a href="/partner">Partner</a> ·
+        <a href="/privacy">Privacy</a> ·
         <a href="/terms">Terms</a>
       </div>
     </div>
   </footer>
+
+  <!-- Ocean audio (must be user-initiated on iOS) -->
+  <audio id="oceanAudio" preload="auto" loop>
+    <source src="/static/ocean.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    (function(){
+      const btn = document.getElementById("soundToggle");
+      const audio = document.getElementById("oceanAudio");
+      let on = false;
+
+      if(!btn || !audio) return;
+
+      btn.addEventListener("click", async () => {
+        try {
+          on = !on;
+          if (on) {
+            await audio.play();
+            btn.textContent = "🔊 Sound: On";
+            btn.setAttribute("aria-pressed","true");
+          } else {
+            audio.pause();
+            btn.textContent = "🔇 Sound: Off";
+            btn.setAttribute("aria-pressed","false");
+          }
+        } catch(e) {
+          // iOS will block if not a real tap; this is already inside click, so usually fine.
+          on = false;
+          btn.textContent = "🔇 Sound: Off";
+          btn.setAttribute("aria-pressed","false");
+        }
+      });
+    })();
+  </script>
 
   {% block scripts %}{% endblock %}
 </body>
