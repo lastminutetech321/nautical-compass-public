@@ -1,18 +1,23 @@
-<!DOCTYPE html>
+<!-- templates/base.html (FULL REPLACE) -->
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
   <title>{% block title %}Nautical Compass{% endblock %}</title>
 
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="stylesheet" href="/static/styles.css" />
+  <!-- Favicon -->
+  <link rel="icon" href="/static/favicon.ico" />
+
+  <!-- ✅ Primary stylesheet (cache-busted) -->
+  <link rel="stylesheet" href="/static/styles.css?v=20260310-1" />
 
   {% block head %}{% endblock %}
 </head>
 
 <body>
-  <!-- Glass Top Nav -->
+  <!-- NAV -->
   <header class="nav glass moist">
     <div class="nav-inner">
       <a class="brand" href="/">
@@ -20,29 +25,47 @@
         <span class="brand-text">Nautical Compass</span>
       </a>
 
-      <nav class="nav-links">
+      <nav class="nav-links" aria-label="Primary">
+        <a href="/hall">Hall</a>
         <a href="/services">Services</a>
         <a href="/dashboards">Dashboards</a>
         <a href="/lead">Lead Intake</a>
         <a href="/partner">Partners</a>
         <a href="/sponsor">Sponsors</a>
-        <a class="tab tab-primary" href="/checkout">Subscribe</a>
+        <a class="tab-primary" href="/checkout">Get Access</a>
       </nav>
     </div>
   </header>
 
-  {% block hero %}{% endblock %}
-
+  <!-- PAGE -->
   <main class="container">
     {% block content %}{% endblock %}
   </main>
 
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-row">
-      <div>© {{ year if year else "" }} Nautical Compass</div>
-      <div class="muted">One system · Many lanes · Built for clarity under pressure</div>
+      <div>
+        © 2026 Nautical Compass<br>
+        <span class="muted">One system • Many lanes • Built for clarity under pressure</span>
+      </div>
+
+      <div class="footer-links">
+        <a href="/services">Solutions</a> •
+        <a href="/lead">General Inquiry</a> •
+        <a href="/partner">Partner</a> •
+        <a href="/privacy">Privacy</a> •
+        <a href="/terms">Terms</a>
+      </div>
     </div>
   </footer>
+
+  <!-- ✅ Global hard override: kill “purple/blue link” look everywhere -->
+  <style>
+    a, a:visited { color: rgba(238,243,255,.90); }
+    a:hover { color: rgba(238,243,255,.98); }
+    a:active { color: rgba(238,243,255,.98); }
+  </style>
 
   {% block scripts %}{% endblock %}
 </body>
