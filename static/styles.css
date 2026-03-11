@@ -128,6 +128,10 @@ a{ color:inherit; text-decoration:none; }
 }
 .tab-primary:hover{ filter:brightness(1.03); }
 
+/* Force ALL links to stay off-white (no neon) */
+a, a:visited { color: rgba(255,255,255,.88); }
+a:hover { color: rgba(255,255,255,.96); }
+
 /* ---------------- HERO (Captain View) ---------------- */
 .hero{
   position:relative;
@@ -200,7 +204,6 @@ a{ color:inherit; text-decoration:none; }
   flex-wrap:wrap;
   margin-top:16px;
 }
-
 .hero-note{
   margin-top:14px;
   display:flex;
@@ -342,6 +345,28 @@ a{ color:inherit; text-decoration:none; }
 
 .btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
 
+/* ---------------- FORMS ---------------- */
+label{ display:block; margin:14px 0 6px; color: var(--muted); font-weight:900; font-size:13px; }
+input, textarea, select{
+  width:100%;
+  padding:12px 14px;
+  border-radius:var(--radius-sm);
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color:var(--text);
+  outline:none;
+  transition:.18s ease;
+}
+textarea{
+  min-height:120px;
+  resize:vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+input:focus, textarea:focus, select:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(184,138,42,.25);
+}
+
 /* ---------------- LISTS ---------------- */
 .clean-list{ padding-left:0; list-style:none; margin:12px 0 0; }
 .clean-list li{
@@ -369,7 +394,7 @@ a{ color:inherit; text-decoration:none; }
   font-size:12px;
 }
 
-/* ---------------- BADGES / FOOTER ---------------- */
+/* ---------------- BADGES / ALERTS ---------------- */
 .badge{
   display:inline-flex;
   padding:6px 10px;
@@ -380,7 +405,17 @@ a{ color:inherit; text-decoration:none; }
   font-weight:900;
   font-size:12px;
 }
+.alert{
+  padding:14px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.05);
+  margin-top:14px;
+}
+.alert.ok{ border-color: rgba(34,197,94,.6); }
+.alert.bad{ border-color: rgba(239,68,68,.6); }
 
+/* ---------------- FOOTER ---------------- */
 .footer{
   max-width:var(--max);
   margin:30px auto 40px;
@@ -395,10 +430,6 @@ a{ color:inherit; text-decoration:none; }
   flex-wrap:wrap;
 }
 
-/* Make textarea readable (optional) */
-textarea{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
 /* =========================
    HALLWAY DOORS (WOW MODE)
    lamp above door + light on click
@@ -487,30 +518,27 @@ textarea{
   box-shadow: 0 0 26px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.14);
 }
 
-/* TEXT (off-white, not harsh blue/purple) */
+/* TEXT */
 .door-title{
   display:block;
   margin-top:18px;
   font-size:18px;
-  font-weight:700;
+  font-weight:900;
   color: rgba(255,255,255,.92);
   transition: text-shadow .2s ease, color .2s ease;
 }
-
 .door-sub{
   display:block;
   margin-top:6px;
   font-size:14px;
   color: rgba(255,255,255,.78);
 }
-
 .door-meta{
   display:block;
   margin-top:10px;
   font-size:12.5px;
   color: rgba(255,255,255,.62);
 }
-
 .door-cta{
   display:inline-block;
   margin-top:12px;
@@ -527,11 +555,3 @@ textarea{
   color: rgba(255,255,255,.98);
   text-shadow: 0 0 22px rgba(255,255,255,.28);
 }
-
-/* Keep links from looking neon */
-a, a:visited { color: rgba(255,255,255,.88); }
-a:hover { color: rgba(255,255,255,.96); }
-
-/* Reduce harsh purple/blue nav link look */
-.nav a{ color: rgba(255,255,255,.82) !important; }
-.nav a:hover{ color: rgba(255,255,255,.95) !important; }
