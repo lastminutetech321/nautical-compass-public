@@ -1,54 +1,34 @@
 (function () {
-  const ACTIVE_CLASS = "door-active";
-
-  function allDoors() {
-    return Array.from(document.querySelectorAll(".door"));
+  function doors() {
+    return Array.from(document.querySelectorAll(".hall-door"));
   }
 
-  function ensureLamp(door) {
-    let lamp = door.querySelector(".lamp");
-    if (!lamp) {
-      lamp = document.createElement("span");
-      lamp.className = "lamp";
-      door.insertBefore(lamp, door.firstChild);
-    }
-    return lamp;
-  }
-
-  function clearActive() {
-    allDoors().forEach((d) => d.classList.remove(ACTIVE_CLASS));
-  }
-
-  function pulseDoor(door) {
-    clearActive();
-    door.classList.add(ACTIVE_CLASS);
-    window.setTimeout(() => door.classList.remove(ACTIVE_CLASS), 900);
-  }
-
-  function addHoverFlicker(door) {
-    let t = null;
-    function flicker() {
-      if (t) window.clearTimeout(t);
-      door.classList.add("door-hover");
-      t = window.setTimeout(() => door.classList.remove("door-hover"), 350);
-    }
-    door.addEventListener("mouseenter", flicker, { passive: true });
-    door.addEventListener("focus", flicker, { passive: true });
-  }
-
-  function wireDoor(door) {
-    ensureLamp(door);
-    addHoverFlicker(door);
-    door.addEventListener("click", () => pulseDoor(door), { passive: true });
-    door.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") pulseDoor(door);
-    });
+  function activate(door) {
+    doors().forEach(d => d.classList.remove("hall-door-active"));
+    door.classList.add("hall-door-active");
+    window.setTimeout(() => {
+      door.classList.remove("hall-door-active");
+    }, 850);
   }
 
   function init() {
-    const doors = allDoors();
-    if (!doors.length) return;
-    doors.forEach(wireDoor);
+    doors().forEach((door) => {
+      door.addEventListener("mouseenter", () => {
+        door.classList.add("hall-door-hover");
+      });
+
+      door.addEventListener("mouseleave", () => {
+        door.classList.remove("hall-door-hover");
+      });
+
+      door.addEventListener("click", () => {
+        activate(door);
+      });
+
+      door.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") activate(door);
+      });
+    });
   }
 
   if (document.readyState === "loading") {
