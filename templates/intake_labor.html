@@ -1,94 +1,11 @@
 {% extends "base.html" %}
-{% block title %}LMT Labor Intake{% endblock %}
+{% block title %}Labor Dispatch • Nautical Compass{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2>LMT — Labor / Tech Intake</h2>
-  <p class="muted">
-    Built for speed: you give the essentials once — then your profile is ready to match.
-    Missing onboarding documents show as risk flags (so you don’t get stuck later).
-  </p>
-
-  <form method="post" action="/intake/labor" class="form">
-    <div class="grid2">
-      <div>
-        <label>Full name</label>
-        <input name="full_name" required>
-      </div>
-      <div>
-        <label>Email</label>
-        <input name="email" type="email" required>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div>
-        <label>Phone</label>
-        <input name="phone">
-      </div>
-      <div>
-        <label>Experience level</label>
-        <input name="experience_level" placeholder="Entry / Mid / Senior">
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div>
-        <label>Home city</label>
-        <input name="home_city">
-      </div>
-      <div>
-        <label>Home state</label>
-        <input name="home_state" placeholder="DC / MD / VA...">
-      </div>
-    </div>
-
-    <label>Roles you can execute</label>
-    <textarea name="roles" rows="3" placeholder="A2, V1, Stagehand, Rigger, LED Tech..."></textarea>
-
-    <label>Certifications (optional)</label>
-    <input name="certs" placeholder="OSHA10, Forklift, Rigging, Audio cert...">
-
-    <hr class="hr">
-
-    <div class="grid2">
-      <label class="check"><input type="checkbox" name="w9_ready"> W-9 ready</label>
-      <label class="check"><input type="checkbox" name="id_ready"> Government ID ready</label>
-    </div>
-
-    <div class="grid2">
-      <label class="check"><input type="checkbox" name="has_llc"> I have an LLC</label>
-      <label class="check"><input type="checkbox" name="has_insurance"> I have pro insurance</label>
-    </div>
-
-    <hr class="hr">
-
-    <label>Transportation</label>
-    <select name="transport_mode">
-      <option value="">Select...</option>
-      <option>Car</option>
-      <option>Rideshare</option>
-      <option>Public Transit</option>
-      <option>Truck / Van</option>
-    </select>
-
-    <div class="grid2">
-      <label class="check"><input type="checkbox" name="can_travel"> Can travel for shows</label>
-      <label class="check"><input type="checkbox" name="last_minute_ok"> Last-minute / emergency calls OK</label>
-    </div>
-
-    <label>Availability (next 7 days)</label>
-    <textarea name="availability_next_7" rows="3" placeholder="Example: Wed-Fri after 5pm, Sat all day, Sun unavailable..."></textarea>
-
-    <label>Preferred rate (optional)</label>
-    <input name="preferred_rate" placeholder="$ / hour or day rate">
-
-    <label>Notes</label>
-    <textarea name="notes" rows="4"></textarea>
-
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/services#av">Back</a>
-    </div>
-  </form>
+<div class="page-shell">
+  <div class="page-card">
+    <h1>Labor Dispatch</h1>
+    <p>This intake lane handles roles, readiness, availability, and routed work opportunities.</p>
+  </div>
 </div>
 {% endblock %}
