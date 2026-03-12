@@ -1,36 +1,46 @@
 {% extends "base.html" %}
-{% block title %}Service Ports{% endblock %}
+{% block title %}Service Ports • Nautical Compass{% endblock %}
 
 {% block content %}
+<section class="ports-scene">
+  <div class="ports-bg"></div>
+  <div class="ports-overlay"></div>
 
-<section class="port-map">
+  <div class="ports-shell">
+    <header class="ports-header">
+      <div class="ports-kicker">SERVICE PORTS</div>
+      <h1 class="ports-title">Navigate the system map</h1>
+      <p class="ports-copy">
+        These ports extend the bridge and hall into actual engines. Each one represents a controlled area
+        of the platform, not a random page.
+      </p>
+    </header>
 
-<h1>Service Ports</h1>
+    <div class="port-grid">
+      <a class="port-card" href="/services">
+        <div class="port-light"></div>
+        <h2>Case Dock</h2>
+        <p>Evidence intake, case assembly, records, structured legal workflow.</p>
+      </a>
 
-<div class="port-grid">
+      <a class="port-card" href="/services">
+        <div class="port-light"></div>
+        <h2>Signal Dock</h2>
+        <p>Alerts, notices, compliance signals, activity coordination, incoming triggers.</p>
+      </a>
 
-<a class="port-node" href="/modules/case-dock">
-<h3>Case Dock</h3>
-<p>Evidence intake and case assembly</p>
-</a>
+      <a class="port-card" href="/services">
+        <div class="port-light"></div>
+        <h2>Equity Engine</h2>
+        <p>Balanced remedy structures, filing support, internal flow governance.</p>
+      </a>
 
-<a class="port-node" href="/modules/signal-dock">
-<h3>Signal Dock</h3>
-<p>Alerts, records and compliance signals</p>
-</a>
-
-<a class="port-node" href="/modules/equity-engine">
-<h3>Equity Engine</h3>
-<p>Equitable remedies and filings</p>
-</a>
-
-<a class="port-node" href="/modules/navigator-ai">
-<h3>Navigator AI</h3>
-<p>System guidance and automation</p>
-</a>
-
-</div>
-
+      <a class="port-card" href="/services">
+        <div class="port-light"></div>
+        <h2>Navigator AI</h2>
+        <p>Guidance layer, orchestration, controlled automation and system logic.</p>
+      </a>
+    </div>
+  </div>
 </section>
-
 {% endblock %}
