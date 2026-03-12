@@ -1,60 +1,46 @@
-{% extends "base.html" %}
-{% block title %}Nautical Compass{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nautical Compass</title>
+<link rel="stylesheet" href="styles.css">
+</head>
 
-{% block content %}
-<section class="hero">
-  <div class="scene">
-    <div class="scene-sky"></div>
-    <div class="scene-water"></div>
-    <div class="scene-boat"></div>
+<body>
 
-    <div class="hero-wrap">
-      <div class="hero-panel glass">
-        <div class="kicker">CAPTAIN'S VIEW</div>
+<header class="radar-bar">
+⚓ Nautical Compass Radar
+<span>Contracts: 12</span>
+<span>Signals: 3</span>
+<span>Dispatch: 5</span>
+</header>
 
-        <h1 class="h-title">
-          One system.<br>
-          Many doors.<br>
-          Zero confusion.
-        </h1>
+<section class="bridge">
 
-        <p class="h-sub">
-          Nautical Compass connects legal navigation, AV & trades coordination,
-          and rapid labor dispatch.
-        </p>
+<h1>Command Bridge</h1>
 
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="/hall">Enter the Hall</a>
-          <a class="btn" href="/services">See Services</a>
-        </div>
-      </div>
+<div class="dashboard">
 
-      <div class="glass-card glass">
-        <div class="card-title">Your Next Step</div>
+<div class="panel">
+<a href="ports/labor-port.html">Labor Port</a>
+</div>
 
-        <div class="lane-grid">
-          <a class="lane" href="/intake/production">
-            <div class="lane-title">Production Company</div>
-            <div class="lane-sub">Request crew</div>
-          </a>
+<div class="panel">
+<a href="ports/legal-port.html">Legal Port</a>
+</div>
 
-          <a class="lane" href="/intake/labor">
-            <div class="lane-title">Labor / Tech</div>
-            <div class="lane-sub">Join dispatch</div>
-          </a>
+<div class="panel">
+<a href="ports/corporate-port.html">Corporate Port</a>
+</div>
 
-          <a class="lane" href="/partner">
-            <div class="lane-title">Partners</div>
-            <div class="lane-sub">Capabilities</div>
-          </a>
+<div class="panel">
+<a href="ports/compliance-port.html">Compliance Port</a>
+</div>
 
-          <a class="lane" href="/sponsor">
-            <div class="lane-title">Sponsors</div>
-            <div class="lane-sub">Brand access</div>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
+
 </section>
-{% endblock %}
+
+<script src="app.js"></script>
+
+</body>
+</html>
