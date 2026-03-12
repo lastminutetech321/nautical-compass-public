@@ -1,4 +1,3 @@
-// hallway.js — lamp above door + light-on-click + title glow
 (function () {
   const ACTIVE_CLASS = "door-active";
 
@@ -40,9 +39,7 @@
   function wireDoor(door) {
     ensureLamp(door);
     addHoverFlicker(door);
-
     door.addEventListener("click", () => pulseDoor(door), { passive: true });
-
     door.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") pulseDoor(door);
     });
