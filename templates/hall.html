@@ -1,55 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Command Hall{% endblock %}
+{% block title %}Command Hall • Nautical Compass{% endblock %}
 
 {% block content %}
+<section class="hall-scene">
+  <div class="hall-bg"></div>
+  <div class="hall-overlay"></div>
 
-<section class="corridor">
+  <div class="hall-shell">
+    <header class="hall-header">
+      <div class="hall-kicker">COMMAND CORRIDOR</div>
+      <h1 class="hall-title">Choose your lane</h1>
+      <p class="hall-copy">
+        The hall carries the bridge theme forward: clean command lighting above,
+        operational access below. Choose a door and move into the correct port or deck.
+      </p>
+    </header>
 
-<div class="corridor-header">
-<h1>Command Hall</h1>
-<p>Select a port or service lane</p>
-</div>
+    <div class="hall-door-grid">
+      <a class="hall-door" href="/services">
+        <span class="door-light"></span>
+        <span class="door-title">Legal Navigation</span>
+        <span class="door-copy">Case Dock, records, disputes, structured document flow</span>
+        <span class="door-cta">Enter Port</span>
+      </a>
 
-<div class="corridor-lanes">
+      <a class="hall-door" href="/intake/production">
+        <span class="door-light"></span>
+        <span class="door-title">Production Command</span>
+        <span class="door-copy">AV requests, show flow, logistics, coordinated routing</span>
+        <span class="door-cta">Open Production</span>
+      </a>
 
-<a class="lane-door" href="/services">
-<div class="lane-light"></div>
-<h2>Legal Navigation</h2>
-<p>Compliance • Records • Contracts</p>
-</a>
+      <a class="hall-door" href="/intake/labor">
+        <span class="door-light"></span>
+        <span class="door-title">Labor Dispatch</span>
+        <span class="door-copy">Roles, readiness, availability, routing opportunities</span>
+        <span class="door-cta">Open Dispatch</span>
+      </a>
 
-<a class="lane-door" href="/intake/production">
-<div class="lane-light"></div>
-<h2>Production Command</h2>
-<p>AV Requests • Crew Routing</p>
-</a>
+      <a class="hall-door" href="/partner">
+        <span class="door-light"></span>
+        <span class="door-title">Partner Port</span>
+        <span class="door-copy">Manufacturers, vendors, regions, coordinated access</span>
+        <span class="door-cta">Open Partner Port</span>
+      </a>
 
-<a class="lane-door" href="/intake/labor">
-<div class="lane-light"></div>
-<h2>Labor Dispatch</h2>
-<p>Roles • Availability • Workflows</p>
-</a>
+      <a class="hall-door" href="/sponsor">
+        <span class="door-light"></span>
+        <span class="door-title">Sponsor Access</span>
+        <span class="door-copy">Structured terms, brand routes, controlled visibility</span>
+        <span class="door-cta">Open Sponsor</span>
+      </a>
 
-<a class="lane-door" href="/partner">
-<div class="lane-light"></div>
-<h2>Partner Port</h2>
-<p>Manufacturers • Vendors</p>
-</a>
-
-<a class="lane-door" href="/sponsor">
-<div class="lane-light"></div>
-<h2>Sponsor Access</h2>
-<p>Brand Placement • Structured Terms</p>
-</a>
-
-<a class="lane-door" href="/dashboards">
-<div class="lane-light"></div>
-<h2>Operations Deck</h2>
-<p>Dashboards • Activity</p>
-</a>
-
-</div>
-
+      <a class="hall-door" href="/dashboards">
+        <span class="door-light"></span>
+        <span class="door-title">Operations Deck</span>
+        <span class="door-copy">Dashboards, signals, flow monitoring, activity view</span>
+        <span class="door-cta">Open Deck</span>
+      </a>
+    </div>
+  </div>
 </section>
-
 {% endblock %}
