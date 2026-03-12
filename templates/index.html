@@ -1,46 +1,65 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Nautical Compass</title>
-<link rel="stylesheet" href="styles.css">
-</head>
+{% extends "base.html" %}
+{% block title %}Bridge • Nautical Compass{% endblock %}
 
-<body>
+{% block content %}
+<section class="bridge-hero">
+  <div class="bridge-scene">
+    <div class="scene-sky"></div>
+    <div class="scene-water"></div>
+    <div class="scene-boat"></div>
+    <div class="scene-overlay"></div>
 
-<header class="radar-bar">
-⚓ Nautical Compass Radar
-<span>Contracts: 12</span>
-<span>Signals: 3</span>
-<span>Dispatch: 5</span>
-</header>
+    <div class="bridge-layout">
+      <section class="bridge-panel glass-panel etched-panel">
+        <div class="bridge-kicker">CAPTAIN'S VIEW</div>
+        <h1 class="bridge-title">One system.<br>Many doors.<br>Zero confusion.</h1>
+        <p class="bridge-copy">
+          Nautical Compass connects legal navigation, partner intake, labor dispatch,
+          production routing, and command oversight through one unified navigation system.
+        </p>
 
-<section class="bridge">
+        <div class="bridge-actions">
+          <a class="action-btn action-btn-primary" href="/hall">Enter the Hall</a>
+          <a class="action-btn" href="/services">Open Service Ports</a>
+        </div>
 
-<h1>Command Bridge</h1>
+        <div class="bridge-status-row">
+          <span class="status-pill">Bridge Active</span>
+          <span class="status-pill">Signals Ready</span>
+          <span class="status-pill">Routes Online</span>
+        </div>
+      </section>
 
-<div class="dashboard">
+      <aside class="bridge-side glass-panel">
+        <div class="side-heading">System Radar</div>
 
-<div class="panel">
-<a href="ports/labor-port.html">Labor Port</a>
-</div>
+        <div class="radar-grid">
+          <div class="radar-card">
+            <div class="radar-title">Command Hall</div>
+            <div class="radar-copy">Department corridor and route selection</div>
+            <a class="radar-link" href="/hall">Open Hall</a>
+          </div>
 
-<div class="panel">
-<a href="ports/legal-port.html">Legal Port</a>
-</div>
+          <div class="radar-card">
+            <div class="radar-title">Service Ports</div>
+            <div class="radar-copy">Case Dock, Signal Dock, Equity, Navigator</div>
+            <a class="radar-link" href="/services">Open Ports</a>
+          </div>
 
-<div class="panel">
-<a href="ports/corporate-port.html">Corporate Port</a>
-</div>
+          <div class="radar-card">
+            <div class="radar-title">Operations Decks</div>
+            <div class="radar-copy">Dashboards and workflow visibility</div>
+            <a class="radar-link" href="/dashboards">Open Decks</a>
+          </div>
 
-<div class="panel">
-<a href="ports/compliance-port.html">Compliance Port</a>
-</div>
-
-</div>
-
+          <div class="radar-card">
+            <div class="radar-title">Lead Intake</div>
+            <div class="radar-copy">New inquiries and guided entry</div>
+            <a class="radar-link" href="/lead">Open Lead</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
 </section>
-
-<script src="app.js"></script>
-
-</body>
-</html>
+{% endblock %}
