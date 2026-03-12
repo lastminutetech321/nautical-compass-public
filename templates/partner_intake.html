@@ -1,39 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Partner • Nautical Compass{% endblock %}
+{% block title %}Partner Port • Nautical Compass{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2>Partner Intake</h2>
-  <p class="muted">Manufacturers, integrators, venues, staffing vendors, insurers, and platform partners.</p>
-
-  <form method="post" action="/partner" class="form">
-    <label>Name</label>
-    <input name="name" required>
-
-    <label>Email</label>
-    <input name="email" type="email" required>
-
-    <label>Company</label>
-    <input name="company">
-
-    <label>Role</label>
-    <input name="role" placeholder="Manufacturer / Venue / Integrator / Sponsor…">
-
-    <label>Product type</label>
-    <input name="product_type" placeholder="LED, Audio, Labor network, Insurance…">
-
-    <label>Website</label>
-    <input name="website">
-
-    <label>Regions</label>
-    <input name="regions" placeholder="DMV, Mid-Atlantic, Nationwide…">
-
-    <label>Message</label>
-    <textarea name="message" rows="5"></textarea>
-
-    <div class="btnrow">
-      <button class="btn btn-primary" type="submit">Submit</button>
-      <a class="btn" href="/services">Back</a>
-    </div>
-  </form>
+<div class="page-shell">
+  <div class="page-card">
+    <h1>Partner Port</h1>
+    <p>Partner intake stays inside the same navigation language and is ready for deeper workflow buildout.</p>
+  </div>
 </div>
 {% endblock %}
