@@ -1,29 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Intake Received • Nautical Compass{% endblock %}
+{% block title %}Lead Received • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>Intake Received</h2>
-  <p class="muted">
-    ✅ Your intake is saved. This is what happens next.
-  </p>
-
-  <div class="alert ok">
-    <strong>Status:</strong> Submitted<br>
-    <strong>Access:</strong> Your token link stays valid until it expires.
-  </div>
-
-  <h3 style="margin-top:16px;">Next Steps</h3>
-  <ol>
-    <li><strong>Review & routing:</strong> Your request is auto-routed into the right rail (strategy, dispute, records, contracts, etc.).</li>
-    <li><strong>Clarify (if needed):</strong> If anything is missing, you’ll be asked for 1–3 specifics (not a long back-and-forth).</li>
-    <li><strong>Build:</strong> The system produces a structured plan + draft packet outline.</li>
-    <li><strong>Deliver:</strong> You receive the next action list + what to upload / what to sign.</li>
-  </ol>
-
-  <div class="btnrow" style="margin-top:16px;">
-    <a class="btn btn-primary" href="/dashboard?token={{ token }}">Back to Dashboard</a>
-    <a class="btn" href="/services">View Services</a>
+<div class="page-shell">
+  <div class="page-card">
+    <h1>Lead Received</h1>
+    <p>Your signal has been received. Return to the hall or continue navigating the platform.</p>
   </div>
 </div>
 {% endblock %}
