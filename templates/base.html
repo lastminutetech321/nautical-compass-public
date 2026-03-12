@@ -10,27 +10,28 @@
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-inner">
+<header class="site-header">
+  <div class="topbar">
     <a class="brand" href="/">
       <span class="brand-badge">NC</span>
-      <span class="brand-text">Nautical Compass</span>
+      <span class="brand-name">Nautical Compass</span>
     </a>
 
-    <nav class="nav-links">
+    <nav class="main-nav">
+      <a href="/">Bridge</a>
       <a href="/hall">Hall</a>
-      <a href="/services">Services</a>
-      <a href="/dashboards">Dashboards</a>
-      <a href="/lead">Lead Intake</a>
-      <a href="/partner">Partners</a>
-      <a href="/sponsor">Sponsors</a>
-      <a class="tab-primary" href="/checkout">Get Access</a>
+      <a href="/services">Ports</a>
+      <a href="/dashboards">Decks</a>
+      <a href="/lead">Lead</a>
+      <a href="/partner">Partner</a>
+      <a href="/sponsor">Sponsor</a>
+      <a class="primary-nav-link" href="/checkout">Get Access</a>
     </nav>
   </div>
 
   <div class="soundbar">
-    <button id="soundToggle" class="soundbtn" type="button" aria-pressed="false">Sound: Off</button>
-    <span class="soundhint">Ocean ambience (tap to enable)</span>
+    <button id="soundToggle" class="sound-button" type="button" aria-pressed="false">Sound: Off</button>
+    <span class="sound-label">Ocean ambience and bridge atmosphere</span>
   </div>
 </header>
 
@@ -42,10 +43,10 @@
   {% block content %}{% endblock %}
 </main>
 
-<footer class="footer">
+<footer class="site-footer">
   <div class="footer-row">
     <div>© 2026 Nautical Compass</div>
-    <div class="muted">One system · Many lanes · Built for clarity under pressure</div>
+    <div class="footer-muted">Bridge to deck operations</div>
   </div>
 </footer>
 
@@ -57,31 +58,32 @@
 
   let on = false;
 
-  function render() {
+  function draw() {
     btn.textContent = on ? "Sound: On" : "Sound: Off";
     btn.setAttribute("aria-pressed", on ? "true" : "false");
   }
 
-  async function setOn(next) {
+  async function setSound(next) {
     on = next;
-    render();
+    draw();
     try {
       if (on) {
-        audio.volume = 0.28;
+        audio.volume = 0.22;
         await audio.play();
       } else {
         audio.pause();
         audio.currentTime = 0;
       }
-    } catch (e) {
+    } catch (err) {
       on = false;
-      render();
+      draw();
     }
   }
 
-  render();
+  draw();
+
   btn.addEventListener("click", function () {
-    setOn(!on);
+    setSound(!on);
   });
 })();
 </script>
