@@ -22,35 +22,35 @@
     <a class="door" role="listitem" data-lane="avpt" href="/intake/production">
       <span class="door-title">AV Production Company (AVPT)</span>
       <span class="door-sub">Create a Job Request → Get Matches → Run the Day</span>
-      <span class="door-meta">Crew requests • call times • truck/liftgate • payroll rails</span>
+      <span class="door-meta">Crew requests • call times • logistics</span>
       <span class="door-cta">Start Production Request</span>
     </a>
 
     <a class="door" role="listitem" data-lane="lmt" href="/intake/labor">
       <span class="door-title">Labor / Tech (LMT)</span>
       <span class="door-sub">Worker Profile → Availability → Routed Opportunities</span>
-      <span class="door-meta">Roles • certs • transport • pay prefs • readiness flags</span>
+      <span class="door-meta">Roles • certs • transport • pay prefs</span>
       <span class="door-cta">Join Labor Pool</span>
     </a>
 
     <a class="door" role="listitem" data-lane="partner" href="/partner">
       <span class="door-title">Partner / Manufacturer</span>
       <span class="door-sub">Capabilities → Regions → Routed Opportunities</span>
-      <span class="door-meta">Vendors • rentals • logistics • staffing partners</span>
+      <span class="door-meta">Vendors • rentals • staffing partners</span>
       <span class="door-cta">Partner Intake</span>
     </a>
 
     <a class="door" role="listitem" data-lane="sponsor" href="/sponsor">
       <span class="door-title">Sponsor Access</span>
       <span class="door-sub">Controlled lane → Clear deliverables → Clean routing</span>
-      <span class="door-meta">Brand placement • preferred access • structured terms</span>
+      <span class="door-meta">Brand placement • preferred access</span>
       <span class="door-cta">View Sponsor Options</span>
     </a>
 
     <a class="door" role="listitem" data-lane="dash" href="/dashboards">
       <span class="door-title">Dashboards</span>
       <span class="door-sub">Choose a dashboard built for your role</span>
-      <span class="door-meta">Public • production • labor • logistics • rentals</span>
+      <span class="door-meta">Public • production • labor • logistics</span>
       <span class="door-cta">Open Dashboards</span>
     </a>
   </div>
@@ -59,6 +59,8 @@
     Tip: tap a door — the lamp turns on and the title glows, then it routes you.
   </div>
 </div>
+{% endblock %}
 
-<script src="/static/hallway.js?v={{ v|default(3) }}"></script>
+{% block scripts %}
+<script src="/static/hallway.js?v={{ v }}"></script>
 {% endblock %}
