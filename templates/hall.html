@@ -1,66 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Hall • Nautical Compass{% endblock %}
+{% block title %}Command Hall{% endblock %}
 
 {% block content %}
-<div class="hall-wrap">
-  <div class="hall-hero">
-    <div class="eyebrow">One hall. Many doors.</div>
-    <h1>Pick your lane</h1>
-    <p class="muted">
-      Each door is a guided intake + routing path. You’ll see what happens next before you submit anything.
-    </p>
-  </div>
 
-  <div class="hall-grid" role="list">
-    <a class="door" role="listitem" data-lane="nc" href="/services">
-      <span class="door-title">Legal / Compliance (NC)</span>
-      <span class="door-sub">Intake → Risk Flags → Next Steps</span>
-      <span class="door-meta">Contracts • disputes • records • document strategy</span>
-      <span class="door-cta">Enter NC</span>
-    </a>
+<section class="corridor">
 
-    <a class="door" role="listitem" data-lane="avpt" href="/intake/production">
-      <span class="door-title">AV Production Company (AVPT)</span>
-      <span class="door-sub">Create a Job Request → Get Matches → Run the Day</span>
-      <span class="door-meta">Crew requests • call times • logistics</span>
-      <span class="door-cta">Start Production Request</span>
-    </a>
-
-    <a class="door" role="listitem" data-lane="lmt" href="/intake/labor">
-      <span class="door-title">Labor / Tech (LMT)</span>
-      <span class="door-sub">Worker Profile → Availability → Routed Opportunities</span>
-      <span class="door-meta">Roles • certs • transport • pay prefs</span>
-      <span class="door-cta">Join Labor Pool</span>
-    </a>
-
-    <a class="door" role="listitem" data-lane="partner" href="/partner">
-      <span class="door-title">Partner / Manufacturer</span>
-      <span class="door-sub">Capabilities → Regions → Routed Opportunities</span>
-      <span class="door-meta">Vendors • rentals • staffing partners</span>
-      <span class="door-cta">Partner Intake</span>
-    </a>
-
-    <a class="door" role="listitem" data-lane="sponsor" href="/sponsor">
-      <span class="door-title">Sponsor Access</span>
-      <span class="door-sub">Controlled lane → Clear deliverables → Clean routing</span>
-      <span class="door-meta">Brand placement • preferred access</span>
-      <span class="door-cta">View Sponsor Options</span>
-    </a>
-
-    <a class="door" role="listitem" data-lane="dash" href="/dashboards">
-      <span class="door-title">Dashboards</span>
-      <span class="door-sub">Choose a dashboard built for your role</span>
-      <span class="door-meta">Public • production • labor • logistics</span>
-      <span class="door-cta">Open Dashboards</span>
-    </a>
-  </div>
-
-  <div class="hall-foot muted">
-    Tip: tap a door — the lamp turns on and the title glows, then it routes you.
-  </div>
+<div class="corridor-header">
+<h1>Command Hall</h1>
+<p>Select a port or service lane</p>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script src="/static/hallway.js?v={{ v }}"></script>
+<div class="corridor-lanes">
+
+<a class="lane-door" href="/services">
+<div class="lane-light"></div>
+<h2>Legal Navigation</h2>
+<p>Compliance • Records • Contracts</p>
+</a>
+
+<a class="lane-door" href="/intake/production">
+<div class="lane-light"></div>
+<h2>Production Command</h2>
+<p>AV Requests • Crew Routing</p>
+</a>
+
+<a class="lane-door" href="/intake/labor">
+<div class="lane-light"></div>
+<h2>Labor Dispatch</h2>
+<p>Roles • Availability • Workflows</p>
+</a>
+
+<a class="lane-door" href="/partner">
+<div class="lane-light"></div>
+<h2>Partner Port</h2>
+<p>Manufacturers • Vendors</p>
+</a>
+
+<a class="lane-door" href="/sponsor">
+<div class="lane-light"></div>
+<h2>Sponsor Access</h2>
+<p>Brand Placement • Structured Terms</p>
+</a>
+
+<a class="lane-door" href="/dashboards">
+<div class="lane-light"></div>
+<h2>Operations Deck</h2>
+<p>Dashboards • Activity</p>
+</a>
+
+</div>
+
+</section>
+
 {% endblock %}
