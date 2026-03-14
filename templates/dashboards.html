@@ -1,30 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Director / Operator Dashboard{% endblock %}
+{% block title %}Operations Deck • Nautical Compass{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2>Director / Operator Dashboard</h2>
-  <p class="muted">Internal oversight: rails, people, scoreboards, routing.</p>
-
-  {% if not admin_ok %}
-    <div class="alert bad">
-      <strong>Admin key missing.</strong><br>
-      This page needs <code>?k=ADMIN_KEY</code> in the URL to open admin dashboards.
-      <div class="muted" style="margin-top:8px;">
-        Example: <code>/dashboards?k=YOUR_ADMIN_KEY</code>
-      </div>
-    </div>
-  {% endif %}
-
-  <div class="btnrow" style="margin-top:14px;">
-    <a class="btn btn-primary" href="/dash/production{% if k %}?k={{k}}{% endif %}">Production Dashboard</a>
-    <a class="btn btn-primary" href="/dash/labor{% if k %}?k={{k}}{% endif %}">Labor Dashboard</a>
-    <a class="btn" href="/dash/public">Public Dashboard</a>
+<div class="page-shell">
+  <div class="page-card">
+    <h1>Operations Deck</h1>
+    <p>
+      This deck is live and ready for the next module pass. It now sits inside the same command language as the bridge,
+      hall, and service ports.
+    </p>
   </div>
-
-  <hr class="hr">
-
-  <p class="muted">
-    Tip: Keep this link saved with your key: <code>/dashboards?k=ADMIN_KEY</code>.
-  </p>
 </div>
 {% endblock %}
