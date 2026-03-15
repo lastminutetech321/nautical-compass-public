@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Signal Dock • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+    <h1>Signal Dock</h1>
+    <p>
+      Signal Dock is the alert, notice, and compliance room. It is where you watch timing, incoming issues,
+      response windows, and procedural triggers so nothing slips past the system.
+    </p>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>Deadlines</h3>
+        <p>Track critical dates, deadlines, filing windows, response timing, and escalation points.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Notice Flow</h3>
+        <p>Map incoming letters, administrative notices, denials, threats, and process changes.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Risk Flags</h3>
+        <p>Surface standing problems, missing evidence, weak points, jurisdiction gaps, and timing danger.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Action Routing</h3>
+        <p>Push the matter toward Equity Engine or Navigator AI once signals are identified and sorted.</p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="/modules/equity-engine">Go to Equity Engine</a>
+      <a class="action-btn" href="/services">Back to Service Ports</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
