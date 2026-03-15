@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Submission Received • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">SYSTEM CONFIRMATION</div>
+    <h1>{{ title }}</h1>
+    <p>{{ summary }}</p>
+
+    <div class="progress-wrap">
+      <div class="progress-topline">
+        <span>Step {{ step_number }} of {{ step_total }}</span>
+        <span>{{ step_name }}</span>
+      </div>
+      <div class="progress-bar">
+        <div
+          class="progress-bar-fill"
+          style="width: {{ (step_number / step_total) * 100 }}%;"
+        ></div>
+      </div>
+    </div>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>Record ID</h3>
+        <p>{{ record_id }}</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Files Received</h3>
+        <p>{{ file_count }}</p>
+      </div>
+
+      <div class="module-box module-box-full">
+        <h3>What Happens Next</h3>
+        <p>{{ why_next }}</p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="{{ next_href }}">
+        {{ next_label }}
+      </a>
+      <a class="action-btn" href="{{ return_href }}">
+        {{ return_label }}
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
