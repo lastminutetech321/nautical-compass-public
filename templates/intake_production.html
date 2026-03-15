@@ -1,42 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Production Command • Nautical Compass{% endblock %}
+{% block title %}Production Command{% endblock %}
 
 {% block content %}
 <div class="page-shell">
-  <div class="page-card">
-    <div class="module-kicker">AV PLUS TRADES</div>
-    <h1>Production Command</h1>
-    <p>
-      This intake lane is for production companies, event operators, and clients who need crew,
-      labor, logistics, and route coordination.
-    </p>
 
-    <div class="module-grid">
-      <div class="module-box">
-        <h3>Request Labor</h3>
-        <p>Open the lane for crew requests, dates, locations, skill needs, and show structure.</p>
-      </div>
+<h1>Production Request</h1>
 
-      <div class="module-box">
-        <h3>Route Logistics</h3>
-        <p>Track load-in details, timing, venue flow, equipment support, and crew requirements.</p>
-      </div>
+<form method="post" enctype="multipart/form-data">
 
-      <div class="module-box">
-        <h3>Company Profile</h3>
-        <p>Set up the production company side so the platform can route work correctly later.</p>
-      </div>
+<label>Company</label>
+<input type="text" name="company" required>
 
-      <div class="module-box">
-        <h3>Next Route</h3>
-        <p>Return to Services or move to Labor Dispatch when workforce intake needs to be cross-checked.</p>
-      </div>
-    </div>
+<label>Contact</label>
+<input type="text" name="contact" required>
 
-    <div class="module-actions">
-      <a class="action-btn action-btn-primary" href="/intake/labor">Go to Labor Dispatch</a>
-      <a class="action-btn" href="/services">Back to Service Ports</a>
-    </div>
-  </div>
+<label>Event Location</label>
+<input type="text" name="event_location" required>
+
+<label>Crew Needed</label>
+<textarea name="crew_needed" required></textarea>
+
+<label>Upload Documents</label>
+<input type="file" name="documents" multiple>
+
+<button type="submit">Submit Request</button>
+
+</form>
+
 </div>
 {% endblock %}
