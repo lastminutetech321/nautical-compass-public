@@ -79,3 +79,24 @@ def intake_labor(request: Request):
 @app.get("/checkout")
 def checkout():
     return JSONResponse({"ok": True, "message": "Checkout placeholder active."})
+
+
+# ---------- NC LEGAL MODULES ----------
+@app.get("/modules/case-dock", response_class=HTMLResponse)
+def case_dock(request: Request):
+    return render(request, "case_dock.html")
+
+
+@app.get("/modules/signal-dock", response_class=HTMLResponse)
+def signal_dock(request: Request):
+    return render(request, "signal_dock.html")
+
+
+@app.get("/modules/equity-engine", response_class=HTMLResponse)
+def equity_engine(request: Request):
+    return render(request, "equity_engine.html")
+
+
+@app.get("/modules/navigator-ai", response_class=HTMLResponse)
+def navigator_ai(request: Request):
+    return render(request, "navigator_ai.html")
