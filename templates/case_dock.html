@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Case Dock • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+    <h1>Case Dock</h1>
+    <p>
+      This is the legal intake and case-assembly room. Use this module as the working lane for building,
+      organizing, and routing a matter before it moves deeper into the system.
+    </p>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>Case Intake</h3>
+        <p>Collect the matter summary, facts, timeline, parties, injuries, requests, and jurisdiction.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Document Stack</h3>
+        <p>Track uploaded records, notices, exhibits, correspondence, and supporting material.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Issue Framing</h3>
+        <p>Break the problem into standing, capacity, evidence, procedure, remedy, and risk questions.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Next Route</h3>
+        <p>Move the matter onward into Signal Dock, Equity Engine, or Navigator AI for the next pass.</p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="/modules/signal-dock">Go to Signal Dock</a>
+      <a class="action-btn" href="/services">Back to Service Ports</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
