@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Navigator AI • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+
+    <div class="legal-rail">
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
+
+    <h1>Navigator AI</h1>
+    <p>
+      <strong>You are in Step 4 of 4.</strong>
+      Navigator AI is the recommendation and output room. It should not leave you at a dead end.
+      It should tell you what route the system sees, what to do next, and what documents were generated.
+    </p>
+
+    {% if case_context %}
+      <div class="next-step-callout">
+        <h3>Recommended Route</h3>
+        <p><strong>{{ case_context.route.route_name }}</strong></p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Current Matter</h3>
+          <p><strong>{{ case_context.matter_title }}</strong></p>
+        </div>
+
+        <div class="module-box">
+          <h3>Jurisdiction</h3>
+          <p>{{ case_context.jurisdiction }}</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Why This Route</h3>
+          <p>• {{ case_context.route.rationale[0] }}</p>
+          <p>• {{ case_context.route.rationale[1] }}</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Recommended Next Actions</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.route.next_actions %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
