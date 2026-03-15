@@ -1,11 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Labor Dispatch • Nautical Compass{% endblock %}
+{% block title %}Labor Dispatch{% endblock %}
 
 {% block content %}
 <div class="page-shell">
-  <div class="page-card">
-    <h1>Labor Dispatch</h1>
-    <p>This intake lane handles roles, readiness, availability, and routed work opportunities.</p>
-  </div>
+
+<h1>Tech Signup</h1>
+
+<form method="post" enctype="multipart/form-data">
+
+<label>Name</label>
+<input type="text" name="name" required>
+
+<label>Role</label>
+<input type="text" name="role" required>
+
+<label>Availability</label>
+<input type="text" name="availability" required>
+
+<label>Resume / Certifications</label>
+<input type="file" name="resume" required>
+
+<button type="submit">Join Dispatch</button>
+
+</form>
+
 </div>
 {% endblock %}
