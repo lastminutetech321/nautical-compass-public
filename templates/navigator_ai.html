@@ -40,3 +40,58 @@
   </div>
 </div>
 {% endblock %}
+        <div class="module-box module-box-full">
+          <h3>Auto-Generated Case Folder</h3>
+          <p>
+            Server folder created:
+            <strong>{{ case_context.case_folder_name }}</strong>
+          </p>
+          <p>
+            Case metadata is also stored in the local database so the system has both
+            file storage and structured record storage.
+          </p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Generated Documents</h3>
+          <ul class="doc-list">
+            {% for doc in case_context.generated_docs %}
+              <li>
+                <a href="{{ doc.url }}" target="_blank" rel="noopener">
+                  {{ doc.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/services">
+          Back to Service Ports
+        </a>
+        <a class="action-btn" href="/hall">
+          Return to Command Hall
+        </a>
+      </div>
+    {% else %}
+      <div class="next-step-callout">
+        <h3>No Active Case Context Found</h3>
+        <p>
+          Navigator AI needs a Case Dock submission first so it has something to
+          analyze and route.
+        </p>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">
+          Start at Case Dock
+        </a>
+        <a class="action-btn" href="/services">
+          Back to Service Ports
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
