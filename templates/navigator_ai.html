@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Navigator AI • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+    <h1>Navigator AI</h1>
+    <p>
+      Navigator AI is the guidance and orchestration room. It sits above the other modules and helps determine
+      what should happen next based on the signals, structure, remedy logic, and route chosen below.
+    </p>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>System Guidance</h3>
+        <p>Translate module findings into next actions, next documents, next routes, and next questions.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Cross-Module Logic</h3>
+        <p>Pull insights from Case Dock, Signal Dock, and Equity Engine into one coherent system pass.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Priority Awareness</h3>
+        <p>Surface what matters first: missing records, urgent deadlines, standing gaps, or route changes.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Command Return</h3>
+        <p>Push the user back to the correct module, port, or deck instead of leaving them at a dead end.</p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="/hall">Return to Command Hall</a>
+      <a class="action-btn" href="/services">Back to Service Ports</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
