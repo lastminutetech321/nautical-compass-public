@@ -4,7 +4,7 @@
   }
 
   function activate(door) {
-    doors().forEach(d => d.classList.remove("hall-door-active"));
+    doors().forEach((d) => d.classList.remove("hall-door-active"));
     door.classList.add("hall-door-active");
     window.setTimeout(() => {
       door.classList.remove("hall-door-active");
