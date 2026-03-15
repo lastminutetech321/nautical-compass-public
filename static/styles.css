@@ -696,3 +696,143 @@ body main > .page-shell{
     font-size:36px;
   }
 }
+/* =========================
+   LEGAL FLOW + SUCCESS UI
+   Add to bottom of styles.css
+   ========================= */
+
+.module-box-full{
+  grid-column:1 / -1;
+}
+
+.legal-rail{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:4px 0 18px;
+}
+
+.legal-step{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+}
+
+.legal-step-active{
+  border-color:rgba(200,148,51,.50);
+  background:rgba(200,148,51,.12);
+}
+
+.legal-step-complete{
+  border-color:rgba(224,180,92,.30);
+  background:rgba(224,180,92,.08);
+}
+
+.legal-step-num{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  font-size:12px;
+  font-weight:800;
+}
+
+.legal-step-active .legal-step-num{
+  background:linear-gradient(135deg,var(--bronze),var(--bronze-soft));
+  color:#07111d;
+}
+
+.legal-step-label{
+  font-size:13px;
+  font-weight:700;
+}
+
+.legal-step-line{
+  width:28px;
+  height:1px;
+  background:rgba(255,255,255,.14);
+}
+
+.legal-step-line-complete{
+  background:rgba(224,180,92,.45);
+}
+
+.next-step-callout{
+  margin-top:12px;
+  padding:16px 18px;
+  border-radius:16px;
+  background:rgba(200,148,51,.10);
+  border:1px solid rgba(200,148,51,.24);
+}
+
+.next-step-callout h3{
+  margin:0 0 8px;
+}
+
+.next-step-callout p{
+  margin:0;
+}
+
+.progress-wrap{
+  margin-top:18px;
+}
+
+.progress-topline{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  font-size:13px;
+  color:#fff;
+  margin-bottom:8px;
+}
+
+.progress-bar{
+  width:100%;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  overflow:hidden;
+}
+
+.progress-bar-fill{
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--bronze),var(--bronze-soft));
+}
+
+.recommendation-list,
+.doc-list{
+  margin:0;
+  padding-left:18px;
+  color:var(--muted);
+}
+
+.doc-list a{
+  color:var(--bronze-soft);
+  text-decoration:underline;
+}
+
+@media (max-width: 980px){
+  .module-box-full{
+    grid-column:auto;
+  }
+}
+
+@media (max-width: 720px){
+  .legal-rail{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .legal-step-line{
+    display:none;
+  }
+}
