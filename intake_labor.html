@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Labor Dispatch • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">AV PLUS TRADES</div>
+    <h1>Labor Dispatch</h1>
+    <p>
+      This intake lane is for techs, crew, operators, and workforce members joining the system.
+      It should be treated as an operator lane, not partner intake.
+    </p>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>Role Intake</h3>
+        <p>Capture position type, core skill set, certifications, experience, and market fit.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Availability</h3>
+        <p>Track dates, readiness, travel ability, transport, and preferred job flow.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Dispatch Readiness</h3>
+        <p>Determine whether the worker is immediately route-ready or still needs profile completion.</p>
+      </div>
+
+      <div class="module-box">
+        <h3>Next Route</h3>
+        <p>Return to Services or move to Partner Port if the user is actually a company or manufacturer.</p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="/partner">Go to Partner Port</a>
+      <a class="action-btn" href="/services">Back to Service Ports</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
