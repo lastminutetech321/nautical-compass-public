@@ -1,11 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Received • Nautical Compass{% endblock %}
+{% block title %}Partner Port{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2>Partner request received.</h2>
-  <p class="muted">We’ll review your fit and respond with next steps.</p>
-  <div class="btnrow">
-    <a class="btn btn-primary" href="/services">Back to Solutions</a>
-  </div>
+<div class="page-shell">
+
+<h1>Partner Intake</h1>
+
+<form method="post" enctype="multipart/form-data">
+
+<label>Company</label>
+<input type="text" name="company" required>
+
+<label>Service Type</label>
+<input type="text" name="service_type" required>
+
+<label>Territory</label>
+<input type="text" name="territory" required>
+
+<label>Upload Capability Documents</label>
+<input type="file" name="documents" multiple>
+
+<button type="submit">Submit Partner Application</button>
+
+</form>
+
 </div>
 {% endblock %}
