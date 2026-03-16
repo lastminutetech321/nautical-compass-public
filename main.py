@@ -2,7 +2,7 @@ from pathlib import Path
 import time
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -73,9 +73,9 @@ def sponsor(request: Request):
     return render(request, "sponsor.html")
 
 
-@app.get("/checkout")
-def checkout():
-    return JSONResponse({"ok": True, "message": "Checkout placeholder active."})
+@app.get("/checkout", response_class=HTMLResponse)
+def checkout(request: Request):
+    return render(request, "checkout.html")
 
 
 @app.get("/partner", response_class=HTMLResponse)
