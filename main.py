@@ -743,10 +743,10 @@ async def case_dock_submit(
             "why_next": "Case Dock gathers the facts and files. Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
         },
     )
-
 # =========================
-# main.py — MODULE 5B
-# Legal intake + legal module routes
+# main.py — MODULE 5 CLEAN
+# Legal module routes
+# Keep this block only
 # =========================
 
 @app.get("/modules/case-dock", response_class=HTMLResponse)
