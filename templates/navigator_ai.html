@@ -5,51 +5,69 @@
 <div class="page-shell">
   <div class="page-card">
     <div class="module-kicker">NC LEGAL MODULE</div>
+
+    <div class="legal-rail">
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
+
     <h1>Navigator AI</h1>
     <p>
-      Navigator AI is the guidance and orchestration room. It sits above the other modules and helps determine
-      what should happen next based on the signals, structure, remedy logic, and route chosen below.
+      <strong>You are in Step 4 of 4.</strong>
+      Navigator AI is the recommendation room. In this recovery build,
+      it is set to safe mode until deeper case logic is turned back on.
     </p>
 
-    <div class="module-grid">
-      <div class="module-box">
-        <h3>System Guidance</h3>
-        <p>Translate module findings into next actions, next documents, next routes, and next questions.</p>
+    {% if case_context %}
+      <div class="next-step-callout">
+        <h3>Recommended Route</h3>
+        <p><strong>{{ case_context.route.route_name }}</strong></p>
       </div>
 
-      <div class="module-box">
-        <h3>Cross-Module Logic</h3>
-        <p>Pull insights from Case Dock, Signal Dock, and Equity Engine into one coherent system pass.</p>
-      </div>
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Current Matter</h3>
+          <p><strong>{{ case_context.matter_title }}</strong></p>
+        </div>
 
-      <div class="module-box">
-        <h3>Priority Awareness</h3>
-        <p>Surface what matters first: missing records, urgent deadlines, standing gaps, or route changes.</p>
-      </div>
+        <div class="module-box">
+          <h3>Jurisdiction</h3>
+          <p>{{ case_context.jurisdiction }}</p>
+        </div>
 
-      <div class="module-box">
-        <h3>Command Return</h3>
-        <p>Push the user back to the correct module, port, or deck instead of leaving them at a dead end.</p>
-      </div>
-    </div>
-
-    <div class="module-actions">
-      <a class="action-btn action-btn-primary" href="/hall">Return to Command Hall</a>
-      <a class="action-btn" href="/services">Back to Service Ports</a>
-    </div>
-  </div>
-</div>
-{% endblock %}
         <div class="module-box module-box-full">
-          <h3>Auto-Generated Case Folder</h3>
-          <p>
-            Server folder created:
-            <strong>{{ case_context.case_folder_name }}</strong>
-          </p>
-          <p>
-            Case metadata is also stored in the local database so the system has both
-            file storage and structured record storage.
-          </p>
+          <h3>Why This Route</h3>
+          <p>• {{ case_context.route.rationale[0] }}</p>
+          <p>• {{ case_context.route.rationale[1] }}</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Recommended Next Actions</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.route.next_actions %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
         </div>
 
         <div class="module-box module-box-full">
@@ -78,17 +96,29 @@
       <div class="next-step-callout">
         <h3>No Active Case Context Found</h3>
         <p>
-          Navigator AI needs a Case Dock submission first so it has something to
-          analyze and route.
+          Navigator AI is currently running in safe recovery mode.
+          The legal flow is working, but deep recommendation logic has not been turned back on yet.
         </p>
       </div>
 
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Current Status</h3>
+          <p>The user successfully completed the guided legal flow.</p>
+        </div>
+
+        <div class="module-box">
+          <h3>Next Practical Move</h3>
+          <p>Return to Services or Command Hall until Navigator logic is restored.</p>
+        </div>
+      </div>
+
       <div class="module-actions">
-        <a class="action-btn action-btn-primary" href="/modules/case-dock">
-          Start at Case Dock
-        </a>
-        <a class="action-btn" href="/services">
+        <a class="action-btn action-btn-primary" href="/services">
           Back to Service Ports
+        </a>
+        <a class="action-btn" href="/hall">
+          Return to Command Hall
         </a>
       </div>
     {% endif %}
