@@ -19,6 +19,7 @@ templates = Jinja2Templates(directory="templates")
 PRODUCTION_SUBMISSIONS = []
 LABOR_SUBMISSIONS = []
 PARTNER_SUBMISSIONS = []
+LAST_CASE_CONTEXT = None
 
 
 def render(request: Request, template: str, data=None):
@@ -268,6 +269,97 @@ async def case_dock_submit(
     requested_outcome: str = Form(""),
     files: list[UploadFile] = File(default=[]),
 ):
+    global LAST_CASE_CONTEXT
+
+    text = " ".join(
+        [
+            matter_title,
+            issue_type,
+            summary,
+            requested_outcome,
+            timeline,
+        ]
+    ).lower()
+
+    route_name = "General Civil / Administrative Review"
+    rationale = [
+        "The intake does not yet point to a single narrow category.",
+        "The system should preserve the facts, organize timing, and prepare the next action path.",
+    ]
+    next_actions = [
+        "Refine the timeline and isolate the triggering event.",
+        "List all notices, denials, and deadlines in order.",
+        "Prepare a first-pass demand or complaint outline.",
+    ]
+
+    if any(word in text for word in ["fcra", "credit report", "equifax", "experian", "transunion"]):
+        route_name = "FCRA / Consumer Reporting Route"
+        rationale = [
+            "The intake suggests inaccurate reporting or consumer-report harm.",
+            "This route benefits from dispute chronology, bureau tracking, and correction strategy.",
+        ]
+        next_actions = [
+            "Identify each bureau or furnisher involved.",
+            "List dispute dates and responses in order.",
+            "Prepare a demand letter and complaint outline.",
+        ]
+
+    elif any(word in text for word in ["eviction", "landlord", "tenant", "lease", "housing"]):
+        route_name = "Housing / Tenant Defense Route"
+        rationale = [
+            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
+            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
+        ]
+        next_actions = [
+            "Identify hearing dates, notice dates, and payment history.",
+            "Preserve all notices and lease language.",
+            "Prepare a housing defense outline.",
+        ]
+
+    elif any(word in text for word in ["employment", "termination", "discrimination", "retaliation", "eeoc"]):
+        route_name = "Employment / EEOC Route"
+        rationale = [
+            "The intake suggests an employment-related conflict or adverse action.",
+            "This route benefits from chronology, preserved communications, and agency timing awareness.",
+        ]
+        next_actions = [
+            "List every adverse action and date in sequence.",
+            "Preserve emails, writeups, and notices.",
+            "Prepare an administrative filing outline.",
+        ]
+
+    elif any(word in text for word in ["contract", "breach", "agreement", "invoice", "payment"]):
+        route_name = "Contract / Payment Enforcement Route"
+        rationale = [
+            "The intake appears to involve an agreement, nonpayment, or broken obligation.",
+            "This route depends on contract terms, breach dates, and remedy framing.",
+        ]
+        next_actions = [
+            "Identify the contract and breach point.",
+            "Preserve invoices, communications, and performance proof.",
+            "Prepare a breach summary and demand letter.",
+        ]
+
+    LAST_CASE_CONTEXT = {
+        "matter_title": matter_title,
+        "jurisdiction": jurisdiction,
+        "issue_type": issue_type,
+        "parties": parties,
+        "timeline": timeline,
+        "summary": summary,
+        "requested_outcome": requested_outcome,
+        "route": {
+            "route_name": route_name,
+            "rationale": rationale,
+            "next_actions": next_actions,
+        },
+        "generated_docs": [
+            {"title": "Case Summary Memorandum", "url": "#"},
+            {"title": "Evidence Index", "url": "#"},
+            {"title": "Complaint / Demand Outline", "url": "#"},
+        ],
+    }
+
     return render(
         request,
         "submission_success.html",
@@ -300,4 +392,4 @@ def equity_engine(request: Request):
 
 @app.get("/modules/navigator-ai", response_class=HTMLResponse)
 def navigator_ai(request: Request):
-    return render(request, "navigator_ai.html", {"case_context": None})
+    return render(request, "navigator_ai.html", {"case_context": LAST_CASE_CONTEXT})
