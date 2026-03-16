@@ -34,8 +34,9 @@
     <h1>Navigator AI</h1>
     <p>
       <strong>You are in Step 4 of 4.</strong>
-      Navigator AI is the recommendation and output room. It should not leave you at a dead end.
-      It should tell you what route the system sees, what to do next, and what documents were generated.
+      Navigator AI is the recommendation room. In this build it returns the
+      recommended route, why that route fits, the next actions, and the document
+      set that will be generated next.
     </p>
 
     {% if case_context %}
@@ -69,3 +70,58 @@
             {% endfor %}
           </ul>
         </div>
+
+        <div class="module-box module-box-full">
+          <h3>Generated Documents</h3>
+          <div class="module-grid">
+            {% for doc in case_context.generated_docs %}
+              <div class="module-box">
+                <h3>{{ doc.title }}</h3>
+                <p>Pending generation in the next build step.</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/services">
+          Back to Service Ports
+        </a>
+        <a class="action-btn" href="/hall">
+          Return to Command Hall
+        </a>
+      </div>
+    {% else %}
+      <div class="next-step-callout">
+        <h3>No Active Case Context Found</h3>
+        <p>
+          Navigator AI needs a fresh Case Dock submission in the current live
+          session so it has a matter to analyze and route.
+        </p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Current Status</h3>
+          <p>No live matter is loaded into Navigator AI yet.</p>
+        </div>
+
+        <div class="module-box">
+          <h3>Next Practical Move</h3>
+          <p>Return to Case Dock, submit a matter, then follow the legal flow back here.</p>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">
+          Start at Case Dock
+        </a>
+        <a class="action-btn" href="/services">
+          Back to Service Ports
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
