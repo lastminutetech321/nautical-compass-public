@@ -69,21 +69,25 @@
             {% endfor %}
           </ul>
         </div>
+      </div>
 
-        <div class="module-box module-box-full">
-          <h3>Generated Documents</h3>
-          <div class="module-grid">
-            {% for doc in case_context.generated_docs %}
-              <div class="module-box">
-                <h3>{{ doc.title }}</h3>
-                <p>Pending generation in the next build step.</p>
-              </div>
-            {% endfor %}
-          </div>
+      <div class="module-box module-box-full" style="margin-top: 18px;">
+        <h3>Generated Documents</h3>
+        <p style="margin-bottom: 14px;">
+          These are the documents this route is preparing to generate next.
+        </p>
+
+        <div class="module-grid" style="margin-top: 0;">
+          {% for doc in case_context.generated_docs %}
+            <div class="module-box">
+              <h3>{{ doc.title }}</h3>
+              <p>Pending generation in the next build step.</p>
+            </div>
+          {% endfor %}
         </div>
       </div>
 
-      <div class="module-actions">
+      <div class="module-actions" style="margin-top: 24px; padding-top: 6px;">
         <a class="action-btn action-btn-primary" href="/services">Back to Service Ports</a>
         <a class="action-btn" href="/hall">Return to Command Hall</a>
       </div>
