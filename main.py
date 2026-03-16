@@ -271,15 +271,15 @@ async def case_dock_submit(
 ):
     global LAST_CASE_CONTEXT
 
-    text = " ".join(
-        [
-            matter_title,
-            issue_type,
-            summary,
-            requested_outcome,
-            timeline,
-        ]
-    ).lower()
+    fields = [
+        matter_title or "",
+        issue_type or "",
+        summary or "",
+        requested_outcome or "",
+        timeline or "",
+        parties or "",
+    ]
+    text = " ".join(fields).lower()
 
     route_name = "General Civil / Administrative Review"
     rationale = [
@@ -292,7 +292,28 @@ async def case_dock_submit(
         "Prepare a first-pass demand or complaint outline.",
     ]
 
-    if any(word in text for word in ["fcra", "credit report", "equifax", "experian", "transunion"]):
+    auto_keywords = [
+        "car", "vehicle", "auto", "buick", "repo", "repossession",
+        "finance", "loan", "car note", "title loan", "dealer", "lender",
+    ]
+    fcra_keywords = ["fcra", "credit report", "equifax", "experian", "transunion"]
+    employment_keywords = ["employment", "termination", "discrimination", "retaliation", "eeoc", "workplace"]
+    contract_keywords = ["contract", "breach", "agreement", "invoice", "payment"]
+    housing_keywords = ["eviction", "landlord", "tenant", "lease", "housing", "rent"]
+
+    if any(word in text for word in auto_keywords):
+        route_name = "Auto Finance / Repossession Route"
+        rationale = [
+            "The intake appears tied to a vehicle, financing dispute, repossession risk, or lender conduct.",
+            "This route benefits from payment history, contract terms, notice review, and lender communication tracking.",
+        ]
+        next_actions = [
+            "Identify the lender, contract terms, payment history, and any default or repossession notices.",
+            "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
+            "Prepare an auto-finance dispute summary and demand outline.",
+        ]
+
+    elif any(word in text for word in fcra_keywords):
         route_name = "FCRA / Consumer Reporting Route"
         rationale = [
             "The intake suggests inaccurate reporting or consumer-report harm.",
@@ -304,19 +325,7 @@ async def case_dock_submit(
             "Prepare a demand letter and complaint outline.",
         ]
 
-    elif any(word in text for word in ["eviction", "landlord", "tenant", "lease", "housing"]):
-        route_name = "Housing / Tenant Defense Route"
-        rationale = [
-            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
-            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
-        ]
-        next_actions = [
-            "Identify hearing dates, notice dates, and payment history.",
-            "Preserve all notices and lease language.",
-            "Prepare a housing defense outline.",
-        ]
-
-    elif any(word in text for word in ["employment", "termination", "discrimination", "retaliation", "eeoc"]):
+    elif any(word in text for word in employment_keywords):
         route_name = "Employment / EEOC Route"
         rationale = [
             "The intake suggests an employment-related conflict or adverse action.",
@@ -328,7 +337,7 @@ async def case_dock_submit(
             "Prepare an administrative filing outline.",
         ]
 
-    elif any(word in text for word in ["contract", "breach", "agreement", "invoice", "payment"]):
+    elif any(word in text for word in contract_keywords):
         route_name = "Contract / Payment Enforcement Route"
         rationale = [
             "The intake appears to involve an agreement, nonpayment, or broken obligation.",
@@ -338,6 +347,18 @@ async def case_dock_submit(
             "Identify the contract and breach point.",
             "Preserve invoices, communications, and performance proof.",
             "Prepare a breach summary and demand letter.",
+        ]
+
+    elif any(word in text for word in housing_keywords):
+        route_name = "Housing / Tenant Defense Route"
+        rationale = [
+            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
+            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
+        ]
+        next_actions = [
+            "Identify hearing dates, notice dates, and payment history.",
+            "Preserve all notices and lease language.",
+            "Prepare a housing defense outline.",
         ]
 
     LAST_CASE_CONTEXT = {
@@ -354,9 +375,9 @@ async def case_dock_submit(
             "next_actions": next_actions,
         },
         "generated_docs": [
-            {"title": "Case Summary Memorandum", "url": "#"},
-            {"title": "Evidence Index", "url": "#"},
-            {"title": "Complaint / Demand Outline", "url": "#"},
+            {"title": "Case Summary Memorandum"},
+            {"title": "Evidence Index"},
+            {"title": "Complaint / Demand Outline"},
         ],
     }
 
