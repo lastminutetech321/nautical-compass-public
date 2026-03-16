@@ -1,173 +1,153 @@
-@app.post("/modules/case-dock")
-async def case_dock_submit(
-    request: Request,
-    matter_title: str = Form(""),
-    jurisdiction: str = Form(""),
-    issue_type: str = Form(""),
-    parties: str = Form(""),
-    timeline: str = Form(""),
-    summary: str = Form(""),
-    requested_outcome: str = Form(""),
-    files: list[UploadFile] = File(default=[]),
-):
-    global LAST_CASE_CONTEXT
+{% extends "base.html" %}
+{% block title %}Case Dock • Nautical Compass{% endblock %}
 
-    fields = [
-        matter_title or "",
-        issue_type or "",
-        summary or "",
-        requested_outcome or "",
-        timeline or "",
-        parties or "",
-    ]
-    text = " ".join(fields).lower()
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
 
-    route_name = "General Civil / Administrative Review"
-    rationale = [
-        "The intake does not yet point to a single narrow category.",
-        "The system should preserve the facts, organize timing, and prepare the next action path.",
-    ]
-    next_actions = [
-        "Refine the timeline and isolate the triggering event.",
-        "List all notices, denials, and deadlines in order.",
-        "Prepare a first-pass demand or complaint outline.",
-    ]
-    generated_docs = [
-        {"title": "Case Intake Summary"},
-        {"title": "Evidence Index"},
-        {"title": "Demand / Complaint Outline"},
-    ]
+    <div class="legal-rail">
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    auto_keywords = [
-        "car", "vehicle", "auto", "buick", "repo", "repossession",
-        "finance", "loan", "car note", "title loan", "dealer", "lender",
-    ]
-    fcra_keywords = ["fcra", "credit report", "equifax", "experian", "transunion"]
-    employment_keywords = ["employment", "termination", "discrimination", "retaliation", "eeoc", "workplace"]
-    contract_keywords = ["contract", "breach", "agreement", "invoice", "payment"]
-    housing_keywords = ["eviction", "landlord", "tenant", "lease", "housing", "rent"]
+      <div class="legal-step">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    if any(word in text for word in auto_keywords):
-        route_name = "Auto Finance / Repossession Route"
-        rationale = [
-            "The intake appears tied to a vehicle, financing dispute, repossession risk, or lender conduct.",
-            "This route benefits from payment history, contract terms, notice review, and lender communication tracking.",
-        ]
-        next_actions = [
-            "Identify the lender, contract terms, payment history, and any default or repossession notices.",
-            "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
-            "Prepare an auto-finance dispute summary and demand outline.",
-        ]
-        generated_docs = [
-            {"title": "Auto Finance Dispute Summary"},
-            {"title": "Payment / Default Timeline"},
-            {"title": "Repossession Notice Review"},
-            {"title": "Lender Demand Outline"},
-        ]
+      <div class="legal-step">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    elif any(word in text for word in fcra_keywords):
-        route_name = "FCRA / Consumer Reporting Route"
-        rationale = [
-            "The intake suggests inaccurate reporting or consumer-report harm.",
-            "This route benefits from dispute chronology, bureau tracking, and correction strategy.",
-        ]
-        next_actions = [
-            "Identify each bureau or furnisher involved.",
-            "List dispute dates and responses in order.",
-            "Prepare a demand letter and complaint outline.",
-        ]
-        generated_docs = [
-            {"title": "FCRA Dispute Summary"},
-            {"title": "Consumer Report Error Index"},
-            {"title": "Dispute Timeline"},
-            {"title": "FCRA Demand / Complaint Outline"},
-        ]
+      <div class="legal-step">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
 
-    elif any(word in text for word in employment_keywords):
-        route_name = "Employment / EEOC Route"
-        rationale = [
-            "The intake suggests an employment-related conflict or adverse action.",
-            "This route benefits from chronology, preserved communications, and agency timing awareness.",
-        ]
-        next_actions = [
-            "List every adverse action and date in sequence.",
-            "Preserve emails, writeups, and notices.",
-            "Prepare an administrative filing outline.",
-        ]
-        generated_docs = [
-            {"title": "Employment Matter Summary"},
-            {"title": "Adverse Action Timeline"},
-            {"title": "Workplace Evidence Index"},
-            {"title": "EEOC / Employment Filing Outline"},
-        ]
+    <h1>Case Dock</h1>
+    <p>
+      <strong>You are in Step 1 of 4.</strong>
+      Enter the matter details, identify what the dispute is actually about,
+      and move the case into the guided legal flow.
+    </p>
 
-    elif any(word in text for word in contract_keywords):
-        route_name = "Contract / Payment Enforcement Route"
-        rationale = [
-            "The intake appears to involve an agreement, nonpayment, or broken obligation.",
-            "This route depends on contract terms, breach dates, and remedy framing.",
-        ]
-        next_actions = [
-            "Identify the contract and breach point.",
-            "Preserve invoices, communications, and performance proof.",
-            "Prepare a breach summary and demand letter.",
-        ]
-        generated_docs = [
-            {"title": "Contract Dispute Summary"},
-            {"title": "Breach Timeline"},
-            {"title": "Invoice / Payment Evidence Index"},
-            {"title": "Demand for Payment / Breach Outline"},
-        ]
+    <div class="next-step-callout">
+      <h3>What This Room Does</h3>
+      <p>
+        Case Dock gathers the core facts, parties, timeline, requested outcome,
+        and supporting files. After submit, the system moves the matter into
+        Signal Dock for notice, deadline, and trigger review.
+      </p>
+    </div>
 
-    elif any(word in text for word in housing_keywords):
-        route_name = "Housing / Tenant Defense Route"
-        rationale = [
-            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
-            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
-        ]
-        next_actions = [
-            "Identify hearing dates, notice dates, and payment history.",
-            "Preserve all notices and lease language.",
-            "Prepare a housing defense outline.",
-        ]
-        generated_docs = [
-            {"title": "Housing Defense Summary"},
-            {"title": "Notice / Rent Timeline"},
-            {"title": "Lease and Notice Index"},
-            {"title": "Tenant Defense Outline"},
-        ]
+    <form
+      class="intake-form"
+      method="post"
+      action="/modules/case-dock"
+      enctype="multipart/form-data"
+    >
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="matter_title">Matter Title</label>
+          <input
+            id="matter_title"
+            name="matter_title"
+            type="text"
+            placeholder="Example: Buick Car Note Dispute"
+            required
+          >
+        </div>
 
-    LAST_CASE_CONTEXT = {
-        "matter_title": matter_title,
-        "jurisdiction": jurisdiction,
-        "issue_type": issue_type,
-        "parties": parties,
-        "timeline": timeline,
-        "summary": summary,
-        "requested_outcome": requested_outcome,
-        "route": {
-            "route_name": route_name,
-            "rationale": rationale,
-            "next_actions": next_actions,
-        },
-        "generated_docs": generated_docs,
-    }
+        <div class="form-field">
+          <label for="jurisdiction">Jurisdiction</label>
+          <input
+            id="jurisdiction"
+            name="jurisdiction"
+            type="text"
+            placeholder="Example: Michigan"
+            required
+          >
+        </div>
 
-    return render(
-        request,
-        "submission_success.html",
-        {
-            "title": "Case Dock Intake Received",
-            "summary": "Your case was received and staged for the next legal step.",
-            "return_href": "/services",
-            "return_label": "Back to Service Ports",
-            "next_href": "/modules/signal-dock",
-            "next_label": "Continue to Signal Dock",
-            "record_id": 1,
-            "file_count": len(files),
-            "step_number": 1,
-            "step_total": 4,
-            "step_name": "Case Dock",
-            "why_next": "Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
-        },
-    )
+        <div class="form-field">
+          <label for="issue_type">Issue Type</label>
+          <input
+            id="issue_type"
+            name="issue_type"
+            type="text"
+            placeholder="Example: Auto finance / repossession"
+            required
+          >
+        </div>
+
+        <div class="form-field">
+          <label for="requested_outcome">Requested Outcome</label>
+          <input
+            id="requested_outcome"
+            name="requested_outcome"
+            type="text"
+            placeholder="Example: Stop repossession and correct account status"
+            required
+          >
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="parties">Parties</label>
+          <textarea
+            id="parties"
+            name="parties"
+            rows="3"
+            placeholder="List the people, agencies, lenders, landlords, employers, companies, or bureaus involved."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="timeline">Timeline</label>
+          <textarea
+            id="timeline"
+            name="timeline"
+            rows="4"
+            placeholder="Enter the timeline in order: agreement date, missed payment, notice date, dispute date, hearing date, denial date, etc."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="summary">Summary</label>
+          <textarea
+            id="summary"
+            name="summary"
+            rows="6"
+            placeholder="Explain what happened, what the dispute is really about, what notices were received, and why relief is needed."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="files">Upload Files</label>
+          <input id="files" name="files" type="file" multiple>
+          <small>
+            Upload notices, agreements, statements, screenshots, letters, reports,
+            payment history, court papers, or other supporting records.
+          </small>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <button class="action-btn action-btn-primary" type="submit">
+          Submit Case Intake
+        </button>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
