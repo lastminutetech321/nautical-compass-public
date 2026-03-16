@@ -1,121 +1,100 @@
-@app.post("/modules/case-dock")
-async def case_dock_submit(
-    request: Request,
-    matter_title: str = Form(""),
-    jurisdiction: str = Form(""),
-    issue_type: str = Form(""),
-    parties: str = Form(""),
-    timeline: str = Form(""),
-    summary: str = Form(""),
-    requested_outcome: str = Form(""),
-    files: list[UploadFile] = File(default=[]),
-):
-    global LAST_CASE_CONTEXT
+{% extends "base.html" %}
+{% block title %}Case Dock • Nautical Compass{% endblock %}
 
-    text = " ".join(
-        [
-            matter_title,
-            issue_type,
-            summary,
-            requested_outcome,
-            timeline,
-        ]
-    ).lower()
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
 
-    route_name = "General Civil / Administrative Review"
-    rationale = [
-        "The intake does not yet point to a single narrow category.",
-        "The system should preserve the facts, organize timing, and prepare the next action path.",
-    ]
-    next_actions = [
-        "Refine the timeline and isolate the triggering event.",
-        "List all notices, denials, and deadlines in order.",
-        "Prepare a first-pass demand or complaint outline.",
-    ]
+    <div class="legal-rail">
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    if any(word in text for word in ["fcra", "credit report", "equifax", "experian", "transunion"]):
-        route_name = "FCRA / Consumer Reporting Route"
-        rationale = [
-            "The intake suggests inaccurate reporting or consumer-report harm.",
-            "This route benefits from dispute chronology, bureau tracking, and correction strategy.",
-        ]
-        next_actions = [
-            "Identify each bureau or furnisher involved.",
-            "List dispute dates and responses in order.",
-            "Prepare a demand letter and complaint outline.",
-        ]
+      <div class="legal-step">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    elif any(word in text for word in ["eviction", "landlord", "tenant", "lease", "housing"]):
-        route_name = "Housing / Tenant Defense Route"
-        rationale = [
-            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
-            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
-        ]
-        next_actions = [
-            "Identify hearing dates, notice dates, and payment history.",
-            "Preserve all notices and lease language.",
-            "Prepare a housing defense outline.",
-        ]
+      <div class="legal-step">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line"></div>
 
-    elif any(word in text for word in ["employment", "termination", "discrimination", "retaliation", "eeoc"]):
-        route_name = "Employment / EEOC Route"
-        rationale = [
-            "The intake suggests an employment-related conflict or adverse action.",
-            "This route benefits from chronology, preserved communications, and agency timing awareness.",
-        ]
-        next_actions = [
-            "List every adverse action and date in sequence.",
-            "Preserve emails, writeups, and notices.",
-            "Prepare an administrative filing outline.",
-        ]
+      <div class="legal-step">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
 
-    elif any(word in text for word in ["contract", "breach", "agreement", "invoice", "payment"]):
-        route_name = "Contract / Payment Enforcement Route"
-        rationale = [
-            "The intake appears to involve an agreement, nonpayment, or broken obligation.",
-            "This route depends on contract terms, breach dates, and remedy framing.",
-        ]
-        next_actions = [
-            "Identify the contract and breach point.",
-            "Preserve invoices, communications, and performance proof.",
-            "Prepare a breach summary and demand letter.",
-        ]
+    <h1>Case Dock</h1>
+    <p>
+      <strong>You are in Step 1 of 4.</strong>
+      Enter the matter details and move the case into the guided legal flow.
+    </p>
 
-    LAST_CASE_CONTEXT = {
-        "matter_title": matter_title,
-        "jurisdiction": jurisdiction,
-        "issue_type": issue_type,
-        "parties": parties,
-        "timeline": timeline,
-        "summary": summary,
-        "requested_outcome": requested_outcome,
-        "route": {
-            "route_name": route_name,
-            "rationale": rationale,
-            "next_actions": next_actions,
-        },
-        "generated_docs": [
-            {"title": "Case Summary Memorandum", "url": "#"},
-            {"title": "Evidence Index", "url": "#"},
-            {"title": "Complaint / Demand Outline", "url": "#"},
-        ],
-    }
+    <div class="next-step-callout">
+      <h3>Next Step After Submit</h3>
+      <p>
+        Signal Dock is next because it reviews deadlines, notices, triggers,
+        and risk signals before remedy analysis.
+      </p>
+    </div>
 
-    return render(
-        request,
-        "submission_success.html",
-        {
-            "title": "Case Dock Intake Received",
-            "summary": "Your case was received and staged for the next legal step.",
-            "return_href": "/services",
-            "return_label": "Back to Service Ports",
-            "next_href": "/modules/signal-dock",
-            "next_label": "Continue to Signal Dock",
-            "record_id": 1,
-            "file_count": len(files),
-            "step_number": 1,
-            "step_total": 4,
-            "step_name": "Case Dock",
-            "why_next": "Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
-        },
-    )
+    <form class="intake-form" method="post" action="/modules/case-dock" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="matter_title">Matter Title</label>
+          <input id="matter_title" name="matter_title" type="text" required>
+        </div>
+
+        <div class="form-field">
+          <label for="jurisdiction">Jurisdiction</label>
+          <input id="jurisdiction" name="jurisdiction" type="text" required>
+        </div>
+
+        <div class="form-field">
+          <label for="issue_type">Issue Type</label>
+          <input id="issue_type" name="issue_type" type="text" required>
+        </div>
+
+        <div class="form-field">
+          <label for="requested_outcome">Requested Outcome</label>
+          <input id="requested_outcome" name="requested_outcome" type="text" required>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="parties">Parties</label>
+          <textarea id="parties" name="parties" rows="3" required></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="timeline">Timeline</label>
+          <textarea id="timeline" name="timeline" rows="4" required></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="summary">Summary</label>
+          <textarea id="summary" name="summary" rows="5" required></textarea>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="files">Upload Files</label>
+          <input id="files" name="files" type="file" multiple>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <button class="action-btn action-btn-primary" type="submit">
+          Submit Case Intake
+        </button>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
