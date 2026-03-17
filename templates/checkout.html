@@ -7,29 +7,57 @@
     <div class="module-kicker">ACCESS PORT</div>
     <h1>Get Access</h1>
     <p>
-      This access page is now live as a visual port instead of a JSON placeholder.
-      Payment and subscription wiring can be attached here next.
+      Choose a subscription lane. Connect your Stripe payment links in environment
+      variables so each plan button redirects to hosted checkout.
     </p>
 
     <div class="module-grid">
       <div class="module-box">
-        <h3>Legal Navigation</h3>
-        <p>Access guided legal flow, intake, and route tools.</p>
+        <h3>Legal Basic</h3>
+        <p>Starter access to guided legal intake and route tools.</p>
+        <div class="module-actions">
+          <a class="action-btn action-btn-primary" href="/checkout/legal_basic">Choose Legal Basic</a>
+        </div>
       </div>
 
       <div class="module-box">
-        <h3>Operations Access</h3>
-        <p>Enter ports, decks, and workflow modules across the platform.</p>
+        <h3>Legal Pro</h3>
+        <p>Expanded legal workflow access for deeper matter building.</p>
+        <div class="module-actions">
+          <a class="action-btn action-btn-primary" href="/checkout/legal_pro">Choose Legal Pro</a>
+        </div>
+      </div>
+
+      <div class="module-box">
+        <h3>Operations Basic</h3>
+        <p>Access to ports, decks, and core workflow modules.</p>
+        <div class="module-actions">
+          <a class="action-btn action-btn-primary" href="/checkout/ops_basic">Choose Operations Basic</a>
+        </div>
+      </div>
+
+      <div class="module-box">
+        <h3>Operations Pro</h3>
+        <p>Extended operations access for deeper ecosystem use.</p>
+        <div class="module-actions">
+          <a class="action-btn action-btn-primary" href="/checkout/ops_pro">Choose Operations Pro</a>
+        </div>
       </div>
 
       <div class="module-box module-box-full">
-        <h3>Next Build Step</h3>
-        <p>Attach Stripe checkout, subscription tiers, or gated access logic to this page.</p>
+        <h3>Stripe Setup</h3>
+        <p>
+          Add these DigitalOcean environment variables to activate hosted checkout:
+          <br><strong>STRIPE_LINK_LEGAL_BASIC</strong>
+          <br><strong>STRIPE_LINK_LEGAL_PRO</strong>
+          <br><strong>STRIPE_LINK_OPS_BASIC</strong>
+          <br><strong>STRIPE_LINK_OPS_PRO</strong>
+        </p>
       </div>
     </div>
 
     <div class="module-actions">
-      <a class="action-btn action-btn-primary" href="/services">Go to Services</a>
+      <a class="action-btn" href="/services">Back to Services</a>
       <a class="action-btn" href="/">Back to Bridge</a>
     </div>
   </div>
