@@ -7,51 +7,33 @@
     <div class="module-kicker">ACCESS PORT</div>
     <h1>Get Access</h1>
     <p>
-      Choose a subscription lane. Connect your Stripe payment links in environment
-      variables so each plan button redirects to hosted checkout.
+      Choose the correct access lane. Entry Access is the first paid step for case submission.
+      Further Action Required is the second tier when the matter needs deeper work.
     </p>
 
     <div class="module-grid">
       <div class="module-box">
-        <h3>Legal Basic</h3>
-        <p>Starter access to guided legal intake and route tools.</p>
+        <h3>Entry Access — $25</h3>
+        <p>Submit the case into NC/JE and begin guided route review.</p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/legal_basic">Choose Legal Basic</a>
+          <a class="action-btn action-btn-primary" href="/checkout/entry_access">Choose Entry Access</a>
         </div>
       </div>
 
       <div class="module-box">
-        <h3>Legal Pro</h3>
-        <p>Expanded legal workflow access for deeper matter building.</p>
+        <h3>Further Action Required — $135</h3>
+        <p>Advance to the next legal tier when deeper action, expanded drafting, or next-stage work is needed.</p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/legal_pro">Choose Legal Pro</a>
-        </div>
-      </div>
-
-      <div class="module-box">
-        <h3>Operations Basic</h3>
-        <p>Access to ports, decks, and core workflow modules.</p>
-        <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/ops_basic">Choose Operations Basic</a>
-        </div>
-      </div>
-
-      <div class="module-box">
-        <h3>Operations Pro</h3>
-        <p>Extended operations access for deeper ecosystem use.</p>
-        <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/ops_pro">Choose Operations Pro</a>
+          <a class="action-btn action-btn-primary" href="/checkout/further_action">Choose Further Action</a>
         </div>
       </div>
 
       <div class="module-box module-box-full">
         <h3>Stripe Setup</h3>
         <p>
-          Add these DigitalOcean environment variables to activate hosted checkout:
-          <br><strong>STRIPE_LINK_LEGAL_BASIC</strong>
-          <br><strong>STRIPE_LINK_LEGAL_PRO</strong>
-          <br><strong>STRIPE_LINK_OPS_BASIC</strong>
-          <br><strong>STRIPE_LINK_OPS_PRO</strong>
+          Add these DigitalOcean environment variables for hosted checkout:
+          <br><strong>STRIPE_LINK_ENTRY_ACCESS</strong>
+          <br><strong>STRIPE_LINK_FURTHER_ACTION</strong>
         </p>
       </div>
     </div>
