@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Draft Packet • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+    <h1>Draft Packet</h1>
+
+    {% if case_context %}
+      <div class="next-step-callout">
+        <h3>Packet Route</h3>
+        <p><strong>{{ case_context.route.route_name }}</strong></p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Matter</h3>
+          <p><strong>{{ case_context.matter_title }}</strong></p>
+        </div>
+
+        <div class="module-box">
+          <h3>Jurisdiction</h3>
+          <p>{{ case_context.jurisdiction }}</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Draft Summary</h3>
+          <p>{{ case_context.summary }}</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Draft Document Set</h3>
+          <ul class="recommendation-list">
+            {% for doc in case_context.generated_docs %}
+              <li>{{ doc.title }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Draft Action Outline</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.route.next_actions %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Immediate Use</h3>
+          <p>
+            This packet is the first working build of the matter. It gives the user a route,
+            a labeled document set, and the first action outline before printable exports are added.
+          </p>
+        </div>
+      </div>
+
+      <div class="module-actions" style="margin-top: 24px;">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">Add More Facts</a>
+        <a class="action-btn" href="/modules/navigator-ai">Back to Navigator AI</a>
+      </div>
+    {% else %}
+      <div class="next-step-callout">
+        <h3>No Draft Context Found</h3>
+        <p>Start in Case Dock first so the system has a live matter to build into a packet.</p>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">Start at Case Dock</a>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
