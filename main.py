@@ -291,6 +291,11 @@ async def case_dock_submit(
         "List all notices, denials, and deadlines in order.",
         "Prepare a first-pass demand or complaint outline.",
     ]
+    generated_docs = [
+        {"title": "Case Intake Summary"},
+        {"title": "Evidence Index"},
+        {"title": "Demand / Complaint Outline"},
+    ]
 
     auto_keywords = [
         "car", "vehicle", "auto", "buick", "repo", "repossession",
@@ -312,6 +317,12 @@ async def case_dock_submit(
             "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
             "Prepare an auto-finance dispute summary and demand outline.",
         ]
+        generated_docs = [
+            {"title": "Auto Finance Dispute Summary"},
+            {"title": "Payment / Default Timeline"},
+            {"title": "Repossession Notice Review"},
+            {"title": "Lender Demand Outline"},
+        ]
 
     elif any(word in text for word in fcra_keywords):
         route_name = "FCRA / Consumer Reporting Route"
@@ -323,6 +334,12 @@ async def case_dock_submit(
             "Identify each bureau or furnisher involved.",
             "List dispute dates and responses in order.",
             "Prepare a demand letter and complaint outline.",
+        ]
+        generated_docs = [
+            {"title": "FCRA Dispute Summary"},
+            {"title": "Consumer Report Error Index"},
+            {"title": "Dispute Timeline"},
+            {"title": "FCRA Demand / Complaint Outline"},
         ]
 
     elif any(word in text for word in employment_keywords):
@@ -336,6 +353,12 @@ async def case_dock_submit(
             "Preserve emails, writeups, and notices.",
             "Prepare an administrative filing outline.",
         ]
+        generated_docs = [
+            {"title": "Employment Matter Summary"},
+            {"title": "Adverse Action Timeline"},
+            {"title": "Workplace Evidence Index"},
+            {"title": "EEOC / Employment Filing Outline"},
+        ]
 
     elif any(word in text for word in contract_keywords):
         route_name = "Contract / Payment Enforcement Route"
@@ -348,6 +371,12 @@ async def case_dock_submit(
             "Preserve invoices, communications, and performance proof.",
             "Prepare a breach summary and demand letter.",
         ]
+        generated_docs = [
+            {"title": "Contract Dispute Summary"},
+            {"title": "Breach Timeline"},
+            {"title": "Invoice / Payment Evidence Index"},
+            {"title": "Demand for Payment / Breach Outline"},
+        ]
 
     elif any(word in text for word in housing_keywords):
         route_name = "Housing / Tenant Defense Route"
@@ -359,6 +388,12 @@ async def case_dock_submit(
             "Identify hearing dates, notice dates, and payment history.",
             "Preserve all notices and lease language.",
             "Prepare a housing defense outline.",
+        ]
+        generated_docs = [
+            {"title": "Housing Defense Summary"},
+            {"title": "Notice / Rent Timeline"},
+            {"title": "Lease and Notice Index"},
+            {"title": "Tenant Defense Outline"},
         ]
 
     LAST_CASE_CONTEXT = {
@@ -374,11 +409,7 @@ async def case_dock_submit(
             "rationale": rationale,
             "next_actions": next_actions,
         },
-        "generated_docs": [
-            {"title": "Case Summary Memorandum"},
-            {"title": "Evidence Index"},
-            {"title": "Complaint / Demand Outline"},
-        ],
+        "generated_docs": generated_docs,
     }
 
     return render(
@@ -414,3 +445,8 @@ def equity_engine(request: Request):
 @app.get("/modules/navigator-ai", response_class=HTMLResponse)
 def navigator_ai(request: Request):
     return render(request, "navigator_ai.html", {"case_context": LAST_CASE_CONTEXT})
+
+
+@app.get("/modules/draft-packet", response_class=HTMLResponse)
+def draft_packet(request: Request):
+    return render(request, "draft_packet.html", {"case_context": LAST_CASE_CONTEXT})
