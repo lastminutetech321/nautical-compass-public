@@ -447,6 +447,7 @@ async def case_dock_submit(
             "next_actions": next_actions,
         },
         "generated_docs": generated_docs,
+        "further_action_required": True,
     }
 
     return render(
