@@ -35,7 +35,7 @@
     <p>
       <strong>You are in Step 4 of 4.</strong>
       Navigator AI returns the recommended route, why that route fits, the next actions,
-      and the document set that will be generated next.
+      and the first draft packet the system can build from this matter.
     </p>
 
     {% if case_context %}
@@ -71,25 +71,26 @@
         </div>
       </div>
 
-      <div class="module-box module-box-full" style="margin-top: 18px;">
+      <div class="module-box module-box-full" style="margin-top: 18px; padding-bottom: 10px;">
         <h3>Generated Documents</h3>
         <p style="margin-bottom: 14px;">
-          These are the documents this route is preparing to generate next.
+          These are the route-specific drafts the system is prepared to build next.
         </p>
 
         <div class="module-grid" style="margin-top: 0;">
           {% for doc in case_context.generated_docs %}
             <div class="module-box">
               <h3>{{ doc.title }}</h3>
-              <p>Pending generation in the next build step.</p>
+              <p>Ready for draft-packet generation.</p>
             </div>
           {% endfor %}
         </div>
       </div>
 
-      <div class="module-actions" style="margin-top: 24px; padding-top: 6px;">
-        <a class="action-btn action-btn-primary" href="/services">Back to Service Ports</a>
-        <a class="action-btn" href="/hall">Return to Command Hall</a>
+      <div class="module-actions" style="margin-top: 28px; padding-top: 8px;">
+        <a class="action-btn action-btn-primary" href="/modules/draft-packet">Generate Draft Packet</a>
+        <a class="action-btn" href="/modules/case-dock">Add More Facts</a>
+        <a class="action-btn" href="/modules/case-dock">Upload More Evidence</a>
       </div>
     {% else %}
       <div class="next-step-callout">
