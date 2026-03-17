@@ -56,10 +56,26 @@
         </div>
       </div>
 
-      <div class="module-actions" style="margin-top: 24px;">
-        <a class="action-btn action-btn-primary" href="/modules/case-dock">Add More Facts</a>
-        <a class="action-btn" href="/modules/navigator-ai">Back to Navigator AI</a>
-      </div>
+      {% if case_context.further_action_required %}
+        <div class="next-step-callout" style="margin-top: 18px;">
+          <h3>Further Action Required</h3>
+          <p>
+            This matter is marked for deeper work. Advance to the next tier when you are ready
+            to continue expanded drafting or next-stage action.
+          </p>
+        </div>
+
+        <div class="module-actions" style="margin-top: 24px;">
+          <a class="action-btn action-btn-primary" href="/checkout/further_action">Advance to Further Action — $135</a>
+          <a class="action-btn" href="/modules/case-dock">Add More Facts</a>
+          <a class="action-btn" href="/modules/navigator-ai">Back to Navigator AI</a>
+        </div>
+      {% else %}
+        <div class="module-actions" style="margin-top: 24px;">
+          <a class="action-btn action-btn-primary" href="/modules/case-dock">Add More Facts</a>
+          <a class="action-btn" href="/modules/navigator-ai">Back to Navigator AI</a>
+        </div>
+      {% endif %}
     {% else %}
       <div class="next-step-callout">
         <h3>No Draft Context Found</h3>
