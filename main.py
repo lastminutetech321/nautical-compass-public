@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import time
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
@@ -27,6 +28,15 @@ def render(request: Request, template: str, data=None):
     ctx["request"] = request
     ctx["v"] = int(time.time())
     return templates.TemplateResponse(template, ctx)
+
+
+def get_checkout_links():
+    return {
+        "legal_basic": os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip(),
+        "legal_pro": os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip(),
+        "ops_basic": os.getenv("STRIPE_LINK_OPS_BASIC", "").strip(),
+        "ops_pro": os.getenv("STRIPE_LINK_OPS_PRO", "").strip(),
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -75,7 +85,38 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
-    return render(request, "checkout.html")
+    return render(
+        request,
+        "checkout.html",
+        {
+            "checkout_links": get_checkout_links(),
+        },
+    )
+
+
+@app.get("/checkout/{plan_key}", response_class=HTMLResponse)
+def checkout_plan(request: Request, plan_key: str):
+    links = get_checkout_links()
+    checkout_url = links.get(plan_key, "")
+
+    plan_titles = {
+        "legal_basic": "Legal Basic",
+        "legal_pro": "Legal Pro",
+        "ops_basic": "Operations Basic",
+        "ops_pro": "Operations Pro",
+    }
+
+    if checkout_url:
+        return RedirectResponse(checkout_url, status_code=302)
+
+    return render(
+        request,
+        "subscription_setup_needed.html",
+        {
+            "plan_key": plan_key,
+            "plan_title": plan_titles.get(plan_key, "Selected Plan"),
+        },
+    )
 
 
 @app.get("/partner", response_class=HTMLResponse)
