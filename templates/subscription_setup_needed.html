@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Subscription Setup Needed • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">ACCESS PORT</div>
+    <h1>Subscription Setup Needed</h1>
+    <p>
+      The selected plan is visible in the app, but its Stripe checkout link is not
+      configured yet.
+    </p>
+
+    <div class="module-grid">
+      <div class="module-box">
+        <h3>Selected Plan</h3>
+        <p><strong>{{ plan_title }}</strong></p>
+      </div>
+
+      <div class="module-box module-box-full">
+        <h3>What To Add</h3>
+        <p>
+          Set the matching hosted Stripe payment link in the app environment,
+          then redeploy.
+        </p>
+      </div>
+    </div>
+
+    <div class="module-actions">
+      <a class="action-btn action-btn-primary" href="/checkout">Back to Access Plans</a>
+      <a class="action-btn" href="/">Back to Bridge</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
