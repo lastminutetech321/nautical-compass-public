@@ -8,6 +8,16 @@
     <h1>{{ title }}</h1>
     <p>{{ summary }}</p>
 
+    <div class="progress-wrap">
+      <div class="progress-topline">
+        <span>Step {{ step_number }} of {{ step_total }}</span>
+        <span>{{ step_name }}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: {{ (step_number / step_total) * 100 }}%;"></div>
+      </div>
+    </div>
+
     <div class="module-grid">
       <div class="module-box">
         <h3>Record ID</h3>
