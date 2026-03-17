@@ -32,10 +32,8 @@ def render(request: Request, template: str, data=None):
 
 def get_checkout_links():
     return {
-        "legal_basic": os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip(),
-        "legal_pro": os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip(),
-        "ops_basic": os.getenv("STRIPE_LINK_OPS_BASIC", "").strip(),
-        "ops_pro": os.getenv("STRIPE_LINK_OPS_PRO", "").strip(),
+        "entry_access": os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip(),
+        "further_action": os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip(),
     }
 
 
@@ -100,10 +98,8 @@ def checkout_plan(request: Request, plan_key: str):
     checkout_url = links.get(plan_key, "")
 
     plan_titles = {
-        "legal_basic": "Legal Basic",
-        "legal_pro": "Legal Pro",
-        "ops_basic": "Operations Basic",
-        "ops_pro": "Operations Pro",
+        "entry_access": "Entry Access — $25",
+        "further_action": "Further Action Required — $135",
     }
 
     if checkout_url:
