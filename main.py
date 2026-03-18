@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
+import json
+import shutil
+import sqlite3
 import time
+from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -17,10 +21,60 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOAD_ROOT)), name="uploads")
 
 templates = Jinja2Templates(directory="templates")
 
+DB_PATH = Path("nautical_compass.db")
+
+CASE_DOCK_UPLOADS = UPLOAD_ROOT / "case_dock"
+PRODUCTION_UPLOADS = UPLOAD_ROOT / "production"
+LABOR_UPLOADS = UPLOAD_ROOT / "labor"
+PARTNER_UPLOADS = UPLOAD_ROOT / "partner"
+CASE_FILES_ROOT = UPLOAD_ROOT / "cases"
+
+for folder in [
+    CASE_DOCK_UPLOADS,
+    PRODUCTION_UPLOADS,
+    LABOR_UPLOADS,
+    PARTNER_UPLOADS,
+    CASE_FILES_ROOT,
+]:
+    folder.mkdir(parents=True, exist_ok=True)
+
 PRODUCTION_SUBMISSIONS = []
 LABOR_SUBMISSIONS = []
 PARTNER_SUBMISSIONS = []
-LAST_CASE_CONTEXT = None
+
+
+def db_conn():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    with db_conn() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                matter_title TEXT,
+                jurisdiction TEXT,
+                issue_type TEXT,
+                parties TEXT,
+                timeline TEXT,
+                summary TEXT,
+                requested_outcome TEXT,
+                created_at INTEGER,
+                case_folder_name TEXT,
+                route_name TEXT,
+                route_json TEXT,
+                files_json TEXT,
+                generated_docs_json TEXT
+            )
+            """
+        )
+        conn.commit()
+
+
+init_db()
 
 
 def render(request: Request, template: str, data=None):
@@ -35,15 +89,395 @@ def get_checkout_links():
         os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
     )
-
     further_action = (
         os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
     )
-
     return {
         "entry_access": entry_access,
         "further_action": further_action,
+    }
+
+
+def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
+    saved_files = []
+
+    for file in files:
+        if not file or not file.filename:
+            continue
+
+        safe_name = f"{int(time.time())}_{uuid4().hex}_{file.filename}"
+        out_path = target_dir / safe_name
+
+        with out_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        saved_files.append(
+            {
+                "name": file.filename,
+                "stored_name": safe_name,
+                "path": str(out_path),
+                "url": f"/uploads/{out_path.relative_to(UPLOAD_ROOT).as_posix()}",
+            }
+        )
+
+    return saved_files
+
+
+def infer_case_route(case_data: dict) -> dict:
+    issue = (case_data.get("issue_type") or "").strip().lower()
+    title = (case_data.get("matter_title") or "").strip().lower()
+    summary = (case_data.get("summary") or "").strip().lower()
+    timeline = (case_data.get("timeline") or "").strip().lower()
+    parties = (case_data.get("parties") or "").strip().lower()
+
+    combined = " ".join([title, summary, timeline, parties])
+
+    if any(term in issue for term in ["auto finance", "car note", "vehicle finance", "repossession", "auto loan"]):
+        return {
+            "route_name": "Auto Finance / Repossession Route",
+            "rationale": [
+                "The issue type identifies a vehicle finance or repossession dispute.",
+                "This route depends on contract terms, payment history, notice review, and lender conduct.",
+            ],
+            "next_actions": [
+                "Identify the lender, contract terms, payment history, and any default or repossession notices.",
+                "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
+                "Prepare an auto-finance dispute summary and demand outline.",
+            ],
+            "document_set": [
+                "Auto Finance Dispute Summary",
+                "Payment / Default Timeline",
+                "Repossession Notice Review",
+                "Lender Demand Outline",
+            ],
+        }
+
+    if any(term in issue for term in ["fcra", "credit reporting", "consumer reporting", "credit report"]):
+        return {
+            "route_name": "FCRA / Consumer Reporting Route",
+            "rationale": [
+                "The issue type identifies a consumer-reporting or credit-report dispute.",
+                "This route depends on dispute chronology, bureau and furnisher conduct, and correction strategy.",
+            ],
+            "next_actions": [
+                "Identify each bureau or furnisher involved.",
+                "List dispute dates and responses in order.",
+                "Prepare a demand letter and complaint outline.",
+            ],
+            "document_set": [
+                "FCRA Dispute Summary",
+                "Consumer Report Error Index",
+                "Dispute Timeline",
+                "FCRA Demand / Complaint Outline",
+            ],
+        }
+
+    if any(term in issue for term in ["employment", "workplace discrimination", "retaliation", "wrongful termination", "eeoc"]):
+        return {
+            "route_name": "Employment / EEOC Route",
+            "rationale": [
+                "The issue type identifies an employment-related adverse action or workplace dispute.",
+                "This route depends on chronology, notices, communications, and agency timing.",
+            ],
+            "next_actions": [
+                "List every adverse action and date in sequence.",
+                "Preserve emails, writeups, evaluations, and notices.",
+                "Prepare an administrative filing outline.",
+            ],
+            "document_set": [
+                "Employment Matter Summary",
+                "Adverse Action Timeline",
+                "Workplace Evidence Index",
+                "EEOC / Employment Filing Outline",
+            ],
+        }
+
+    if any(term in issue for term in ["housing", "tenant", "eviction", "lease dispute", "rent"]):
+        return {
+            "route_name": "Housing / Tenant Defense Route",
+            "rationale": [
+                "The issue type identifies a housing or tenant-defense matter.",
+                "This route depends on notice dates, lease language, and payment and occupancy history.",
+            ],
+            "next_actions": [
+                "Identify hearing dates, notice dates, and payment history.",
+                "Preserve all notices and lease language.",
+                "Prepare a housing defense outline.",
+            ],
+            "document_set": [
+                "Housing Defense Summary",
+                "Notice / Rent Timeline",
+                "Lease and Notice Index",
+                "Tenant Defense Outline",
+            ],
+        }
+
+    if any(term in issue for term in ["contract", "breach", "nonpayment", "invoice dispute"]):
+        return {
+            "route_name": "Contract / Payment Enforcement Route",
+            "rationale": [
+                "The issue type identifies a contract or payment-enforcement dispute.",
+                "This route depends on agreement terms, breach chronology, and payment proof.",
+            ],
+            "next_actions": [
+                "Identify the contract and breach point.",
+                "Preserve invoices, communications, and performance proof.",
+                "Prepare a breach summary and demand letter.",
+            ],
+            "document_set": [
+                "Contract Dispute Summary",
+                "Breach Timeline",
+                "Invoice / Payment Evidence Index",
+                "Demand for Payment / Breach Outline",
+            ],
+        }
+
+    if issue == "":
+        if any(term in combined for term in ["buick", "car note", "repossession", "vehicle", "auto loan", "lender"]):
+            return {
+                "route_name": "Auto Finance / Repossession Route",
+                "rationale": [
+                    "The matter title and facts point to a vehicle finance or repossession dispute.",
+                    "This route depends on lender conduct, account history, and notice review.",
+                ],
+                "next_actions": [
+                    "Identify the lender, contract terms, payment history, and any default or repossession notices.",
+                    "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
+                    "Prepare an auto-finance dispute summary and demand outline.",
+                ],
+                "document_set": [
+                    "Auto Finance Dispute Summary",
+                    "Payment / Default Timeline",
+                    "Repossession Notice Review",
+                    "Lender Demand Outline",
+                ],
+            }
+
+    return {
+        "route_name": "General Civil / Administrative Review",
+        "rationale": [
+            "The intake does not yet clearly identify a single legal route.",
+            "The matter needs tighter issue labeling before the system should force a narrower lane.",
+        ],
+        "next_actions": [
+            "Clarify the exact issue type in one line.",
+            "Refine the timeline and isolate the triggering event.",
+            "List all notices, denials, deadlines, and requested relief in order.",
+        ],
+        "document_set": [
+            "Case Intake Summary",
+            "Evidence Index",
+            "Preliminary Route Outline",
+        ],
+    }
+
+
+def write_case_folder(case_data: dict, files: list[dict], route_data: dict) -> tuple[str, list[dict]]:
+    case_folder_name = f"case_{case_data['id']}_{uuid4().hex[:8]}"
+    case_folder = CASE_FILES_ROOT / case_folder_name
+    case_folder.mkdir(parents=True, exist_ok=True)
+
+    metadata = {
+        "case_id": case_data["id"],
+        "matter_title": case_data["matter_title"],
+        "jurisdiction": case_data["jurisdiction"],
+        "issue_type": case_data["issue_type"],
+        "requested_outcome": case_data["requested_outcome"],
+        "parties": case_data["parties"],
+        "timeline": case_data["timeline"],
+        "summary": case_data["summary"],
+        "files": files,
+        "route": route_data,
+        "created_at": case_data["created_at"],
+    }
+
+    with (case_folder / "case_metadata.json").open("w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+
+    generated_docs = []
+
+    summary_title = route_data["document_set"][0] if len(route_data["document_set"]) > 0 else "Case Summary Memorandum"
+    timeline_title = route_data["document_set"][1] if len(route_data["document_set"]) > 1 else "Evidence Index"
+    review_title = route_data["document_set"][2] if len(route_data["document_set"]) > 2 else "Next-Step Action Brief"
+    outline_title = route_data["document_set"][3] if len(route_data["document_set"]) > 3 else "Complaint / Demand Outline"
+
+    summary_text = f"""{summary_title}
+
+Case ID: {case_data["id"]}
+Matter Title: {case_data["matter_title"]}
+Jurisdiction: {case_data["jurisdiction"]}
+Issue Type: {case_data["issue_type"]}
+Requested Outcome: {case_data["requested_outcome"]}
+
+PARTIES
+{case_data["parties"]}
+
+TIMELINE
+{case_data["timeline"]}
+
+SUMMARY
+{case_data["summary"]}
+
+RECOMMENDED ROUTE
+{route_data["route_name"]}
+
+RATIONALE
+- {route_data["rationale"][0]}
+- {route_data["rationale"][1]}
+"""
+    summary_file = case_folder / f"{summary_title.lower().replace(' / ', '_').replace(' ', '_')}.txt"
+    summary_file.write_text(summary_text, encoding="utf-8")
+    generated_docs.append(
+        {
+            "title": summary_title,
+            "url": f"/uploads/{summary_file.relative_to(UPLOAD_ROOT).as_posix()}",
+        }
+    )
+
+    timeline_text = f"""{timeline_title}
+
+Case ID: {case_data["id"]}
+Matter Title: {case_data["matter_title"]}
+
+FILES RECEIVED
+"""
+    if files:
+        for item in files:
+            timeline_text += f"- {item['name']}\n"
+    else:
+        timeline_text += "- No files uploaded.\n"
+
+    timeline_file = case_folder / f"{timeline_title.lower().replace(' / ', '_').replace(' ', '_')}.txt"
+    timeline_file.write_text(timeline_text, encoding="utf-8")
+    generated_docs.append(
+        {
+            "title": timeline_title,
+            "url": f"/uploads/{timeline_file.relative_to(UPLOAD_ROOT).as_posix()}",
+        }
+    )
+
+    action_text = f"""{review_title}
+
+Case ID: {case_data["id"]}
+Recommended Route: {route_data["route_name"]}
+
+RATIONALE
+- {route_data["rationale"][0]}
+- {route_data["rationale"][1]}
+
+RECOMMENDED NEXT ACTIONS
+"""
+    for action in route_data["next_actions"]:
+        action_text += f"- {action}\n"
+
+    action_text += "\nAUTO-GENERATED DOCUMENT SET\n"
+    for doc in route_data["document_set"]:
+        action_text += f"- {doc}\n"
+
+    review_file = case_folder / f"{review_title.lower().replace(' / ', '_').replace(' ', '_')}.txt"
+    review_file.write_text(action_text, encoding="utf-8")
+    generated_docs.append(
+        {
+            "title": review_title,
+            "url": f"/uploads/{review_file.relative_to(UPLOAD_ROOT).as_posix()}",
+        }
+    )
+
+    outline_text = f"""{outline_title}
+
+Case ID: {case_data["id"]}
+Matter Title: {case_data["matter_title"]}
+
+1. Parties
+2. Jurisdiction / Venue
+3. Relevant Facts
+4. Chronology of Events
+5. Harm / Injury
+6. Claims / Theories To Explore
+7. Requested Relief
+8. Supporting Documents
+9. Next Filing / Demand Route
+
+Initial Route Category:
+{route_data["route_name"]}
+"""
+    outline_file = case_folder / f"{outline_title.lower().replace(' / ', '_').replace(' ', '_')}.txt"
+    outline_file.write_text(outline_text, encoding="utf-8")
+    generated_docs.append(
+        {
+            "title": outline_title,
+            "url": f"/uploads/{outline_file.relative_to(UPLOAD_ROOT).as_posix()}",
+        }
+    )
+
+    return case_folder_name, generated_docs
+
+
+def store_case_record(case_data: dict):
+    with db_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO cases (
+                id,
+                matter_title,
+                jurisdiction,
+                issue_type,
+                parties,
+                timeline,
+                summary,
+                requested_outcome,
+                created_at,
+                case_folder_name,
+                route_name,
+                route_json,
+                files_json,
+                generated_docs_json
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                case_data["id"],
+                case_data["matter_title"],
+                case_data["jurisdiction"],
+                case_data["issue_type"],
+                case_data["parties"],
+                case_data["timeline"],
+                case_data["summary"],
+                case_data["requested_outcome"],
+                case_data["created_at"],
+                case_data["case_folder_name"],
+                case_data["route"]["route_name"],
+                json.dumps(case_data["route"]),
+                json.dumps(case_data["files"]),
+                json.dumps(case_data["generated_docs"]),
+            ),
+        )
+        conn.commit()
+
+
+def fetch_latest_case():
+    with db_conn() as conn:
+        row = conn.execute("SELECT * FROM cases ORDER BY id DESC LIMIT 1").fetchone()
+
+    if not row:
+        return None
+
+    return {
+        "id": row["id"],
+        "matter_title": row["matter_title"],
+        "jurisdiction": row["jurisdiction"],
+        "issue_type": row["issue_type"],
+        "parties": row["parties"],
+        "timeline": row["timeline"],
+        "summary": row["summary"],
+        "requested_outcome": row["requested_outcome"],
+        "created_at": row["created_at"],
+        "case_folder_name": row["case_folder_name"],
+        "route": json.loads(row["route_json"]) if row["route_json"] else {},
+        "files": json.loads(row["files_json"]) if row["files_json"] else [],
+        "generated_docs": json.loads(row["generated_docs_json"]) if row["generated_docs_json"] else [],
+        "further_action_required": True,
     }
 
 
@@ -93,13 +527,7 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
-    return render(
-        request,
-        "checkout.html",
-        {
-            "checkout_links": get_checkout_links(),
-        },
-    )
+    return render(request, "checkout.html", {"checkout_links": get_checkout_links()})
 
 
 @app.get("/checkout/{plan_key}", response_class=HTMLResponse)
@@ -143,6 +571,7 @@ async def partner_submit(
     notes: str = Form(""),
     files: list[UploadFile] = File(default=[]),
 ):
+    saved_files = save_uploads(files, PARTNER_UPLOADS)
     submission_id = len(PARTNER_SUBMISSIONS) + 1
 
     PARTNER_SUBMISSIONS.append(
@@ -156,7 +585,7 @@ async def partner_submit(
             "territory": territory,
             "capabilities": capabilities,
             "notes": notes,
-            "file_count": len(files),
+            "files": saved_files,
             "created_at": int(time.time()),
         }
     )
@@ -172,7 +601,7 @@ async def partner_submit(
             "next_href": "/dashboards",
             "next_label": "Open Operations Deck",
             "record_id": submission_id,
-            "file_count": len(files),
+            "file_count": len(saved_files),
             "step_number": 1,
             "step_total": 1,
             "step_name": "Partner Port",
@@ -201,6 +630,7 @@ async def intake_production_submit(
     logistics_notes: str = Form(""),
     files: list[UploadFile] = File(default=[]),
 ):
+    saved_files = save_uploads(files, PRODUCTION_UPLOADS)
     submission_id = len(PRODUCTION_SUBMISSIONS) + 1
 
     PRODUCTION_SUBMISSIONS.append(
@@ -216,7 +646,7 @@ async def intake_production_submit(
             "event_dates": event_dates,
             "crew_needed": crew_needed,
             "logistics_notes": logistics_notes,
-            "file_count": len(files),
+            "files": saved_files,
             "created_at": int(time.time()),
         }
     )
@@ -232,7 +662,7 @@ async def intake_production_submit(
             "next_href": "/intake/labor",
             "next_label": "Continue to Labor Dispatch",
             "record_id": submission_id,
-            "file_count": len(files),
+            "file_count": len(saved_files),
             "step_number": 1,
             "step_total": 3,
             "step_name": "Production Command",
@@ -260,6 +690,7 @@ async def intake_labor_submit(
     notes: str = Form(""),
     files: list[UploadFile] = File(default=[]),
 ):
+    saved_files = save_uploads(files, LABOR_UPLOADS)
     submission_id = len(LABOR_SUBMISSIONS) + 1
 
     LABOR_SUBMISSIONS.append(
@@ -274,7 +705,7 @@ async def intake_labor_submit(
             "availability": availability,
             "transport": transport,
             "notes": notes,
-            "file_count": len(files),
+            "files": saved_files,
             "created_at": int(time.time()),
         }
     )
@@ -290,7 +721,7 @@ async def intake_labor_submit(
             "next_href": "/dashboards",
             "next_label": "Open Operations Deck",
             "record_id": submission_id,
-            "file_count": len(files),
+            "file_count": len(saved_files),
             "step_number": 2,
             "step_total": 3,
             "step_name": "Labor Dispatch",
@@ -316,134 +747,13 @@ async def case_dock_submit(
     requested_outcome: str = Form(""),
     files: list[UploadFile] = File(default=[]),
 ):
-    global LAST_CASE_CONTEXT
+    with db_conn() as conn:
+        next_id = conn.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM cases").fetchone()[0]
 
-    fields = [
-        matter_title or "",
-        issue_type or "",
-        summary or "",
-        requested_outcome or "",
-        timeline or "",
-        parties or "",
-    ]
-    text = " ".join(fields).lower()
+    saved_files = save_uploads(files, CASE_DOCK_UPLOADS)
 
-    route_name = "General Civil / Administrative Review"
-    rationale = [
-        "The intake does not yet point to a single narrow category.",
-        "The system should preserve the facts, organize timing, and prepare the next action path.",
-    ]
-    next_actions = [
-        "Refine the timeline and isolate the triggering event.",
-        "List all notices, denials, and deadlines in order.",
-        "Prepare a first-pass demand or complaint outline.",
-    ]
-    generated_docs = [
-        {"title": "Case Intake Summary"},
-        {"title": "Evidence Index"},
-        {"title": "Demand / Complaint Outline"},
-    ]
-
-    auto_keywords = [
-        "car", "vehicle", "auto", "buick", "repo", "repossession",
-        "finance", "loan", "car note", "title loan", "dealer", "lender",
-    ]
-    fcra_keywords = ["fcra", "credit report", "equifax", "experian", "transunion"]
-    employment_keywords = ["employment", "termination", "discrimination", "retaliation", "eeoc", "workplace"]
-    contract_keywords = ["contract", "breach", "agreement", "invoice", "payment"]
-    housing_keywords = ["eviction", "landlord", "tenant", "lease", "housing", "rent"]
-
-    if any(word in text for word in auto_keywords):
-        route_name = "Auto Finance / Repossession Route"
-        rationale = [
-            "The intake appears tied to a vehicle, financing dispute, repossession risk, or lender conduct.",
-            "This route benefits from payment history, contract terms, notice review, and lender communication tracking.",
-        ]
-        next_actions = [
-            "Identify the lender, contract terms, payment history, and any default or repossession notices.",
-            "Preserve account statements, repossession notices, texts, emails, and loan paperwork.",
-            "Prepare an auto-finance dispute summary and demand outline.",
-        ]
-        generated_docs = [
-            {"title": "Auto Finance Dispute Summary"},
-            {"title": "Payment / Default Timeline"},
-            {"title": "Repossession Notice Review"},
-            {"title": "Lender Demand Outline"},
-        ]
-
-    elif any(word in text for word in fcra_keywords):
-        route_name = "FCRA / Consumer Reporting Route"
-        rationale = [
-            "The intake suggests inaccurate reporting or consumer-report harm.",
-            "This route benefits from dispute chronology, bureau tracking, and correction strategy.",
-        ]
-        next_actions = [
-            "Identify each bureau or furnisher involved.",
-            "List dispute dates and responses in order.",
-            "Prepare a demand letter and complaint outline.",
-        ]
-        generated_docs = [
-            {"title": "FCRA Dispute Summary"},
-            {"title": "Consumer Report Error Index"},
-            {"title": "Dispute Timeline"},
-            {"title": "FCRA Demand / Complaint Outline"},
-        ]
-
-    elif any(word in text for word in employment_keywords):
-        route_name = "Employment / EEOC Route"
-        rationale = [
-            "The intake suggests an employment-related conflict or adverse action.",
-            "This route benefits from chronology, preserved communications, and agency timing awareness.",
-        ]
-        next_actions = [
-            "List every adverse action and date in sequence.",
-            "Preserve emails, writeups, and notices.",
-            "Prepare an administrative filing outline.",
-        ]
-        generated_docs = [
-            {"title": "Employment Matter Summary"},
-            {"title": "Adverse Action Timeline"},
-            {"title": "Workplace Evidence Index"},
-            {"title": "EEOC / Employment Filing Outline"},
-        ]
-
-    elif any(word in text for word in contract_keywords):
-        route_name = "Contract / Payment Enforcement Route"
-        rationale = [
-            "The intake appears to involve an agreement, nonpayment, or broken obligation.",
-            "This route depends on contract terms, breach dates, and remedy framing.",
-        ]
-        next_actions = [
-            "Identify the contract and breach point.",
-            "Preserve invoices, communications, and performance proof.",
-            "Prepare a breach summary and demand letter.",
-        ]
-        generated_docs = [
-            {"title": "Contract Dispute Summary"},
-            {"title": "Breach Timeline"},
-            {"title": "Invoice / Payment Evidence Index"},
-            {"title": "Demand for Payment / Breach Outline"},
-        ]
-
-    elif any(word in text for word in housing_keywords):
-        route_name = "Housing / Tenant Defense Route"
-        rationale = [
-            "The intake appears tied to housing, lease terms, landlord conduct, or removal risk.",
-            "Housing matters are timing sensitive and benefit from immediate chronology and notice control.",
-        ]
-        next_actions = [
-            "Identify hearing dates, notice dates, and payment history.",
-            "Preserve all notices and lease language.",
-            "Prepare a housing defense outline.",
-        ]
-        generated_docs = [
-            {"title": "Housing Defense Summary"},
-            {"title": "Notice / Rent Timeline"},
-            {"title": "Lease and Notice Index"},
-            {"title": "Tenant Defense Outline"},
-        ]
-
-    LAST_CASE_CONTEXT = {
+    case_data = {
+        "id": next_id,
         "matter_title": matter_title,
         "jurisdiction": jurisdiction,
         "issue_type": issue_type,
@@ -451,31 +761,35 @@ async def case_dock_submit(
         "timeline": timeline,
         "summary": summary,
         "requested_outcome": requested_outcome,
-        "route": {
-            "route_name": route_name,
-            "rationale": rationale,
-            "next_actions": next_actions,
-        },
-        "generated_docs": generated_docs,
-        "further_action_required": True,
+        "files": saved_files,
+        "created_at": int(time.time()),
     }
+
+    route_data = infer_case_route(case_data)
+    case_folder_name, generated_docs = write_case_folder(case_data, saved_files, route_data)
+
+    case_data["route"] = route_data
+    case_data["case_folder_name"] = case_folder_name
+    case_data["generated_docs"] = generated_docs
+
+    store_case_record(case_data)
 
     return render(
         request,
         "submission_success.html",
         {
             "title": "Case Dock Intake Received",
-            "summary": "Your case was received and staged for the next legal step.",
+            "summary": "Your case intake and supporting documents have been captured and staged for the next legal route.",
             "return_href": "/services",
             "return_label": "Back to Service Ports",
             "next_href": "/modules/signal-dock",
             "next_label": "Continue to Signal Dock",
-            "record_id": 1,
-            "file_count": len(files),
+            "record_id": next_id,
+            "file_count": len(saved_files),
             "step_number": 1,
             "step_total": 4,
             "step_name": "Case Dock",
-            "why_next": "Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
+            "why_next": "Case Dock gathers the facts and files. Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
         },
     )
 
@@ -492,9 +806,11 @@ def equity_engine(request: Request):
 
 @app.get("/modules/navigator-ai", response_class=HTMLResponse)
 def navigator_ai(request: Request):
-    return render(request, "navigator_ai.html", {"case_context": LAST_CASE_CONTEXT})
+    case_context = fetch_latest_case()
+    return render(request, "navigator_ai.html", {"case_context": case_context})
 
 
 @app.get("/modules/draft-packet", response_class=HTMLResponse)
 def draft_packet(request: Request):
-    return render(request, "draft_packet.html", {"case_context": LAST_CASE_CONTEXT})
+    case_context = fetch_latest_case()
+    return render(request, "draft_packet.html", {"case_context": case_context})
