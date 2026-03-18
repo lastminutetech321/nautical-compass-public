@@ -31,9 +31,19 @@ def render(request: Request, template: str, data=None):
 
 
 def get_checkout_links():
+    entry_access = (
+        os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
+        or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
+    )
+
+    further_action = (
+        os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
+        or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
+    )
+
     return {
-        "entry_access": os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip(),
-        "further_action": os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip(),
+        "entry_access": entry_access,
+        "further_action": further_action,
     }
 
 
