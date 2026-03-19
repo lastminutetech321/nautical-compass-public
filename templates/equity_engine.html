@@ -2,79 +2,57 @@
 {% block title %}Equity Engine • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <div class="page-card">
-    <div class="module-kicker">NC LEGAL MODULE</div>
-
-    <div class="legal-rail">
-      <div class="legal-step legal-step-complete">
-        <span class="legal-step-num">1</span>
-        <span class="legal-step-label">Case Dock</span>
-      </div>
-      <div class="legal-step-line legal-step-line-complete"></div>
-
-      <div class="legal-step legal-step-complete">
-        <span class="legal-step-num">2</span>
-        <span class="legal-step-label">Signal Dock</span>
-      </div>
-      <div class="legal-step-line legal-step-line-complete"></div>
-
-      <div class="legal-step legal-step-active">
-        <span class="legal-step-num">3</span>
-        <span class="legal-step-label">Equity Engine</span>
-      </div>
-      <div class="legal-step-line"></div>
-
-      <div class="legal-step">
-        <span class="legal-step-num">4</span>
-        <span class="legal-step-label">Navigator AI</span>
-      </div>
-    </div>
-
+<section class="page-shell">
+  <div class="hero-card">
+    <div class="eyebrow">Relief and Remedy Layer</div>
     <h1>Equity Engine</h1>
-    <p>
-      <strong>You are in Step 3 of 4.</strong>
-      This room defines remedy, posture, route discipline, and what outcome the matter should pursue.
+    <p class="muted">
+      Equity Engine is where the system shifts from intake and review into posture, relief design, fairness framing, and next-step remedy logic.
     </p>
+  </div>
 
-    <div class="next-step-callout">
-      <h3>Next Step</h3>
-      <p>
-        Continue to <strong>Navigator AI</strong> to generate the recommended route,
-        case folder, and starter documents.
-      </p>
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Remedy Logic</div>
+      <h3>Requested Relief</h3>
+      <p>Clarify exactly what outcome is being sought, whether correction, payment, stoppage, restoration, records, injunction, or administrative action.</p>
     </div>
 
-    <div class="module-grid">
-      <div class="module-box">
-        <h3>Remedy Design</h3>
-        <p>Clarify damages, injunction, declaration, correction, or process repair.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Strategic Framing</h3>
-        <p>Compare leverage, fairness themes, escalation options, and route posture.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Route Discipline</h3>
-        <p>Check whether the matter belongs in court, admin, demand, or pre-suit correction.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Forward Link</h3>
-        <p>Move to Navigator AI for final recommendation and output generation.</p>
-      </div>
+    <div class="feature-card">
+      <div class="feature-kicker">Positioning</div>
+      <h3>Equitable Posture</h3>
+      <p>Frame fairness, hardship, urgency, procedural imbalance, and the practical reasons a tribunal or decision-maker should take action.</p>
     </div>
 
-    <div class="module-actions">
-      <a class="action-btn action-btn-primary" href="/modules/navigator-ai">
-        Continue to Navigator AI
-      </a>
-      <a class="action-btn" href="/modules/signal-dock">
-        Back to Signal Dock
-      </a>
+    <div class="feature-card">
+      <div class="feature-kicker">Next Move</div>
+      <h3>Pressure Path</h3>
+      <p>Determine whether the next move is demand, complaint, administrative filing, motion practice, cure notice, or evidence reinforcement.</p>
     </div>
   </div>
-</div>
+
+  <div class="hero-card" style="margin-top: 28px;">
+    <div class="eyebrow">Module purpose</div>
+    <h2>Why this page matters now</h2>
+    <p class="muted">
+      This page makes the remedy layer visible inside the app now, without waiting on deeper deployment work. It preserves the build direction and gives the system a visible legal sequence.
+    </p>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <a class="feature-card" href="/modules/signal-dock">
+      <div class="feature-kicker">Previous step</div>
+      <h3>Back to Signal Dock</h3>
+      <p>Return to review if notice timing, contradictions, or missing records still need to be cleaned up first.</p>
+      <span class="feature-link">Open Signal Dock →</span>
+    </a>
+
+    <a class="feature-card" href="/modules/draft-packet">
+      <div class="feature-kicker">Next step</div>
+      <h3>Continue to Draft Packet</h3>
+      <p>Move into output generation once the requested relief and remedy posture are clear enough to organize into draft form.</p>
+      <span class="feature-link">Open Draft Packet →</span>
+    </a>
+  </div>
+</section>
 {% endblock %}
