@@ -23,7 +23,10 @@ class InMemoryLaborSignalRepository:
     def save_region_snapshot(self, snapshot: Dict[str, Any]) -> Dict[str, Any]:
         self.region_snapshots = [
             s for s in self.region_snapshots
-            if not (s.get("region_code") == snapshot.get("region_code") and s.get("snapshot_date") == snapshot.get("snapshot_date"))
+            if not (
+                s.get("region_code") == snapshot.get("region_code")
+                and s.get("snapshot_date") == snapshot.get("snapshot_date")
+            )
         ]
         self.region_snapshots.append(snapshot)
         return snapshot
