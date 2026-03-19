@@ -7,26 +7,9 @@ import time
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-# Optional labor-signal module import.
-# This keeps the current app stable even before the module files are merged.
-LABOR_SIGNAL_MODULE_AVAILABLE = False
-labor_signal_settings = None
-
-try:
-    from modules.labor_signal.router import router as labor_signal_router
-    from modules.labor_signal.config import LaborSignalSettings
-
-    LABOR_SIGNAL_MODULE_AVAILABLE = True
-    labor_signal_settings = LaborSignalSettings()
-except Exception:
-    labor_signal_router = None
-    LaborSignalSettings = None
-    labor_signal_settings = None
-
 
 app = FastAPI(title="Nautical Compass")
 
@@ -58,6 +41,24 @@ for folder in [
 PRODUCTION_SUBMISSIONS = []
 LABOR_SUBMISSIONS = []
 PARTNER_SUBMISSIONS = []
+
+
+def str_to_bool(value: str | None, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def labor_signal_flags() -> dict:
+    return {
+        "ENABLE_LABOR_SIGNAL_ENGINE": str_to_bool(os.getenv("ENABLE_LABOR_SIGNAL_ENGINE"), True),
+        "ENABLE_OPPORTUNITY_SCORING": str_to_bool(os.getenv("ENABLE_OPPORTUNITY_SCORING"), True),
+        "ENABLE_SKILL_GAP_ENGINE": str_to_bool(os.getenv("ENABLE_SKILL_GAP_ENGINE"), True),
+        "ENABLE_MARKET_ROUTING_ADVISORY": str_to_bool(os.getenv("ENABLE_MARKET_ROUTING_ADVISORY"), True),
+        "SHOW_LABOR_WIDGETS_TO_USERS": str_to_bool(os.getenv("SHOW_LABOR_WIDGETS_TO_USERS"), False),
+        "SHOW_LABOR_WIDGETS_TO_ADMIN": str_to_bool(os.getenv("SHOW_LABOR_WIDGETS_TO_ADMIN"), True),
+        "USE_SIGNAL_ENGINE_IN_MATCHING": str_to_bool(os.getenv("USE_SIGNAL_ENGINE_IN_MATCHING"), False),
+    }
 
 
 def db_conn():
@@ -94,18 +95,12 @@ def init_db():
 init_db()
 
 
-# Register labor-signal router only when the module exists.
-# This prevents a downgrade or crash if the repo has not received the module files yet.
-if LABOR_SIGNAL_MODULE_AVAILABLE and labor_signal_router is not None:
-    app.include_router(labor_signal_router)
-
-
 def render(request: Request, template: str, data=None):
     ctx = data or {}
     ctx["request"] = request
     ctx["v"] = int(time.time())
-    ctx["labor_signal_module_available"] = LABOR_SIGNAL_MODULE_AVAILABLE
-    ctx["labor_signal_settings"] = labor_signal_settings
+    ctx["labor_signal_flags"] = labor_signal_flags()
+    ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
     return templates.TemplateResponse(template, ctx)
 
 
@@ -118,19 +113,14 @@ def get_checkout_links():
         os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
     )
-
-    # Labor-signal / Stripe reconnect placeholders.
-    # These do not disturb the current checkout flow.
-    labor_insights = os.getenv("STRIPE_LINK_LABOR_INSIGHTS", "").strip()
-    skill_gap = os.getenv("STRIPE_LINK_SKILL_GAP", "").strip()
-    market_routing = os.getenv("STRIPE_LINK_MARKET_ROUTING", "").strip()
+    labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
+    labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
 
     return {
         "entry_access": entry_access,
         "further_action": further_action,
-        "labor_insights": labor_insights,
-        "skill_gap": skill_gap,
-        "market_routing": market_routing,
+        "labor_signal_basic": labor_signal_basic,
+        "labor_signal_pro": labor_signal_pro,
     }
 
 
@@ -516,19 +506,31 @@ def fetch_latest_case():
     }
 
 
-@app.get("/health")
-def health():
-    return {
-        "ok": True,
-        "app": "nautical_compass",
-        "labor_signal_module_available": LABOR_SIGNAL_MODULE_AVAILABLE,
-        "labor_signal_flags": labor_signal_settings.__dict__ if labor_signal_settings else {},
-    }
-
-
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return render(request, "index.html")
+
+
+@app.get("/health")
+def health():
+    module_imported = False
+    module_error = None
+
+    try:
+        from modules.labor_signal.router import router as labor_signal_router  # noqa: F401
+        module_imported = True
+    except Exception as exc:
+        module_error = str(exc)
+
+    return JSONResponse(
+        {
+            "ok": True,
+            "app": "Nautical Compass",
+            "labor_signal_module_imported": module_imported,
+            "labor_signal_module_error": module_error,
+            "labor_signal_flags": labor_signal_flags(),
+        }
+    )
 
 
 @app.get("/hall", response_class=HTMLResponse)
@@ -583,9 +585,8 @@ def checkout_plan(request: Request, plan_key: str):
     plan_titles = {
         "entry_access": "Entry Access — $25",
         "further_action": "Further Action Required — $135",
-        "labor_insights": "Labor Insights",
-        "skill_gap": "Skill Gap Report",
-        "market_routing": "Market Routing Advisory",
+        "labor_signal_basic": "Labor Signal Basic",
+        "labor_signal_pro": "Labor Signal Pro",
     }
 
     if checkout_url:
@@ -862,3 +863,12 @@ def navigator_ai(request: Request):
 def draft_packet(request: Request):
     case_context = fetch_latest_case()
     return render(request, "draft_packet.html", {"case_context": case_context})
+
+
+# Safe, additive labor-signal module registration.
+try:
+    if labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]:
+        from modules.labor_signal.router import router as labor_signal_router
+        app.include_router(labor_signal_router)
+except Exception as exc:
+    print(f"[labor_signal] router not loaded: {exc}")
