@@ -1,14 +1,84 @@
 {% extends "base.html" %}
-{% block title %}Operations Deck • Nautical Compass{% endblock %}
+{% block title %}Dashboards • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <div class="page-card">
-    <h1>Operations Deck</h1>
-    <p>
-      This deck is live and ready for the next module pass. It now sits inside the same command language as the bridge,
-      hall, and service ports.
+<section class="page-shell">
+  <div class="hero-card">
+    <div class="eyebrow">Operations Deck</div>
+    <h1>Dashboard Hub</h1>
+    <p class="muted">
+      This deck is the visible command layer for live modules, routed intakes, and market intelligence.
     </p>
   </div>
-</div>
+
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <a class="feature-card" href="/modules/labor-signal">
+      <div class="feature-kicker">Labor Intelligence</div>
+      <h3>Labor Signal</h3>
+      <p>
+        View demand signals, opportunity scoring, skill-gap routing, and market direction without changing current worker flows.
+      </p>
+      <span class="feature-link">Open Labor Signal →</span>
+    </a>
+
+    <a class="feature-card" href="/modules/signal-dock">
+      <div class="feature-kicker">Case Logic</div>
+      <h3>Signal Dock</h3>
+      <p>
+        Review deadlines, notices, triggers, red flags, and intake pressure points before escalating toward remedy strategy.
+      </p>
+      <span class="feature-link">Open Signal Dock →</span>
+    </a>
+
+    <a class="feature-card" href="/modules/equity-engine">
+      <div class="feature-kicker">Remedy Layer</div>
+      <h3>Equity Engine</h3>
+      <p>
+        Frame harm, requested relief, equitable posture, and strategic next-step pressure inside the current legal workflow.
+      </p>
+      <span class="feature-link">Open Equity Engine →</span>
+    </a>
+  </div>
+
+  <div class="hero-card" style="margin-top: 28px;">
+    <div class="eyebrow">System Status</div>
+    <h2>Current Build Position</h2>
+    <div class="mini-grid">
+      <div class="mini-stat">
+        <strong>Case Dock</strong>
+        <span>Live intake + document staging</span>
+      </div>
+      <div class="mini-stat">
+        <strong>Labor Signal</strong>
+        <span>Visible module + API engine layer</span>
+      </div>
+      <div class="mini-stat">
+        <strong>Signal Dock</strong>
+        <span>Visible review layer</span>
+      </div>
+      <div class="mini-stat">
+        <strong>Equity Engine</strong>
+        <span>Visible remedy layer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Why this matters</div>
+      <h3>No downgrade path</h3>
+      <p>
+        These updates expose progress visually while preserving the current app structure. The deeper labor engine and Stripe reconnect remain modular.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Next integration phase</div>
+      <h3>Stripe + deeper routing</h3>
+      <p>
+        Once deployment access is back, the next layer is entitlement checks, stored labor records, and admin-only signal widgets tied to paid access.
+      </p>
+    </div>
+  </div>
+</section>
 {% endblock %}
