@@ -865,7 +865,6 @@ def draft_packet(request: Request):
     return render(request, "draft_packet.html", {"case_context": case_context})
 
 
-# Safe, additive labor-signal module registration.
 try:
     if labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]:
         from modules.labor_signal.router import router as labor_signal_router
