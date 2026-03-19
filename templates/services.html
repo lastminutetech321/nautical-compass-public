@@ -1,78 +1,60 @@
 {% extends "base.html" %}
-{% block title %}Service Ports • Nautical Compass{% endblock %}
+{% block title %}Services • Nautical Compass{% endblock %}
 
 {% block content %}
-<section class="ports-scene">
-  <div class="ports-bg"></div>
-  <div class="ports-overlay"></div>
+<section class="page-shell">
+  <div class="hero-card">
+    <div class="eyebrow">Service Ports</div>
+    <h1>Choose your lane</h1>
+    <p class="muted">
+      Enter through intake, review, labor intelligence, or remedy design. Each lane is built to support the current structure without replacing it.
+    </p>
+  </div>
 
-  <div class="ports-shell">
-    <header class="ports-header">
-      <div class="ports-kicker">SERVICE PORTS</div>
-      <h1 class="ports-title">Navigate the system map</h1>
-      <p class="ports-copy">
-        Every port below is wired to a live route so the platform works as a system instead of dead cards.
-        Legal services live here. AVPT intake lanes are linked here too.
-      </p>
-    </header>
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <a class="feature-card" href="/modules/case-dock">
+      <div class="feature-kicker">Legal Intake</div>
+      <h3>Case Dock</h3>
+      <p>Capture facts, files, timeline, and requested outcome. The system stages the matter and prepares a recommended route.</p>
+      <span class="feature-link">Open Case Dock →</span>
+    </a>
 
-    <div class="service-section">
-      <h2 class="section-title">Nautical Compass Legal Navigation</h2>
-      <div class="port-grid">
-        <a class="port-card" href="/modules/case-dock">
-          <div class="port-light"></div>
-          <h2>Case Dock</h2>
-          <p>Case intake, records, structure, evidence loading, draft flow, and file organization.</p>
-        </a>
+    <a class="feature-card" href="/modules/signal-dock">
+      <div class="feature-kicker">Issue Review</div>
+      <h3>Signal Dock</h3>
+      <p>Review the matter for notices, deadlines, contradictions, escalation points, and the practical signal pattern before further action.</p>
+      <span class="feature-link">Open Signal Dock →</span>
+    </a>
 
-        <a class="port-card" href="/modules/signal-dock">
-          <div class="port-light"></div>
-          <h2>Signal Dock</h2>
-          <p>Compliance signals, notices, alerts, timelines, routing triggers, and process status.</p>
-        </a>
+    <a class="feature-card" href="/modules/equity-engine">
+      <div class="feature-kicker">Relief Strategy</div>
+      <h3>Equity Engine</h3>
+      <p>Shape remedy thinking, define posture, and organize the transition from intake review toward drafted relief and next-step leverage.</p>
+      <span class="feature-link">Open Equity Engine →</span>
+    </a>
+  </div>
 
-        <a class="port-card" href="/modules/equity-engine">
-          <div class="port-light"></div>
-          <h2>Equity Engine</h2>
-          <p>Remedy logic, fairness flow, strategic posture, structured issue framing, and escalation.</p>
-        </a>
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <a class="feature-card" href="/modules/labor-signal">
+      <div class="feature-kicker">Opportunity Mapping</div>
+      <h3>Labor Signal</h3>
+      <p>See demand lanes, role signals, skill gaps, and market routes. This is the visible front layer of the labor intelligence engine.</p>
+      <span class="feature-link">Open Labor Signal →</span>
+    </a>
 
-        <a class="port-card" href="/modules/navigator-ai">
-          <div class="port-light"></div>
-          <h2>Navigator AI</h2>
-          <p>Guidance layer, route logic, system reasoning, orchestration, and next-step awareness.</p>
-        </a>
-      </div>
-    </div>
+    <a class="feature-card" href="/intake/production">
+      <div class="feature-kicker">Operations</div>
+      <h3>Production Command</h3>
+      <p>Submit production-side logistics, scheduling, and labor demand so the wider system can route operator and workforce coverage.</p>
+      <span class="feature-link">Open Production Command →</span>
+    </a>
 
-    <div class="service-section">
-      <h2 class="section-title">AV Plus Trades / Workforce Engine</h2>
-      <div class="port-grid">
-        <a class="port-card" href="/intake/production">
-          <div class="port-light"></div>
-          <h2>Production Companies</h2>
-          <p>Request labor, crew, logistics, and production support through the production intake rail.</p>
-        </a>
-
-        <a class="port-card" href="/intake/labor">
-          <div class="port-light"></div>
-          <h2>Techs / Crew</h2>
-          <p>Join dispatch, declare roles, availability, readiness, transport, and work preferences.</p>
-        </a>
-
-        <a class="port-card" href="/partner">
-          <div class="port-light"></div>
-          <h2>Manufacturers / Vendors</h2>
-          <p>Partner intake for manufacturers, rental houses, vendors, fulfillment, and strategic allies.</p>
-        </a>
-
-        <a class="port-card" href="/dashboards">
-          <div class="port-light"></div>
-          <h2>Operations Deck</h2>
-          <p>Use the deck as the command view for activity, routing, and future live workflow visibility.</p>
-        </a>
-      </div>
-    </div>
+    <a class="feature-card" href="/intake/labor">
+      <div class="feature-kicker">Workforce</div>
+      <h3>Labor Dispatch</h3>
+      <p>Submit labor-side readiness, certifications, market area, and availability to stage dispatch alignment and role coverage.</p>
+      <span class="feature-link">Open Labor Dispatch →</span>
+    </a>
   </div>
 </section>
 {% endblock %}
