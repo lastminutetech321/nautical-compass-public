@@ -11,6 +11,23 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+# Optional labor-signal module import.
+# This keeps the current app stable even before the module files are merged.
+LABOR_SIGNAL_MODULE_AVAILABLE = False
+labor_signal_settings = None
+
+try:
+    from modules.labor_signal.router import router as labor_signal_router
+    from modules.labor_signal.config import LaborSignalSettings
+
+    LABOR_SIGNAL_MODULE_AVAILABLE = True
+    labor_signal_settings = LaborSignalSettings()
+except Exception:
+    labor_signal_router = None
+    LaborSignalSettings = None
+    labor_signal_settings = None
+
+
 app = FastAPI(title="Nautical Compass")
 
 UPLOAD_ROOT = Path("uploads")
@@ -77,10 +94,18 @@ def init_db():
 init_db()
 
 
+# Register labor-signal router only when the module exists.
+# This prevents a downgrade or crash if the repo has not received the module files yet.
+if LABOR_SIGNAL_MODULE_AVAILABLE and labor_signal_router is not None:
+    app.include_router(labor_signal_router)
+
+
 def render(request: Request, template: str, data=None):
     ctx = data or {}
     ctx["request"] = request
     ctx["v"] = int(time.time())
+    ctx["labor_signal_module_available"] = LABOR_SIGNAL_MODULE_AVAILABLE
+    ctx["labor_signal_settings"] = labor_signal_settings
     return templates.TemplateResponse(template, ctx)
 
 
@@ -93,9 +118,19 @@ def get_checkout_links():
         os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
     )
+
+    # Labor-signal / Stripe reconnect placeholders.
+    # These do not disturb the current checkout flow.
+    labor_insights = os.getenv("STRIPE_LINK_LABOR_INSIGHTS", "").strip()
+    skill_gap = os.getenv("STRIPE_LINK_SKILL_GAP", "").strip()
+    market_routing = os.getenv("STRIPE_LINK_MARKET_ROUTING", "").strip()
+
     return {
         "entry_access": entry_access,
         "further_action": further_action,
+        "labor_insights": labor_insights,
+        "skill_gap": skill_gap,
+        "market_routing": market_routing,
     }
 
 
@@ -481,6 +516,16 @@ def fetch_latest_case():
     }
 
 
+@app.get("/health")
+def health():
+    return {
+        "ok": True,
+        "app": "nautical_compass",
+        "labor_signal_module_available": LABOR_SIGNAL_MODULE_AVAILABLE,
+        "labor_signal_flags": labor_signal_settings.__dict__ if labor_signal_settings else {},
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return render(request, "index.html")
@@ -538,6 +583,9 @@ def checkout_plan(request: Request, plan_key: str):
     plan_titles = {
         "entry_access": "Entry Access — $25",
         "further_action": "Further Action Required — $135",
+        "labor_insights": "Labor Insights",
+        "skill_gap": "Skill Gap Report",
+        "market_routing": "Market Routing Advisory",
     }
 
     if checkout_url:
