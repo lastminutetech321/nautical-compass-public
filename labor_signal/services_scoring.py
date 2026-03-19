@@ -51,21 +51,22 @@ def score_role_opportunities(region_code: str) -> list[dict]:
             - (entry_friction_score * 0.10)
         )
 
-        score = {
-            "region_code": region_code,
-            "role_name": role_name,
-            "demand_score": round(demand_score, 2),
-            "wage_score": wage_score,
-            "growth_score": growth_score,
-            "employment_volume_score": employment_volume_score,
-            "transferability_score": transferability_score,
-            "entry_friction_score": entry_friction_score,
-            "overall_opportunity_score": round(overall, 2),
-            "recommended_for_fast_entry": entry_friction_score <= 50 and demand_score >= 50,
-            "recommended_for_upskill": entry_friction_score > 50 and overall >= 60,
-            "recommended_for_pivot": transferability_score >= 75,
-        }
-        scores.append(score)
+        scores.append(
+            {
+                "region_code": region_code,
+                "role_name": role_name,
+                "demand_score": round(demand_score, 2),
+                "wage_score": wage_score,
+                "growth_score": growth_score,
+                "employment_volume_score": employment_volume_score,
+                "transferability_score": transferability_score,
+                "entry_friction_score": entry_friction_score,
+                "overall_opportunity_score": round(overall, 2),
+                "recommended_for_fast_entry": entry_friction_score <= 50 and demand_score >= 50,
+                "recommended_for_upskill": entry_friction_score > 50 and overall >= 60,
+                "recommended_for_pivot": transferability_score >= 75,
+            }
+        )
 
     scores = sorted(scores, key=lambda x: x["overall_opportunity_score"], reverse=True)
     repo.save_role_scores(scores)
