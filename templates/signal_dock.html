@@ -2,79 +2,72 @@
 {% block title %}Signal Dock • Nautical Compass{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <div class="page-card">
-    <div class="module-kicker">NC LEGAL MODULE</div>
-
-    <div class="legal-rail">
-      <div class="legal-step legal-step-complete">
-        <span class="legal-step-num">1</span>
-        <span class="legal-step-label">Case Dock</span>
-      </div>
-      <div class="legal-step-line legal-step-line-complete"></div>
-
-      <div class="legal-step legal-step-active">
-        <span class="legal-step-num">2</span>
-        <span class="legal-step-label">Signal Dock</span>
-      </div>
-      <div class="legal-step-line"></div>
-
-      <div class="legal-step">
-        <span class="legal-step-num">3</span>
-        <span class="legal-step-label">Equity Engine</span>
-      </div>
-      <div class="legal-step-line"></div>
-
-      <div class="legal-step">
-        <span class="legal-step-num">4</span>
-        <span class="legal-step-label">Navigator AI</span>
-      </div>
-    </div>
-
+<section class="page-shell">
+  <div class="hero-card">
+    <div class="eyebrow">Case Review Layer</div>
     <h1>Signal Dock</h1>
-    <p>
-      <strong>You are in Step 2 of 4.</strong>
-      This room is for deadlines, notices, denials, trigger events, and procedural risk.
+    <p class="muted">
+      Signal Dock sits between intake and remedy. It is the review layer for deadlines, notices, red flags, contradictions, and pressure points.
     </p>
+  </div>
 
-    <div class="next-step-callout">
-      <h3>Next Step</h3>
-      <p>
-        Continue to <strong>Equity Engine</strong> after reviewing timing, notice flow,
-        and risk flags.
-      </p>
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Review Zone</div>
+      <h3>Deadlines</h3>
+      <p>Identify filing dates, response windows, hearing dates, default risks, and timing pressure before committing to a route.</p>
     </div>
 
-    <div class="module-grid">
-      <div class="module-box">
-        <h3>Deadlines</h3>
-        <p>Track filing windows, response limits, hearing dates, and timing danger.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Notice Flow</h3>
-        <p>Map letters, denials, agency notices, warnings, and correspondence.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Risk Flags</h3>
-        <p>Surface missing records, standing gaps, timing issues, and weak spots.</p>
-      </div>
-
-      <div class="module-box">
-        <h3>Action Routing</h3>
-        <p>Once signals are clear, move to remedy and posture analysis.</p>
-      </div>
+    <div class="feature-card">
+      <div class="feature-kicker">Review Zone</div>
+      <h3>Notice Signals</h3>
+      <p>Track denials, repossession notices, bureau responses, administrative notices, lease notices, and other trigger documents.</p>
     </div>
 
-    <div class="module-actions">
-      <a class="action-btn action-btn-primary" href="/modules/equity-engine">
-        Continue to Equity Engine
-      </a>
-      <a class="action-btn" href="/modules/case-dock">
-        Back to Case Dock
-      </a>
+    <div class="feature-card">
+      <div class="feature-kicker">Review Zone</div>
+      <h3>Risk Flags</h3>
+      <p>Spot contradictions, missing documents, missing chronology, weak issue labeling, and evidentiary gaps that weaken later action.</p>
     </div>
   </div>
-</div>
+
+  <div class="hero-card" style="margin-top: 28px;">
+    <div class="eyebrow">How it fits</div>
+    <h2>Current app sequence</h2>
+    <div class="mini-grid">
+      <div class="mini-stat">
+        <strong>1. Case Dock</strong>
+        <span>Fact capture</span>
+      </div>
+      <div class="mini-stat">
+        <strong>2. Signal Dock</strong>
+        <span>Notice and risk review</span>
+      </div>
+      <div class="mini-stat">
+        <strong>3. Equity Engine</strong>
+        <span>Relief framing</span>
+      </div>
+      <div class="mini-stat">
+        <strong>4. Draft Packet</strong>
+        <span>Draft output</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <a class="feature-card" href="/modules/case-dock">
+      <div class="feature-kicker">Previous step</div>
+      <h3>Back to Case Dock</h3>
+      <p>Return to intake if the matter still needs a cleaner timeline, more records, or sharper issue labeling.</p>
+      <span class="feature-link">Open Case Dock →</span>
+    </a>
+
+    <a class="feature-card" href="/modules/equity-engine">
+      <div class="feature-kicker">Next step</div>
+      <h3>Continue to Equity Engine</h3>
+      <p>Once facts and signals are organized, move into remedy framing, requested relief, and strategic posture.</p>
+      <span class="feature-link">Open Equity Engine →</span>
+    </a>
+  </div>
+</section>
 {% endblock %}
