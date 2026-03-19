@@ -853,6 +853,11 @@ def equity_engine(request: Request):
     return render(request, "equity_engine.html")
 
 
+@app.get("/modules/labor-signal", response_class=HTMLResponse)
+def labor_signal_page(request: Request):
+    return render(request, "labor_signal.html")
+
+
 @app.get("/modules/navigator-ai", response_class=HTMLResponse)
 def navigator_ai(request: Request):
     case_context = fetch_latest_case()
