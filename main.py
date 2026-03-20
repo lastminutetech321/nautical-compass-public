@@ -85,11 +85,17 @@ def init_db():
                 route_name TEXT,
                 route_json TEXT,
                 files_json TEXT,
-                generated_docs_json TEXT
+                generated_docs_json TEXT,
+                compliance_json TEXT
             )
             """
         )
         conn.commit()
+
+        columns = [row["name"] for row in conn.execute("PRAGMA table_info(cases)").fetchall()]
+        if "compliance_json" not in columns:
+            conn.execute("ALTER TABLE cases ADD COLUMN compliance_json TEXT")
+            conn.commit()
 
 
 init_db()
@@ -298,6 +304,150 @@ def infer_case_route(case_data: dict) -> dict:
     }
 
 
+def validate_actor(request: Request) -> dict:
+    actor_type = (request.query_params.get("actor_type") or "public_user").strip()
+    actor_role = (request.query_params.get("actor_role") or "case_submitter").strip()
+    actor_id = (request.query_params.get("actor_id") or "anonymous").strip()
+
+    permissions = [
+        "submit_case",
+        "view_route",
+        "generate_packet",
+    ]
+
+    if actor_role in ["admin", "reviewer", "compliance_officer"]:
+        permissions.extend(
+            [
+                "override_route",
+                "review_high_risk_case",
+                "view_compliance_gate",
+            ]
+        )
+
+    return {
+        "actor_type": actor_type,
+        "actor_role": actor_role,
+        "actor_id": actor_id,
+        "permissions": permissions,
+        "is_verified_actor": actor_id != "anonymous",
+    }
+
+
+def classify_request(case_data: dict, route_data: dict) -> dict:
+    route_name = route_data.get("route_name", "General Civil / Administrative Review")
+    issue_type = (case_data.get("issue_type") or "").strip().lower()
+    requested_outcome = (case_data.get("requested_outcome") or "").strip().lower()
+
+    domain = "legal"
+    action_type = "informational_guidance"
+    risk_level = "medium"
+    requires_human_review = False
+    blocking_flags = []
+
+    high_risk_routes = {
+        "Auto Finance / Repossession Route",
+        "Employment / EEOC Route",
+        "Housing / Tenant Defense Route",
+    }
+
+    rights_routes = {
+        "FCRA / Consumer Reporting Route",
+        "Employment / EEOC Route",
+    }
+
+    if route_name in rights_routes:
+        action_type = "rights_analysis"
+
+    if route_name in high_risk_routes:
+        risk_level = "high"
+        requires_human_review = True
+
+    if "injunction" in requested_outcome or "emergency" in requested_outcome:
+        risk_level = "high"
+        requires_human_review = True
+        blocking_flags.append("emergency_or_injunctive_relief_requested")
+
+    if issue_type == "":
+        blocking_flags.append("issue_type_not_cleanly_stated")
+
+    if route_name == "General Civil / Administrative Review":
+        blocking_flags.append("route_confidence_low")
+        requires_human_review = True
+
+    return {
+        "domain": domain,
+        "action_type": action_type,
+        "risk_level": risk_level,
+        "requires_human_review": requires_human_review,
+        "blocking_flags": blocking_flags,
+    }
+
+
+def attach_legal_basis(case_data: dict, route_data: dict) -> list[dict]:
+    route_name = route_data.get("route_name", "General Civil / Administrative Review")
+    legal_basis = [
+        {
+            "authority": "Article III Standing",
+            "reference": "Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992)",
+            "why_it_applies": "Any federal-court facing route should tie injury, causation, and redressability to the matter.",
+        },
+        {
+            "authority": "Real Party in Interest / Capacity",
+            "reference": "Rule 17; Rule 9(a)",
+            "why_it_applies": "The system should identify who is actually asserting the claim and in what capacity.",
+        },
+        {
+            "authority": "Federal Question Gate",
+            "reference": "28 U.S.C. § 1331",
+            "why_it_applies": "Any federal-law route should identify whether the matter arises under federal law.",
+        },
+    ]
+
+    if route_name == "FCRA / Consumer Reporting Route":
+        legal_basis.append(
+            {
+                "authority": "FCRA",
+                "reference": "15 U.S.C. § 1681 et seq.",
+                "why_it_applies": "Consumer reporting disputes require permissible-purpose, accuracy, reinvestigation, and harm analysis.",
+            }
+        )
+
+    if route_name == "Employment / EEOC Route":
+        legal_basis.append(
+            {
+                "authority": "Civil Rights / Capacity Analysis",
+                "reference": "42 U.S.C. § 1983; Ex parte Young",
+                "why_it_applies": "Where public-actor conduct is implicated, the system should distinguish official-capacity and personal-capacity posture.",
+            }
+        )
+
+    if route_name == "General Civil / Administrative Review":
+        legal_basis.append(
+            {
+                "authority": "Administrative Process Discipline",
+                "reference": "5 U.S.C. § 551 et seq.",
+                "why_it_applies": "The system should classify whether the matter is best treated as agency action, adjudication, or pre-suit review.",
+            }
+        )
+
+    return legal_basis
+
+
+def build_compliance_gate(request: Request, case_data: dict, route_data: dict) -> dict:
+    actor = validate_actor(request)
+    request_profile = classify_request(case_data, route_data)
+    legal_basis = attach_legal_basis(case_data, route_data)
+
+    return {
+        "gate_status": "active",
+        "actor": actor,
+        "request_profile": request_profile,
+        "legal_basis": legal_basis,
+        "human_review_status": "required" if request_profile["requires_human_review"] else "not_required",
+        "audit_stamp": int(time.time()),
+    }
+
+
 def write_case_folder(case_data: dict, files: list[dict], route_data: dict) -> tuple[str, list[dict]]:
     case_folder_name = f"case_{case_data['id']}_{uuid4().hex[:8]}"
     case_folder = CASE_FILES_ROOT / case_folder_name
@@ -436,6 +586,52 @@ Initial Route Category:
         }
     )
 
+    compliance = route_data.get("compliance_gate")
+    if compliance:
+        gate_text = f"""AI COMPLIANCE GATE REPORT
+
+CASE ID
+{case_data["id"]}
+
+GATE STATUS
+{compliance.get("gate_status")}
+
+ACTOR
+- type: {compliance["actor"].get("actor_type")}
+- role: {compliance["actor"].get("actor_role")}
+- id: {compliance["actor"].get("actor_id")}
+- verified: {compliance["actor"].get("is_verified_actor")}
+
+REQUEST PROFILE
+- domain: {compliance["request_profile"].get("domain")}
+- action_type: {compliance["request_profile"].get("action_type")}
+- risk_level: {compliance["request_profile"].get("risk_level")}
+- requires_human_review: {compliance["request_profile"].get("requires_human_review")}
+
+BLOCKING FLAGS
+"""
+        flags = compliance["request_profile"].get("blocking_flags", [])
+        if flags:
+            for flag in flags:
+                gate_text += f"- {flag}\n"
+        else:
+            gate_text += "- none\n"
+
+        gate_text += "\nLEGAL BASIS\n"
+        for item in compliance.get("legal_basis", []):
+            gate_text += f"- {item['authority']}: {item['reference']} | {item['why_it_applies']}\n"
+
+        gate_text += f"\nHUMAN REVIEW STATUS\n{compliance.get('human_review_status')}\n"
+
+        gate_file = case_folder / "ai_compliance_gate_report.txt"
+        gate_file.write_text(gate_text, encoding="utf-8")
+        generated_docs.append(
+            {
+                "title": "AI Compliance Gate Report",
+                "url": f"/uploads/{gate_file.relative_to(UPLOAD_ROOT).as_posix()}",
+            }
+        )
+
     return case_folder_name, generated_docs
 
 
@@ -457,9 +653,10 @@ def store_case_record(case_data: dict):
                 route_name,
                 route_json,
                 files_json,
-                generated_docs_json
+                generated_docs_json,
+                compliance_json
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 case_data["id"],
@@ -476,6 +673,7 @@ def store_case_record(case_data: dict):
                 json.dumps(case_data["route"]),
                 json.dumps(case_data["files"]),
                 json.dumps(case_data["generated_docs"]),
+                json.dumps(case_data.get("compliance_gate", {})),
             ),
         )
         conn.commit()
@@ -488,6 +686,14 @@ def fetch_latest_case():
     if not row:
         return None
 
+    compliance = {}
+    if "compliance_json" in row.keys() and row["compliance_json"]:
+        compliance = json.loads(row["compliance_json"])
+
+    route = json.loads(row["route_json"]) if row["route_json"] else {}
+    if compliance and "compliance_gate" not in route:
+        route["compliance_gate"] = compliance
+
     return {
         "id": row["id"],
         "matter_title": row["matter_title"],
@@ -499,10 +705,11 @@ def fetch_latest_case():
         "requested_outcome": row["requested_outcome"],
         "created_at": row["created_at"],
         "case_folder_name": row["case_folder_name"],
-        "route": json.loads(row["route_json"]) if row["route_json"] else {},
+        "route": route,
         "files": json.loads(row["files_json"]) if row["files_json"] else [],
         "generated_docs": json.loads(row["generated_docs_json"]) if row["generated_docs_json"] else [],
         "further_action_required": True,
+        "compliance_gate": compliance or route.get("compliance_gate", {}),
     }
 
 
@@ -815,11 +1022,15 @@ async def case_dock_submit(
     }
 
     route_data = infer_case_route(case_data)
+    compliance_gate = build_compliance_gate(request, case_data, route_data)
+    route_data["compliance_gate"] = compliance_gate
+
     case_folder_name, generated_docs = write_case_folder(case_data, saved_files, route_data)
 
     case_data["route"] = route_data
     case_data["case_folder_name"] = case_folder_name
     case_data["generated_docs"] = generated_docs
+    case_data["compliance_gate"] = compliance_gate
 
     store_case_record(case_data)
 
@@ -838,7 +1049,7 @@ async def case_dock_submit(
             "step_number": 1,
             "step_total": 4,
             "step_name": "Case Dock",
-            "why_next": "Case Dock gathers the facts and files. Signal Dock is next because it reviews deadlines, notices, triggers, and risk signals before remedy analysis.",
+            "why_next": "Case Dock gathers the facts and files. Signal Dock is next because it reviews deadlines, notices, triggers, risk signals, and the AI Compliance Gate before remedy analysis.",
         },
     )
 
