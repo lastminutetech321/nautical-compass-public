@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Case Continuation Update • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+    <h1>Case Continuation Update</h1>
+
+    {% if case_context %}
+      <div class="next-step-callout">
+        <h3>Existing Matter Detected</h3>
+        <p>
+          Your original case intake has already been received.
+          Use this page to add supplemental facts, documents, or clarifications to the current matter.
+        </p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>Current Matter</h3>
+          <p><strong>{{ case_context.matter_title }}</strong></p>
+        </div>
+
+        <div class="module-box">
+          <h3>Status</h3>
+          <p>Case intake received • Routed to guided review • Supplemental updates may be added below</p>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Current Route</h3>
+          <p><strong>{{ case_context.route.route_name }}</strong></p>
+        </div>
+      </div>
+
+      <form class="intake-form" method="post" action="/modules/case-update" enctype="multipart/form-data" style="margin-top: 20px;">
+        <div class="form-grid">
+          <div class="form-field form-field-full">
+            <label for="additional_facts">Additional Facts</label>
+            <textarea id="additional_facts" name="additional_facts" rows="6" placeholder="Add new facts, clarifications, or details that were not included in the original intake."></textarea>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="additional_timeline">Additional Timeline Notes</label>
+            <textarea id="additional_timeline" name="additional_timeline" rows="4" placeholder="Add new dates, notices, calls, letters, deadlines, or event sequence updates."></textarea>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="updated_requested_outcome">Updated Requested Outcome</label>
+            <input id="updated_requested_outcome" name="updated_requested_outcome" type="text" placeholder="Update the relief or outcome requested, only if needed.">
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="files">Upload More Evidence</label>
+            <input id="files" name="files" type="file" multiple>
+          </div>
+        </div>
+
+        <div class="module-actions">
+          <button class="action-btn action-btn-primary" type="submit">Save Additional Facts</button>
+          <a class="action-btn" href="/modules/navigator-ai">Back to Navigator AI</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="next-step-callout">
+        <h3>No Active Matter Found</h3>
+        <p>Start with a fresh Case Dock intake first.</p>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">Start at Case Dock</a>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
