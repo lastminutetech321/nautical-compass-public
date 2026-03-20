@@ -679,6 +679,38 @@ def store_case_record(case_data: dict):
         conn.commit()
 
 
+def update_case_record(case_data: dict):
+    with db_conn() as conn:
+        conn.execute(
+            """
+            UPDATE cases
+            SET timeline = ?,
+                summary = ?,
+                requested_outcome = ?,
+                case_folder_name = ?,
+                route_name = ?,
+                route_json = ?,
+                files_json = ?,
+                generated_docs_json = ?,
+                compliance_json = ?
+            WHERE id = ?
+            """,
+            (
+                case_data["timeline"],
+                case_data["summary"],
+                case_data["requested_outcome"],
+                case_data["case_folder_name"],
+                case_data["route"]["route_name"],
+                json.dumps(case_data["route"]),
+                json.dumps(case_data["files"]),
+                json.dumps(case_data["generated_docs"]),
+                json.dumps(case_data.get("compliance_gate", {})),
+                case_data["id"],
+            ),
+        )
+        conn.commit()
+
+
 def fetch_latest_case():
     with db_conn() as conn:
         row = conn.execute("SELECT * FROM cases ORDER BY id DESC LIMIT 1").fetchone()
@@ -1050,6 +1082,86 @@ async def case_dock_submit(
             "step_total": 4,
             "step_name": "Case Dock",
             "why_next": "Case Dock gathers the facts and files. Signal Dock is next because it reviews deadlines, notices, triggers, risk signals, and the AI Compliance Gate before remedy analysis.",
+        },
+    )
+
+
+@app.get("/modules/case-update", response_class=HTMLResponse)
+def case_update(request: Request):
+    case_context = fetch_latest_case()
+    return render(request, "case_update.html", {"case_context": case_context})
+
+
+@app.post("/modules/case-update")
+async def case_update_submit(
+    request: Request,
+    additional_facts: str = Form(""),
+    additional_timeline: str = Form(""),
+    updated_requested_outcome: str = Form(""),
+    files: list[UploadFile] = File(default=[]),
+):
+    case_context = fetch_latest_case()
+    if not case_context:
+        return RedirectResponse("/modules/case-dock", status_code=303)
+
+    saved_files = save_uploads(files, CASE_DOCK_UPLOADS)
+
+    updated_summary = case_context.get("summary", "")
+    if additional_facts.strip():
+        updated_summary = f"{updated_summary}\n\nSUPPLEMENTAL FACTS\n{additional_facts}".strip()
+
+    updated_timeline = case_context.get("timeline", "")
+    if additional_timeline.strip():
+        updated_timeline = f"{updated_timeline}\n\nSUPPLEMENTAL TIMELINE NOTES\n{additional_timeline}".strip()
+
+    requested_outcome = case_context.get("requested_outcome", "")
+    if updated_requested_outcome.strip():
+        requested_outcome = updated_requested_outcome.strip()
+
+    merged_files = list(case_context.get("files", [])) + saved_files
+
+    case_data = {
+        "id": case_context["id"],
+        "matter_title": case_context["matter_title"],
+        "jurisdiction": case_context["jurisdiction"],
+        "issue_type": case_context["issue_type"],
+        "parties": case_context["parties"],
+        "timeline": updated_timeline,
+        "summary": updated_summary,
+        "requested_outcome": requested_outcome,
+        "files": merged_files,
+        "created_at": case_context["created_at"],
+    }
+
+    route_data = infer_case_route(case_data)
+    compliance_gate = build_compliance_gate(request, case_data, route_data)
+    route_data["compliance_gate"] = compliance_gate
+
+    case_folder_name, generated_docs = write_case_folder(case_data, merged_files, route_data)
+
+    case_data["route"] = route_data
+    case_data["case_folder_name"] = case_folder_name
+    case_data["generated_docs"] = generated_docs
+    case_data["compliance_gate"] = compliance_gate
+
+    update_case_record(case_data)
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Case Update Saved",
+            "summary": "Your additional facts and supporting files were added to the existing matter.",
+            "return_href": "/modules/navigator-ai",
+            "return_label": "Back to Navigator AI",
+            "next_href": "/modules/draft-packet",
+            "next_label": "Open Updated Draft Packet",
+            "record_id": case_data["id"],
+            "file_count": len(saved_files),
+            "step_number": 4,
+            "step_total": 4,
+            "step_name": "Case Continuation Update",
+            "why_next": "The original intake remains active. This update has been attached to the existing matter and the packet has been refreshed.",
         },
     )
 
