@@ -34,8 +34,8 @@
     <h1>Navigator AI</h1>
     <p>
       <strong>You are in Step 4 of 4.</strong>
-      Navigator AI returns the recommended route, why that route fits, the next actions,
-      and the first draft packet the system can build from this matter.
+      Navigator AI returns the recommended route, next actions,
+      compliance status, and the first controlled packet for the matter.
     </p>
 
     {% if case_context %}
@@ -43,6 +43,17 @@
         <h3>Recommended Route</h3>
         <p><strong>{{ case_context.route.route_name }}</strong></p>
       </div>
+
+      {% if case_context.compliance_gate %}
+      <div class="module-box module-box-full" style="margin-top: 18px;">
+        <h3>AI Compliance Gate</h3>
+        <p><strong>Gate Status:</strong> {{ case_context.compliance_gate.gate_status }}</p>
+        <p><strong>Actor Type:</strong> {{ case_context.compliance_gate.actor.actor_type }}</p>
+        <p><strong>Actor Role:</strong> {{ case_context.compliance_gate.actor.actor_role }}</p>
+        <p><strong>Risk Level:</strong> {{ case_context.compliance_gate.request_profile.risk_level|upper }}</p>
+        <p><strong>Human Review Status:</strong> {{ case_context.compliance_gate.human_review_status }}</p>
+      </div>
+      {% endif %}
 
       <div class="module-grid">
         <div class="module-box">
@@ -69,6 +80,33 @@
             {% endfor %}
           </ul>
         </div>
+
+        {% if case_context.compliance_gate %}
+        <div class="module-box module-box-full">
+          <h3>Legal Basis</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.compliance_gate.legal_basis %}
+              <li>
+                <strong>{{ item.authority }}</strong> — {{ item.reference }}<br>
+                {{ item.why_it_applies }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Blocking Flags</h3>
+          <ul class="recommendation-list">
+            {% if case_context.compliance_gate.request_profile.blocking_flags %}
+              {% for flag in case_context.compliance_gate.request_profile.blocking_flags %}
+                <li>{{ flag }}</li>
+              {% endfor %}
+            {% else %}
+              <li>No active blocking flags.</li>
+            {% endif %}
+          </ul>
+        </div>
+        {% endif %}
       </div>
 
       <div class="module-box module-box-full" style="margin-top: 18px; padding-bottom: 10px;">
@@ -81,7 +119,7 @@
           {% for doc in case_context.generated_docs %}
             <div class="module-box">
               <h3>{{ doc.title }}</h3>
-              <p>Ready for draft-packet generation.</p>
+              <p><a href="{{ doc.url }}" target="_blank" rel="noopener">Open document</a></p>
             </div>
           {% endfor %}
         </div>
@@ -90,8 +128,8 @@
       <div class="next-step-callout" style="margin-top: 18px;">
         <h3>Immediate Action</h3>
         <p>
-          Generate the first packet now. If the matter needs deeper work after review,
-          advance to Further Action Required.
+          Generate the first packet now. The Compliance Gate allows guided analysis
+          and packet generation, but not automatic enforcement.
         </p>
       </div>
 
@@ -104,21 +142,8 @@
       <div class="next-step-callout">
         <h3>No Active Case Context Found</h3>
         <p>
-          Navigator AI needs a fresh Case Dock submission in the current live
-          session so it has a matter to analyze and route.
+          Navigator AI needs a fresh Case Dock submission so it has a matter to analyze and route.
         </p>
-      </div>
-
-      <div class="module-grid">
-        <div class="module-box">
-          <h3>Current Status</h3>
-          <p>No live matter is loaded into Navigator AI yet.</p>
-        </div>
-
-        <div class="module-box">
-          <h3>Next Practical Move</h3>
-          <p>Return to Case Dock, submit a matter, then follow the legal flow back here.</p>
-        </div>
       </div>
 
       <div class="module-actions">
