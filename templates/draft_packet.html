@@ -13,6 +13,16 @@
         <p><strong>{{ case_context.route.route_name }}</strong></p>
       </div>
 
+      {% if case_context.compliance_gate %}
+      <div class="module-box module-box-full" style="margin-top: 18px;">
+        <h3>AI Compliance Gate</h3>
+        <p><strong>Gate Status:</strong> {{ case_context.compliance_gate.gate_status }}</p>
+        <p><strong>Human Review Status:</strong> {{ case_context.compliance_gate.human_review_status }}</p>
+        <p><strong>Risk Level:</strong> {{ case_context.compliance_gate.request_profile.risk_level|upper }}</p>
+        <p><strong>Action Type:</strong> {{ case_context.compliance_gate.request_profile.action_type }}</p>
+      </div>
+      {% endif %}
+
       <div class="module-grid">
         <div class="module-box">
           <h3>Matter</h3>
@@ -33,7 +43,7 @@
           <h3>Draft Document Set</h3>
           <ul class="recommendation-list">
             {% for doc in case_context.generated_docs %}
-              <li>{{ doc.title }}</li>
+              <li><a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.title }}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -47,11 +57,39 @@
           </ul>
         </div>
 
+        {% if case_context.compliance_gate %}
+        <div class="module-box module-box-full">
+          <h3>Legal Basis</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.compliance_gate.legal_basis %}
+              <li>
+                <strong>{{ item.authority }}</strong> — {{ item.reference }}<br>
+                {{ item.why_it_applies }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="module-box module-box-full">
+          <h3>Blocking Flags</h3>
+          <ul class="recommendation-list">
+            {% if case_context.compliance_gate.request_profile.blocking_flags %}
+              {% for flag in case_context.compliance_gate.request_profile.blocking_flags %}
+                <li>{{ flag }}</li>
+              {% endfor %}
+            {% else %}
+              <li>No active blocking flags.</li>
+            {% endif %}
+          </ul>
+        </div>
+        {% endif %}
+
         <div class="module-box module-box-full">
           <h3>Immediate Use</h3>
           <p>
             This packet is the first working build of the matter. It gives the user a route,
-            a labeled document set, and the first action outline before printable exports are added.
+            a labeled document set, a compliance-gated action outline, and the first controlled
+            next-step path before printable exports are added.
           </p>
         </div>
       </div>
