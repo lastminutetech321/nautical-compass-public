@@ -836,3 +836,120 @@ body main > .page-shell{
     display:none;
   }
 }
+
+/* =========================
+   MODULE LAYOUT + FORM UI
+   Added by Builder Agent
+   ========================= */
+.module-kicker{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:var(--bronze-soft);
+  margin-bottom:10px;
+}
+.module-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:18px;
+}
+.module-box{
+  padding:16px 18px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+}
+.module-box h3{
+  margin:0 0 8px;
+  font-size:14px;
+  font-weight:800;
+}
+.module-box p{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.55;
+}
+.module-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:22px;
+}
+/* INTAKE FORM */
+.intake-form{
+  margin-top:22px;
+}
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.form-field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.form-field-full{
+  grid-column:1 / -1;
+}
+.form-field label{
+  font-size:13px;
+  font-weight:700;
+  color:rgba(255,255,255,.80);
+}
+.form-field input,
+.form-field textarea,
+.form-field select{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-size:14px;
+  font-family:inherit;
+  resize:vertical;
+}
+.form-field input::placeholder,
+.form-field textarea::placeholder{
+  color:rgba(255,255,255,.32);
+}
+.form-field small{
+  font-size:12px;
+  color:var(--muted);
+}
+/* SIGNAL DOCK SPECIFIC */
+.signal-list{
+  margin:0;
+  padding-left:18px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.7;
+}
+.flag{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  background:rgba(200,148,51,.14);
+  border:1px solid rgba(200,148,51,.28);
+  color:var(--bronze-soft);
+  margin:2px 4px 2px 0;
+}
+.flag-top{
+  background:rgba(220,60,60,.14);
+  border-color:rgba(220,60,60,.28);
+  color:#f87171;
+}
+@media (max-width: 720px){
+  .module-grid,
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+  .form-field-full{
+    grid-column:auto;
+  }
+}

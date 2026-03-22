@@ -2,72 +2,166 @@
 {% block title %}Signal Dock • Nautical Compass{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="hero-card">
-    <div class="eyebrow">Case Review Layer</div>
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+
+    <div class="legal-rail">
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line"></div>
+
+      <div class="legal-step">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line"></div>
+
+      <div class="legal-step">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
+
     <h1>Signal Dock</h1>
-    <p class="muted">
-      Signal Dock sits between intake and remedy. It is the review layer for deadlines, notices, red flags, contradictions, and pressure points.
+    <p>
+      <strong>You are in Step 2 of 4.</strong>
+      Signal Dock is the review layer. Before moving toward remedy, identify
+      the deadlines, notices, and risk flags that shape the matter's pressure points.
     </p>
-  </div>
 
-  <div class="card-grid three-up" style="margin-top: 24px;">
-    <div class="feature-card">
-      <div class="feature-kicker">Review Zone</div>
-      <h3>Deadlines</h3>
-      <p>Identify filing dates, response windows, hearing dates, default risks, and timing pressure before committing to a route.</p>
-    </div>
+    {% if case_context %}
 
-    <div class="feature-card">
-      <div class="feature-kicker">Review Zone</div>
-      <h3>Notice Signals</h3>
-      <p>Track denials, repossession notices, bureau responses, administrative notices, lease notices, and other trigger documents.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-kicker">Review Zone</div>
-      <h3>Risk Flags</h3>
-      <p>Spot contradictions, missing documents, missing chronology, weak issue labeling, and evidentiary gaps that weaken later action.</p>
-    </div>
-  </div>
-
-  <div class="hero-card" style="margin-top: 28px;">
-    <div class="eyebrow">How it fits</div>
-    <h2>Current app sequence</h2>
-    <div class="mini-grid">
-      <div class="mini-stat">
-        <strong>1. Case Dock</strong>
-        <span>Fact capture</span>
+      <div class="next-step-callout">
+        <h3>Active Matter: {{ case_context.matter_title }}</h3>
+        <p>
+          Route: <strong>{{ case_context.route.route_name }}</strong> &nbsp;|&nbsp;
+          Jurisdiction: {{ case_context.jurisdiction }}
+        </p>
       </div>
-      <div class="mini-stat">
-        <strong>2. Signal Dock</strong>
-        <span>Notice and risk review</span>
-      </div>
-      <div class="mini-stat">
-        <strong>3. Equity Engine</strong>
-        <span>Relief framing</span>
-      </div>
-      <div class="mini-stat">
-        <strong>4. Draft Packet</strong>
-        <span>Draft output</span>
-      </div>
-    </div>
-  </div>
 
-  <div class="card-grid two-up" style="margin-top: 24px;">
-    <a class="feature-card" href="/modules/case-dock">
-      <div class="feature-kicker">Previous step</div>
-      <h3>Back to Case Dock</h3>
-      <p>Return to intake if the matter still needs a cleaner timeline, more records, or sharper issue labeling.</p>
-      <span class="feature-link">Open Case Dock →</span>
-    </a>
+      <div class="module-grid" style="margin-top:18px;">
+        <div class="module-box">
+          <h3>What This Room Does</h3>
+          <p>
+            Signal Dock captures the critical deadlines, trigger notices, and
+            evidentiary gaps that must be organized before remedy strategy begins.
+          </p>
+        </div>
+        <div class="module-box">
+          <h3>Why It Matters</h3>
+          <p>
+            Missing a filing window, overlooking a denial notice, or entering
+            Equity Engine with contradictions in the record weakens every later action.
+          </p>
+        </div>
+      </div>
 
-    <a class="feature-card" href="/modules/equity-engine">
-      <div class="feature-kicker">Next step</div>
-      <h3>Continue to Equity Engine</h3>
-      <p>Once facts and signals are organized, move into remedy framing, requested relief, and strategic posture.</p>
-      <span class="feature-link">Open Equity Engine →</span>
-    </a>
+      <form
+        class="intake-form"
+        method="post"
+        action="/modules/signal-dock"
+        enctype="multipart/form-data"
+      >
+        <div class="form-grid">
+
+          <div class="form-field form-field-full">
+            <label for="critical_deadlines">Critical Deadlines</label>
+            <textarea
+              id="critical_deadlines"
+              name="critical_deadlines"
+              rows="4"
+              placeholder="List all filing dates, response windows, hearing dates, default risk dates, and statute-of-limitations pressure points. Include the date and what action is required by that date."
+            ></textarea>
+            <small>
+              Examples: Response to repossession notice due by [date]; EEOC charge window closes [date]; Eviction hearing set for [date].
+            </small>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="notice_signals">Notice Signals</label>
+            <textarea
+              id="notice_signals"
+              name="notice_signals"
+              rows="4"
+              placeholder="List all trigger documents received: denial letters, repossession notices, bureau responses, administrative notices, cure notices, lease termination notices, right-to-cure letters, or other formal communications."
+            ></textarea>
+            <small>
+              Include the document name, date received, and who sent it. Note if any notice is missing that should have been sent.
+            </small>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="risk_flags">Risk Flags</label>
+            <textarea
+              id="risk_flags"
+              name="risk_flags"
+              rows="4"
+              placeholder="Identify contradictions, missing documents, gaps in the timeline, weak issue labeling, missing witnesses, incomplete payment records, or anything that weakens the matter if not addressed before remedy action."
+            ></textarea>
+            <small>
+              Be specific. A risk flag is anything that an opposing party or decision-maker could use to undercut the claim.
+            </small>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="signal_summary">Signal Summary (Optional)</label>
+            <textarea
+              id="signal_summary"
+              name="signal_summary"
+              rows="3"
+              placeholder="Summarize the overall signal picture: is the matter time-sensitive, well-documented, or in need of more evidence before moving to remedy framing?"
+            ></textarea>
+          </div>
+
+        </div>
+
+        <div class="module-actions">
+          <button class="action-btn action-btn-primary" type="submit">
+            Submit Signal Review
+          </button>
+          <a class="action-btn" href="/modules/case-dock">Back to Case Dock</a>
+          <a class="action-btn" href="/services">Back to Service Ports</a>
+        </div>
+      </form>
+
+    {% else %}
+
+      <div class="next-step-callout">
+        <h3>No Active Case Context Found</h3>
+        <p>
+          Signal Dock requires an active case to review. Start in Case Dock first
+          to capture the matter, parties, timeline, and supporting files.
+        </p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>What Signal Dock Reviews</h3>
+          <p>Deadlines, notice signals, risk flags, and evidentiary gaps that shape the pressure pattern before remedy strategy begins.</p>
+        </div>
+        <div class="module-box">
+          <h3>Where to Start</h3>
+          <p>Open Case Dock to enter the matter details, parties, timeline, and requested outcome. Signal Dock activates after intake is complete.</p>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">
+          Start at Case Dock
+        </a>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+
+    {% endif %}
   </div>
-</section>
+</div>
 {% endblock %}

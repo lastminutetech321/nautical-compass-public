@@ -2,57 +2,198 @@
 {% block title %}Equity Engine • Nautical Compass{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="hero-card">
-    <div class="eyebrow">Relief and Remedy Layer</div>
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">NC LEGAL MODULE</div>
+
+    <div class="legal-rail">
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">1</span>
+        <span class="legal-step-label">Case Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-complete">
+        <span class="legal-step-num">2</span>
+        <span class="legal-step-label">Signal Dock</span>
+      </div>
+      <div class="legal-step-line legal-step-line-complete"></div>
+
+      <div class="legal-step legal-step-active">
+        <span class="legal-step-num">3</span>
+        <span class="legal-step-label">Equity Engine</span>
+      </div>
+      <div class="legal-step-line"></div>
+
+      <div class="legal-step">
+        <span class="legal-step-num">4</span>
+        <span class="legal-step-label">Navigator AI</span>
+      </div>
+    </div>
+
     <h1>Equity Engine</h1>
-    <p class="muted">
-      Equity Engine is where the system shifts from intake and review into posture, relief design, fairness framing, and next-step remedy logic.
+    <p>
+      <strong>You are in Step 3 of 4.</strong>
+      Equity Engine is the remedy layer. Clarify what outcome is being sought,
+      frame the equitable posture, and identify the strategic pressure path before
+      the draft packet is built.
     </p>
+
+    {% if case_context %}
+
+      <div class="next-step-callout">
+        <h3>Active Matter: {{ case_context.matter_title }}</h3>
+        <p>
+          Route: <strong>{{ case_context.route.route_name }}</strong> &nbsp;|&nbsp;
+          Jurisdiction: {{ case_context.jurisdiction }}
+        </p>
+      </div>
+
+      <div class="module-grid" style="margin-top:18px;">
+        <div class="module-box">
+          <h3>Requested Relief</h3>
+          <p>
+            Clarify exactly what outcome is being sought — correction, payment,
+            stoppage, restoration, records, injunction, or administrative action.
+          </p>
+        </div>
+        <div class="module-box">
+          <h3>Equitable Posture</h3>
+          <p>
+            Frame fairness, hardship, urgency, procedural imbalance, and the
+            practical reasons a tribunal or decision-maker should take action.
+          </p>
+        </div>
+        <div class="module-box">
+          <h3>Pressure Path</h3>
+          <p>
+            Determine whether the next move is demand, complaint, administrative
+            filing, motion practice, cure notice, or evidence reinforcement.
+          </p>
+        </div>
+        <div class="module-box">
+          <h3>Current Route Context</h3>
+          <p>
+            {% for item in case_context.route.next_actions[:2] %}
+              {{ item }}<br>
+            {% endfor %}
+          </p>
+        </div>
+      </div>
+
+      <form
+        class="intake-form"
+        method="post"
+        action="/modules/equity-engine"
+        enctype="multipart/form-data"
+      >
+        <div class="form-grid">
+
+          <div class="form-field form-field-full">
+            <label for="relief_sought">Relief Sought</label>
+            <textarea
+              id="relief_sought"
+              name="relief_sought"
+              rows="4"
+              placeholder="State exactly what outcome you are seeking. Be specific: dollar amount, account correction, reinstatement, record removal, injunction, administrative order, or other concrete relief."
+            ></textarea>
+            <small>
+              Examples: Removal of inaccurate tradeline from all three bureaus; Reinstatement of employment with back pay; Return of vehicle and correction of repossession record.
+            </small>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="equitable_posture">Equitable Posture</label>
+            <textarea
+              id="equitable_posture"
+              name="equitable_posture"
+              rows="4"
+              placeholder="Describe the hardship, urgency, or procedural imbalance that makes this matter one where a decision-maker should act. Include financial impact, housing risk, employment risk, or other concrete harm."
+            ></textarea>
+            <small>
+              This is the fairness argument — why the facts, timeline, and harm justify the relief being sought.
+            </small>
+          </div>
+
+          <div class="form-field">
+            <label for="pressure_path">Pressure Path</label>
+            <select id="pressure_path" name="pressure_path">
+              <option value="">— Select the next strategic move —</option>
+              <option value="demand_letter">Demand Letter</option>
+              <option value="administrative_complaint">Administrative Complaint</option>
+              <option value="bureau_dispute">Bureau Dispute / Reinvestigation</option>
+              <option value="eeoc_charge">EEOC Charge</option>
+              <option value="court_filing">Court Filing</option>
+              <option value="cure_notice">Cure Notice</option>
+              <option value="motion_practice">Motion Practice</option>
+              <option value="evidence_reinforcement">Evidence Reinforcement First</option>
+              <option value="negotiation">Negotiation / Settlement Demand</option>
+              <option value="other">Other — Describe Below</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="urgency_level">Urgency Level</label>
+            <select id="urgency_level" name="urgency_level">
+              <option value="">— Select urgency —</option>
+              <option value="immediate">Immediate — Deadline within 30 days</option>
+              <option value="high">High — Active harm ongoing</option>
+              <option value="standard">Standard — No imminent deadline</option>
+              <option value="low">Low — Preservation and preparation phase</option>
+            </select>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="equity_notes">Additional Equity Notes (Optional)</label>
+            <textarea
+              id="equity_notes"
+              name="equity_notes"
+              rows="3"
+              placeholder="Any additional context about the remedy strategy, alternative relief options, or factors that affect the equitable posture of this matter."
+            ></textarea>
+          </div>
+
+        </div>
+
+        <div class="module-actions">
+          <button class="action-btn action-btn-primary" type="submit">
+            Submit Equity Review
+          </button>
+          <a class="action-btn" href="/modules/signal-dock">Back to Signal Dock</a>
+          <a class="action-btn" href="/services">Back to Service Ports</a>
+        </div>
+      </form>
+
+    {% else %}
+
+      <div class="next-step-callout">
+        <h3>No Active Case Context Found</h3>
+        <p>
+          Equity Engine requires an active case. Start in Case Dock to capture
+          the matter, then complete Signal Dock before entering remedy framing.
+        </p>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-box">
+          <h3>What Equity Engine Does</h3>
+          <p>Frames requested relief, equitable posture, urgency level, and the strategic pressure path before the draft packet is assembled.</p>
+        </div>
+        <div class="module-box">
+          <h3>Where to Start</h3>
+          <p>Open Case Dock to begin the matter, then complete Signal Dock review before entering this module.</p>
+        </div>
+      </div>
+
+      <div class="module-actions">
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">
+          Start at Case Dock
+        </a>
+        <a class="action-btn" href="/modules/signal-dock">Go to Signal Dock</a>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
+      </div>
+
+    {% endif %}
   </div>
-
-  <div class="card-grid three-up" style="margin-top: 24px;">
-    <div class="feature-card">
-      <div class="feature-kicker">Remedy Logic</div>
-      <h3>Requested Relief</h3>
-      <p>Clarify exactly what outcome is being sought, whether correction, payment, stoppage, restoration, records, injunction, or administrative action.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-kicker">Positioning</div>
-      <h3>Equitable Posture</h3>
-      <p>Frame fairness, hardship, urgency, procedural imbalance, and the practical reasons a tribunal or decision-maker should take action.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-kicker">Next Move</div>
-      <h3>Pressure Path</h3>
-      <p>Determine whether the next move is demand, complaint, administrative filing, motion practice, cure notice, or evidence reinforcement.</p>
-    </div>
-  </div>
-
-  <div class="hero-card" style="margin-top: 28px;">
-    <div class="eyebrow">Module purpose</div>
-    <h2>Why this page matters now</h2>
-    <p class="muted">
-      This page makes the remedy layer visible inside the app now, without waiting on deeper deployment work. It preserves the build direction and gives the system a visible legal sequence.
-    </p>
-  </div>
-
-  <div class="card-grid two-up" style="margin-top: 24px;">
-    <a class="feature-card" href="/modules/signal-dock">
-      <div class="feature-kicker">Previous step</div>
-      <h3>Back to Signal Dock</h3>
-      <p>Return to review if notice timing, contradictions, or missing records still need to be cleaned up first.</p>
-      <span class="feature-link">Open Signal Dock →</span>
-    </a>
-
-    <a class="feature-card" href="/modules/draft-packet">
-      <div class="feature-kicker">Next step</div>
-      <h3>Continue to Draft Packet</h3>
-      <p>Move into output generation once the requested relief and remedy posture are clear enough to organize into draft form.</p>
-      <span class="feature-link">Open Draft Packet →</span>
-    </a>
-  </div>
-</section>
+</div>
 {% endblock %}

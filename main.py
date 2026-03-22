@@ -1168,12 +1168,173 @@ async def case_update_submit(
 
 @app.get("/modules/signal-dock", response_class=HTMLResponse)
 def signal_dock(request: Request):
-    return render(request, "signal_dock.html")
+    case_context = fetch_latest_case()
+    return render(request, "signal_dock.html", {"case_context": case_context})
+
+
+@app.post("/modules/signal-dock")
+async def signal_dock_submit(
+    request: Request,
+    critical_deadlines: str = Form(""),
+    notice_signals: str = Form(""),
+    risk_flags: str = Form(""),
+    signal_summary: str = Form(""),
+):
+    case_context = fetch_latest_case()
+    if not case_context:
+        return RedirectResponse("/modules/case-dock", status_code=303)
+
+    signal_block_parts = []
+    if critical_deadlines.strip():
+        signal_block_parts.append(f"CRITICAL DEADLINES\n{critical_deadlines.strip()}")
+    if notice_signals.strip():
+        signal_block_parts.append(f"NOTICE SIGNALS\n{notice_signals.strip()}")
+    if risk_flags.strip():
+        signal_block_parts.append(f"RISK FLAGS\n{risk_flags.strip()}")
+    if signal_summary.strip():
+        signal_block_parts.append(f"SIGNAL SUMMARY\n{signal_summary.strip()}")
+
+    signal_block = "\n\n".join(signal_block_parts)
+
+    updated_summary = case_context.get("summary", "")
+    if signal_block:
+        updated_summary = f"{updated_summary}\n\nSIGNAL DOCK REVIEW\n{signal_block}".strip()
+
+    case_data = {
+        "id": case_context["id"],
+        "matter_title": case_context["matter_title"],
+        "jurisdiction": case_context["jurisdiction"],
+        "issue_type": case_context["issue_type"],
+        "parties": case_context["parties"],
+        "timeline": case_context["timeline"],
+        "summary": updated_summary,
+        "requested_outcome": case_context["requested_outcome"],
+        "files": case_context.get("files", []),
+        "created_at": case_context["created_at"],
+    }
+
+    route_data = infer_case_route(case_data)
+    compliance_gate = build_compliance_gate(request, case_data, route_data)
+    route_data["compliance_gate"] = compliance_gate
+
+    case_folder_name, generated_docs = write_case_folder(
+        case_data, case_data["files"], route_data
+    )
+
+    case_data["route"] = route_data
+    case_data["case_folder_name"] = case_folder_name
+    case_data["generated_docs"] = generated_docs
+    case_data["compliance_gate"] = compliance_gate
+
+    update_case_record(case_data)
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Signal Review Saved",
+            "summary": "Deadlines, notice signals, and risk flags have been captured and appended to the active matter.",
+            "return_href": "/modules/case-dock",
+            "return_label": "Back to Case Dock",
+            "next_href": "/modules/equity-engine",
+            "next_label": "Continue to Equity Engine",
+            "record_id": case_context["id"],
+            "file_count": 0,
+            "step_number": 2,
+            "step_total": 4,
+            "step_name": "Signal Dock",
+            "why_next": "Signal review is complete. Equity Engine is the next step where requested relief, equitable posture, and strategic pressure path are framed before the draft packet is built.",
+        },
+    )
 
 
 @app.get("/modules/equity-engine", response_class=HTMLResponse)
 def equity_engine(request: Request):
-    return render(request, "equity_engine.html")
+    case_context = fetch_latest_case()
+    return render(request, "equity_engine.html", {"case_context": case_context})
+
+
+@app.post("/modules/equity-engine")
+async def equity_engine_submit(
+    request: Request,
+    relief_sought: str = Form(""),
+    equitable_posture: str = Form(""),
+    pressure_path: str = Form(""),
+    urgency_level: str = Form(""),
+    equity_notes: str = Form(""),
+):
+    case_context = fetch_latest_case()
+    if not case_context:
+        return RedirectResponse("/modules/case-dock", status_code=303)
+
+    equity_block_parts = []
+    if relief_sought.strip():
+        equity_block_parts.append(f"RELIEF SOUGHT\n{relief_sought.strip()}")
+    if equitable_posture.strip():
+        equity_block_parts.append(f"EQUITABLE POSTURE\n{equitable_posture.strip()}")
+    if pressure_path.strip():
+        equity_block_parts.append(f"PRESSURE PATH\n{pressure_path.strip()}")
+    if urgency_level.strip():
+        equity_block_parts.append(f"URGENCY LEVEL\n{urgency_level.strip()}")
+    if equity_notes.strip():
+        equity_block_parts.append(f"EQUITY NOTES\n{equity_notes.strip()}")
+
+    equity_block = "\n\n".join(equity_block_parts)
+
+    updated_summary = case_context.get("summary", "")
+    if equity_block:
+        updated_summary = f"{updated_summary}\n\nEQUITY ENGINE REVIEW\n{equity_block}".strip()
+
+    updated_outcome = case_context.get("requested_outcome", "")
+    if relief_sought.strip():
+        updated_outcome = relief_sought.strip()
+
+    case_data = {
+        "id": case_context["id"],
+        "matter_title": case_context["matter_title"],
+        "jurisdiction": case_context["jurisdiction"],
+        "issue_type": case_context["issue_type"],
+        "parties": case_context["parties"],
+        "timeline": case_context["timeline"],
+        "summary": updated_summary,
+        "requested_outcome": updated_outcome,
+        "files": case_context.get("files", []),
+        "created_at": case_context["created_at"],
+    }
+
+    route_data = infer_case_route(case_data)
+    compliance_gate = build_compliance_gate(request, case_data, route_data)
+    route_data["compliance_gate"] = compliance_gate
+
+    case_folder_name, generated_docs = write_case_folder(
+        case_data, case_data["files"], route_data
+    )
+
+    case_data["route"] = route_data
+    case_data["case_folder_name"] = case_folder_name
+    case_data["generated_docs"] = generated_docs
+    case_data["compliance_gate"] = compliance_gate
+
+    update_case_record(case_data)
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Equity Review Saved",
+            "summary": "Relief framing, equitable posture, and pressure path have been captured and added to the active matter.",
+            "return_href": "/modules/signal-dock",
+            "return_label": "Back to Signal Dock",
+            "next_href": "/modules/navigator-ai",
+            "next_label": "Continue to Navigator AI",
+            "record_id": case_context["id"],
+            "file_count": 0,
+            "step_number": 3,
+            "step_total": 4,
+            "step_name": "Equity Engine",
+            "why_next": "Equity review is complete. Navigator AI is the next step where the full case context, route, and remedy framing are assembled into a recommended action path and draft packet.",
+        },
+    )
 
 
 @app.get("/modules/labor-signal", response_class=HTMLResponse)

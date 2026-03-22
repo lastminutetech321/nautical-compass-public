@@ -34,15 +34,37 @@
     <h1>Navigator AI</h1>
     <p>
       <strong>You are in Step 4 of 4.</strong>
-      Navigator AI is the recommendation room. In this recovery build,
-      it is set to safe mode until deeper case logic is turned back on.
+      Navigator AI is the recommendation room. It assembles the full case context,
+      route logic, compliance gate, and remedy framing into a clear action path.
     </p>
 
     {% if case_context %}
+
       <div class="next-step-callout">
         <h3>Recommended Route</h3>
         <p><strong>{{ case_context.route.route_name }}</strong></p>
       </div>
+
+      {% if case_context.compliance_gate %}
+      <div class="module-box module-box-full" style="margin-top:18px;">
+        <h3>AI Compliance Gate</h3>
+        <p>
+          <strong>Gate Status:</strong> {{ case_context.compliance_gate.gate_status }}
+          &nbsp;|&nbsp;
+          <strong>Human Review:</strong> {{ case_context.compliance_gate.human_review_status }}
+          &nbsp;|&nbsp;
+          <strong>Risk Level:</strong> {{ case_context.compliance_gate.request_profile.risk_level|upper }}
+        </p>
+        {% if case_context.compliance_gate.request_profile.blocking_flags %}
+        <p style="margin-top:8px;">
+          <strong>Blocking Flags:</strong>
+          {% for flag in case_context.compliance_gate.request_profile.blocking_flags %}
+            <span class="flag flag-top">{{ flag }}</span>
+          {% endfor %}
+        </p>
+        {% endif %}
+      </div>
+      {% endif %}
 
       <div class="module-grid">
         <div class="module-box">
@@ -55,8 +77,18 @@
           <p>{{ case_context.jurisdiction }}</p>
         </div>
 
+        <div class="module-box">
+          <h3>Issue Type</h3>
+          <p>{{ case_context.issue_type or "Not specified" }}</p>
+        </div>
+
+        <div class="module-box">
+          <h3>Requested Outcome</h3>
+          <p>{{ case_context.requested_outcome }}</p>
+        </div>
+
         <div class="module-box module-box-full">
-          <h3>Why This Route</h3>
+          <h3>Route Rationale</h3>
           <p>• {{ case_context.route.rationale[0] }}</p>
           <p>• {{ case_context.route.rationale[1] }}</p>
         </div>
@@ -69,6 +101,20 @@
             {% endfor %}
           </ul>
         </div>
+
+        {% if case_context.compliance_gate and case_context.compliance_gate.legal_basis %}
+        <div class="module-box module-box-full">
+          <h3>Legal Basis</h3>
+          <ul class="recommendation-list">
+            {% for item in case_context.compliance_gate.legal_basis %}
+              <li>
+                <strong>{{ item.authority }}</strong> — {{ item.reference }}<br>
+                {{ item.why_it_applies }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
 
         <div class="module-box module-box-full">
           <h3>Generated Documents</h3>
@@ -85,42 +131,41 @@
       </div>
 
       <div class="module-actions">
-        <a class="action-btn action-btn-primary" href="/services">
-          Back to Service Ports
+        <a class="action-btn action-btn-primary" href="/modules/draft-packet">
+          Open Draft Packet
         </a>
-        <a class="action-btn" href="/hall">
-          Return to Command Hall
-        </a>
+        <a class="action-btn" href="/modules/case-update">Add More Facts</a>
+        <a class="action-btn" href="/services">Back to Service Ports</a>
       </div>
+
     {% else %}
+
       <div class="next-step-callout">
         <h3>No Active Case Context Found</h3>
         <p>
-          Navigator AI is currently running in safe recovery mode.
-          The legal flow is working, but deep recommendation logic has not been turned back on yet.
+          Navigator AI requires an active case. Complete the full legal flow —
+          Case Dock, Signal Dock, and Equity Engine — before entering this module.
         </p>
       </div>
 
       <div class="module-grid">
         <div class="module-box">
-          <h3>Current Status</h3>
-          <p>The user successfully completed the guided legal flow.</p>
+          <h3>What Navigator AI Does</h3>
+          <p>Assembles the full case context, route logic, compliance gate, and remedy framing into a clear recommended action path and draft packet.</p>
         </div>
-
         <div class="module-box">
-          <h3>Next Practical Move</h3>
-          <p>Return to Services or Command Hall until Navigator logic is restored.</p>
+          <h3>Where to Start</h3>
+          <p>Begin at Case Dock, complete Signal Dock review, then frame the remedy in Equity Engine before arriving here.</p>
         </div>
       </div>
 
       <div class="module-actions">
-        <a class="action-btn action-btn-primary" href="/services">
-          Back to Service Ports
+        <a class="action-btn action-btn-primary" href="/modules/case-dock">
+          Start at Case Dock
         </a>
-        <a class="action-btn" href="/hall">
-          Return to Command Hall
-        </a>
+        <a class="action-btn" href="/hall">Return to Command Hall</a>
       </div>
+
     {% endif %}
   </div>
 </div>
