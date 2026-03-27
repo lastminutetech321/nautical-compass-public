@@ -102,6 +102,7 @@
           </ul>
         </div>
 
+        {% if case_context.route.module_state.signal_dock.status == "complete" %}
         <div class="module-box module-box-full">
           <h3>Signal Dock Review</h3>
           <p><strong>Critical Deadlines:</strong><br>{{ case_context.route.module_state.signal_dock.review.critical_deadlines or "No deadlines captured yet." }}</p>
@@ -109,7 +110,9 @@
           <p><strong>Risk Flags:</strong><br>{{ case_context.route.module_state.signal_dock.review.risk_flags or "No risk flags captured yet." }}</p>
           <p><strong>Signal Summary:</strong><br>{{ case_context.route.module_state.signal_dock.review.signal_summary or "No signal summary captured yet." }}</p>
         </div>
+        {% endif %}
 
+        {% if case_context.route.module_state.equity_engine.status == "complete" %}
         <div class="module-box module-box-full">
           <h3>Equity Engine Review</h3>
           <p><strong>Relief Sought:</strong><br>{{ case_context.route.module_state.equity_engine.review.relief_sought or case_context.requested_outcome }}</p>
@@ -118,6 +121,7 @@
           <p><strong>Urgency Level:</strong> {{ case_context.route.module_state.equity_engine.review.urgency_level or "Not selected" }}</p>
           <p><strong>Additional Notes:</strong><br>{{ case_context.route.module_state.equity_engine.review.equity_notes or "No additional equity notes captured yet." }}</p>
         </div>
+        {% endif %}
 
         {% if case_context.compliance_gate and case_context.compliance_gate.legal_basis %}
         <div class="module-box module-box-full">

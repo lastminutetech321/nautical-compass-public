@@ -57,6 +57,7 @@
           </ul>
         </div>
 
+        {% if case_context.route.module_state.signal_dock.status == "complete" %}
         <div class="module-box module-box-full">
           <h3>Signal Dock Review</h3>
           <ul class="recommendation-list">
@@ -66,7 +67,9 @@
             <li><strong>Signal Summary:</strong> {{ case_context.route.module_state.signal_dock.review.signal_summary or "No signal summary captured yet." }}</li>
           </ul>
         </div>
+        {% endif %}
 
+        {% if case_context.route.module_state.equity_engine.status == "complete" %}
         <div class="module-box module-box-full">
           <h3>Equity Engine Review</h3>
           <ul class="recommendation-list">
@@ -77,6 +80,7 @@
             <li><strong>Additional Notes:</strong> {{ case_context.route.module_state.equity_engine.review.equity_notes or "No additional equity notes captured yet." }}</li>
           </ul>
         </div>
+        {% endif %}
 
         {% if case_context.compliance_gate %}
         <div class="module-box module-box-full">
