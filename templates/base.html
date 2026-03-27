@@ -18,13 +18,7 @@
     </a>
 
     <nav class="main-nav">
-      <a href="/">Bridge</a>
-      <a href="/hall">Hall</a>
-      <a href="/services">Ports</a>
-      <a href="/dashboards">Decks</a>
-      <a href="/lead">Lead</a>
-      <a href="/partner">Partner</a>
-      <a href="/sponsor">Sponsor</a>
+      <a href="/">Home</a>
       <a class="primary-nav-link" href="/checkout">Get Access</a>
     </nav>
   </div>
@@ -75,6 +69,23 @@
         audio.currentTime = 0;
       }
     } catch (err) {
+      on = false;
+      draw();
+    }
+  }
+
+  draw();
+
+  btn.addEventListener("click", function () {
+    setSound(!on);
+  });
+})();
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
+ (err) {
       on = false;
       draw();
     }

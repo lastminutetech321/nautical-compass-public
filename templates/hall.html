@@ -17,17 +17,21 @@
     </header>
 
     <div class="hall-door-grid">
-      <a class="hall-door" href="/services">
+      <a class="hall-door" href="/checkout">
         <span class="door-light"></span>
-        <span class="door-title">Legal Navigation</span>
-        <span class="door-copy">Case Dock, records, disputes, structured document flow</span>
-        <span class="door-cta">Enter Port</span>
+        <span class="door-title">Entry Access</span>
+        <span class="door-copy">Open the current live access and checkout path.</span>
+        <span class="door-cta">Open Access</span>
       </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
 
-      <a class="hall-door" href="/intake/production">
-        <span class="door-light"></span>
-        <span class="door-title">Production Command</span>
-        <span class="door-copy">AV requests, show flow, logistics, coordinated routing</span>
+{% block scripts %}
+<script src="/static/hallway.js?v={{ v }}"></script>
+{% endblock %}
+rdinated routing</span>
         <span class="door-cta">Open Production</span>
       </a>
 
