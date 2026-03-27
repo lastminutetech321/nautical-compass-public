@@ -63,6 +63,14 @@
             Equity Engine with contradictions in the record weakens every later action.
           </p>
         </div>
+        <div class="module-box module-box-full">
+          <h3>Case Dock Intake Snapshot</h3>
+          <p><strong>Issue Type:</strong> {{ case_context.route.module_state.case_dock.snapshot.issue_type or case_context.issue_type }}</p>
+          <p><strong>Requested Outcome:</strong> {{ case_context.route.module_state.case_dock.snapshot.requested_outcome or case_context.requested_outcome }}</p>
+          <p><strong>Files Captured:</strong> {{ case_context.route.module_state.case_dock.snapshot.file_count if case_context.route.module_state.case_dock.snapshot.file_count is not none else case_context.files|length }}</p>
+          <p><strong>Parties:</strong><br>{{ case_context.route.module_state.case_dock.snapshot.parties or case_context.parties }}</p>
+          <p><strong>Timeline:</strong><br>{{ case_context.route.module_state.case_dock.snapshot.timeline or case_context.timeline }}</p>
+        </div>
       </div>
 
       <form

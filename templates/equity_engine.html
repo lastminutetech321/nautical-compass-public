@@ -79,6 +79,13 @@
             {% endfor %}
           </p>
         </div>
+        <div class="module-box module-box-full">
+          <h3>Signal Dock Review Snapshot</h3>
+          <p><strong>Critical Deadlines:</strong><br>{{ case_context.route.module_state.signal_dock.review.critical_deadlines or "No deadlines captured yet." }}</p>
+          <p><strong>Notice Signals:</strong><br>{{ case_context.route.module_state.signal_dock.review.notice_signals or "No notices captured yet." }}</p>
+          <p><strong>Risk Flags:</strong><br>{{ case_context.route.module_state.signal_dock.review.risk_flags or "No risk flags captured yet." }}</p>
+          <p><strong>Signal Summary:</strong><br>{{ case_context.route.module_state.signal_dock.review.signal_summary or "No signal summary captured yet." }}</p>
+        </div>
       </div>
 
       <form

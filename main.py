@@ -726,6 +726,31 @@ def fetch_latest_case():
     if compliance and "compliance_gate" not in route:
         route["compliance_gate"] = compliance
 
+    route.setdefault("module_state", {})
+    route["module_state"].setdefault(
+        "case_dock",
+        {
+            "status": "complete",
+            "completed_at": row["created_at"],
+            "snapshot": {
+                "matter_title": row["matter_title"],
+                "jurisdiction": row["jurisdiction"],
+                "issue_type": row["issue_type"],
+                "requested_outcome": row["requested_outcome"],
+                "parties": row["parties"],
+                "timeline": row["timeline"],
+                "summary": row["summary"],
+                "file_count": len(json.loads(row["files_json"])) if row["files_json"] else 0,
+            },
+        },
+    )
+    route["module_state"].setdefault(
+        "signal_dock", {"status": "pending", "completed_at": None, "review": {}}
+    )
+    route["module_state"].setdefault(
+        "equity_engine", {"status": "pending", "completed_at": None, "review": {}}
+    )
+
     return {
         "id": row["id"],
         "matter_title": row["matter_title"],
@@ -1054,6 +1079,32 @@ async def case_dock_submit(
     }
 
     route_data = infer_case_route(case_data)
+    route_data["module_state"] = {
+        "case_dock": {
+            "status": "complete",
+            "completed_at": int(time.time()),
+            "snapshot": {
+                "matter_title": matter_title,
+                "jurisdiction": jurisdiction,
+                "issue_type": issue_type,
+                "requested_outcome": requested_outcome,
+                "parties": parties,
+                "timeline": timeline,
+                "summary": summary,
+                "file_count": len(saved_files),
+            },
+        },
+        "signal_dock": {
+            "status": "pending",
+            "completed_at": None,
+            "review": {},
+        },
+        "equity_engine": {
+            "status": "pending",
+            "completed_at": None,
+            "review": {},
+        },
+    }
     compliance_gate = build_compliance_gate(request, case_data, route_data)
     route_data["compliance_gate"] = compliance_gate
 
@@ -1134,6 +1185,25 @@ async def case_update_submit(
     }
 
     route_data = infer_case_route(case_data)
+    existing_module_state = case_context.get("route", {}).get("module_state", {})
+    route_data["module_state"] = {
+        "case_dock": {
+            "status": "complete",
+            "completed_at": existing_module_state.get("case_dock", {}).get("completed_at") or case_context.get("created_at"),
+            "snapshot": {
+                "matter_title": case_data["matter_title"],
+                "jurisdiction": case_data["jurisdiction"],
+                "issue_type": case_data["issue_type"],
+                "requested_outcome": case_data["requested_outcome"],
+                "parties": case_data["parties"],
+                "timeline": case_data["timeline"],
+                "summary": case_data["summary"],
+                "file_count": len(merged_files),
+            },
+        },
+        "signal_dock": existing_module_state.get("signal_dock", {"status": "pending", "completed_at": None, "review": {}}),
+        "equity_engine": existing_module_state.get("equity_engine", {"status": "pending", "completed_at": None, "review": {}}),
+    }
     compliance_gate = build_compliance_gate(request, case_data, route_data)
     route_data["compliance_gate"] = compliance_gate
 
@@ -1200,6 +1270,13 @@ async def signal_dock_submit(
     if signal_block:
         updated_summary = f"{updated_summary}\n\nSIGNAL DOCK REVIEW\n{signal_block}".strip()
 
+    signal_review = {
+        "critical_deadlines": critical_deadlines.strip(),
+        "notice_signals": notice_signals.strip(),
+        "risk_flags": risk_flags.strip(),
+        "signal_summary": signal_summary.strip(),
+    }
+
     case_data = {
         "id": case_context["id"],
         "matter_title": case_context["matter_title"],
@@ -1214,6 +1291,29 @@ async def signal_dock_submit(
     }
 
     route_data = infer_case_route(case_data)
+    existing_module_state = case_context.get("route", {}).get("module_state", {})
+    route_data["module_state"] = {
+        "case_dock": existing_module_state.get("case_dock", {
+            "status": "complete",
+            "completed_at": case_context.get("created_at"),
+            "snapshot": {
+                "matter_title": case_context["matter_title"],
+                "jurisdiction": case_context["jurisdiction"],
+                "issue_type": case_context["issue_type"],
+                "requested_outcome": case_context["requested_outcome"],
+                "parties": case_context["parties"],
+                "timeline": case_context["timeline"],
+                "summary": case_context.get("summary", ""),
+                "file_count": len(case_context.get("files", [])),
+            },
+        }),
+        "signal_dock": {
+            "status": "complete",
+            "completed_at": int(time.time()),
+            "review": signal_review,
+        },
+        "equity_engine": existing_module_state.get("equity_engine", {"status": "pending", "completed_at": None, "review": {}}),
+    }
     compliance_gate = build_compliance_gate(request, case_data, route_data)
     route_data["compliance_gate"] = compliance_gate
 
@@ -1289,6 +1389,14 @@ async def equity_engine_submit(
     if relief_sought.strip():
         updated_outcome = relief_sought.strip()
 
+    equity_review = {
+        "relief_sought": relief_sought.strip(),
+        "equitable_posture": equitable_posture.strip(),
+        "pressure_path": pressure_path.strip(),
+        "urgency_level": urgency_level.strip(),
+        "equity_notes": equity_notes.strip(),
+    }
+
     case_data = {
         "id": case_context["id"],
         "matter_title": case_context["matter_title"],
@@ -1303,6 +1411,29 @@ async def equity_engine_submit(
     }
 
     route_data = infer_case_route(case_data)
+    existing_module_state = case_context.get("route", {}).get("module_state", {})
+    route_data["module_state"] = {
+        "case_dock": existing_module_state.get("case_dock", {
+            "status": "complete",
+            "completed_at": case_context.get("created_at"),
+            "snapshot": {
+                "matter_title": case_context["matter_title"],
+                "jurisdiction": case_context["jurisdiction"],
+                "issue_type": case_context["issue_type"],
+                "requested_outcome": case_context["requested_outcome"],
+                "parties": case_context["parties"],
+                "timeline": case_context["timeline"],
+                "summary": case_context.get("summary", ""),
+                "file_count": len(case_context.get("files", [])),
+            },
+        }),
+        "signal_dock": existing_module_state.get("signal_dock", {"status": "pending", "completed_at": None, "review": {}}),
+        "equity_engine": {
+            "status": "complete",
+            "completed_at": int(time.time()),
+            "review": equity_review,
+        },
+    }
     compliance_gate = build_compliance_gate(request, case_data, route_data)
     route_data["compliance_gate"] = compliance_gate
 
