@@ -7,33 +7,60 @@
     <div class="module-kicker">ACCESS PORT</div>
     <h1>Get Access</h1>
     <p>
-      Choose the correct access lane. Entry Access is the first paid step for case submission.
-      Further Action Required is the second tier when the matter needs deeper work.
+      Nautical Compass is active now for structured access, guided review, and tiered support.
+      Choose the lane that fits your current need. Higher tiers provide deeper support, priority, and escalation.
     </p>
 
     <div class="module-grid">
       <div class="module-box">
-        <h3>Entry Access — $25</h3>
-        <p>Submit the case into NC/JE and begin guided route review.</p>
+        <h3>NC Access — $25/month</h3>
+        <p>
+          Structured entry into the NC system. Includes intake, issue pathway breakdown,
+          next-step guidance, and risk/impact indicators.
+        </p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/entry_access">Choose Entry Access</a>
+          <a class="action-btn action-btn-primary" href="/checkout/access">Choose NC Access</a>
         </div>
       </div>
 
       <div class="module-box">
-        <h3>Further Action Required — $135</h3>
-        <p>Advance to the next legal tier when deeper action, expanded drafting, or next-stage work is needed.</p>
+        <h3>NC Protection — $75/month</h3>
+        <p>
+          Expanded support with deeper analysis, stronger route development,
+          and more structured guidance for users who need more than initial direction.
+        </p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/further_action">Choose Further Action</a>
+          <a class="action-btn action-btn-primary" href="/checkout/protection">Choose NC Protection</a>
         </div>
+      </div>
+
+      <div class="module-box">
+        <h3>NC Command — $135/month</h3>
+        <p>
+          Full system access with director-level review, priority handling,
+          and advanced support for complex situations requiring maximum attention.
+        </p>
+        <div class="module-actions">
+          <a class="action-btn action-btn-primary" href="/checkout/command">Choose NC Command</a>
+        </div>
+      </div>
+
+      <div class="module-box module-box-full">
+        <h3>System Note</h3>
+        <p>
+          NC Access provides clarity and direction.
+          NC Protection adds deeper structured support.
+          NC Command provides priority handling, escalation, and advanced support.
+        </p>
       </div>
 
       <div class="module-box module-box-full">
         <h3>Stripe Setup</h3>
         <p>
           Add these DigitalOcean environment variables for hosted checkout:
-          <br><strong>STRIPE_LINK_ENTRY_ACCESS</strong>
-          <br><strong>STRIPE_LINK_FURTHER_ACTION</strong>
+          <br><strong>STRIPE_LINK_NC_ACCESS</strong>
+          <br><strong>STRIPE_LINK_NC_PROTECTION</strong>
+          <br><strong>STRIPE_LINK_NC_COMMAND</strong>
         </p>
       </div>
     </div>
