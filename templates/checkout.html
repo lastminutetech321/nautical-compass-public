@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Get Access • Nautical Compass{% endblock %}
+{% block title %}Checkout • Nautical Compass{% endblock %}
 
 {% block content %}
 <div class="page-shell">
   <div class="page-card">
-    <div class="module-kicker">ACCESS PORT</div>
-    <h1>Get Access</h1>
+    <div class="module-kicker">CHECKOUT PORT</div>
+    <h1>Confirm Your Access Lane</h1>
     <p>
-      Nautical Compass is active now for structured access, guided review, and tiered support.
-      Choose the lane that fits your current need. Higher tiers provide deeper support, priority, and escalation.
+      Choose the active Nautical Compass lane that fits your current need.
+      Each tier provides a different level of structure, support, priority, and escalation.
     </p>
 
     <div class="module-grid">
@@ -19,7 +19,7 @@
           next-step guidance, and risk/impact indicators.
         </p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/access">Choose NC Access</a>
+          <a class="action-btn action-btn-primary" href="{{ nc_access_link or '#' }}">Continue with NC Access</a>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
           and more structured guidance for users who need more than initial direction.
         </p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/protection">Choose NC Protection</a>
+          <a class="action-btn action-btn-primary" href="{{ nc_protection_link or '#' }}">Continue with NC Protection</a>
         </div>
       </div>
 
@@ -41,16 +41,15 @@
           and advanced support for complex situations requiring maximum attention.
         </p>
         <div class="module-actions">
-          <a class="action-btn action-btn-primary" href="/checkout/command">Choose NC Command</a>
+          <a class="action-btn action-btn-primary" href="{{ nc_command_link or '#' }}">Continue with NC Command</a>
         </div>
       </div>
 
       <div class="module-box module-box-full">
-        <h3>System Note</h3>
+        <h3>What Happens After Checkout</h3>
         <p>
-          NC Access provides clarity and direction.
-          NC Protection adds deeper structured support.
-          NC Command provides priority handling, escalation, and advanced support.
+          After checkout, you will enter the selected NC lane and continue through the current live system path.
+          Higher tiers provide deeper support, stronger protection, and greater priority inside the system.
         </p>
       </div>
 
@@ -66,6 +65,7 @@
     </div>
 
     <div class="module-actions">
+      <a class="action-btn" href="/get_access">Back to Access</a>
       <a class="action-btn" href="/services">Back to Services</a>
       <a class="action-btn" href="/">Back to Bridge</a>
     </div>
