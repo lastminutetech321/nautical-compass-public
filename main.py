@@ -111,22 +111,10 @@ def render(request: Request, template: str, data=None):
 
 
 def get_checkout_links():
-    entry_access = (
-        os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
-        or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
-    )
-    further_action = (
-        os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
-        or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
-    )
-    labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
-    labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
-
     return {
-        "entry_access": entry_access,
-        "further_action": further_action,
-        "labor_signal_basic": labor_signal_basic,
-        "labor_signal_pro": labor_signal_pro,
+        "access": os.getenv("STRIPE_LINK_NC_ACCESS", "").strip(),
+        "protection": os.getenv("STRIPE_LINK_NC_PROTECTION", "").strip(),
+        "command": os.getenv("STRIPE_LINK_NC_COMMAND", "").strip(),
     }
 
 
@@ -813,7 +801,16 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
-    return render(request, "checkout.html", {"checkout_links": get_checkout_links()})
+    links = get_checkout_links()
+    return render(
+        request,
+        "checkout.html",
+        {
+            "nc_access_link": links.get("access", ""),
+            "nc_protection_link": links.get("protection", ""),
+            "nc_command_link": links.get("command", ""),
+        },
+    )
 
 
 @app.get("/checkout/{plan_key}", response_class=HTMLResponse)
@@ -822,10 +819,9 @@ def checkout_plan(request: Request, plan_key: str):
     checkout_url = links.get(plan_key, "")
 
     plan_titles = {
-        "entry_access": "Entry Access — $25",
-        "further_action": "Further Action Required — $135",
-        "labor_signal_basic": "Labor Signal Basic",
-        "labor_signal_pro": "Labor Signal Pro",
+        "access": "NC Access — $25/month",
+        "protection": "NC Protection — $75/month",
+        "command": "NC Command — $135/month",
     }
 
     if checkout_url:
