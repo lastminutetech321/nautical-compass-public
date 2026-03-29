@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "v1",
+  "scoringEngine": {
+    "scores": {
+      "classificationScore": {
+        "range": [0, 100],
+        "purpose": "Measures how clearly the user's current worker/business classification can be determined.",
+        "inputs": [
+          "workProfile.workerType",
+          "incomeProfile.receivesW2",
+          "incomeProfile.receives1099",
+          "workProfile.setsOwnSchedule",
+          "workProfile.providesOwnTools",
+          "businessProfile.operatingCapacity",
+          "businessProfile.entityType"
+        ]
+      },
+      "savingsOpportunityScore": {
+        "range": [0, 100],
+        "purpose": "Measures likely opportunity for tax, structure, or records-based savings.",
+        "inputs": [
+          "incomeProfile.estimatedAnnualGrossIncome",
+          "incomeProfile.estimatedAnnualNetIncome",
+          "expenseProfile.estimatedAnnualBusinessExpenses",
+          "expenseProfile.tracksMileage",
+          "complianceProfile.recordkeepingStrength",
+          "businessProfile.entityType",
+          "businessProfile.separateBusinessBankAccount"
+        ]
+      },
+      "riskScore": {
+        "range": [0, 100],
+        "purpose": "Measures legal, operational, and structural exposure.",
+        "inputs": [
+          "businessProfile.entityType",
+          "businessProfile.separateBusinessBankAccount",
+          "complianceProfile.hasInsurance",
+          "complianceProfile.usesWrittenContracts",
+          "complianceProfile.recordkeepingStrength",
+          "incomeProfile.hasUnpaidInvoices",
+          "complaintProfile.hasComplaintOrDispute"
+        ]
+      },
+      "complaintStrengthScore": {
+        "range": [0, 100],
+        "purpose": "Measures how usable and supportable a complaint is based on facts, timeline, harm, and evidence.",
+        "inputs": [
+          "complaintTemplate.shortTitle",
+          "complaintTemplate.plainLanguageSummary",
+          "complaintTemplate.whatHappened",
+          "complaintTemplate.targetName",
+          "complaintTemplate.harmTypes",
+          "complaintTemplate.financialLossAmount",
+          "complaintTemplate.timelineEvents",
+          "complaintTemplate.relatedEvidenceIds"
+        ]
+      },
+      "documentReadinessScore": {
+        "range": [0, 100],
+        "purpose": "Measures readiness to generate forms and profiles from intake data.",
+        "inputs": [
+          "documentProfile.w9Ready",
+          "documentProfile.invoiceReady",
+          "documentProfile.contractorProfileReady",
+          "identityProfile.fullLegalName",
+          "identityProfile.email",
+          "identityProfile.phone",
+          "businessProfile.businessName"
+        ]
+      },
+      "entityReadinessScore": {
+        "range": [0, 100],
+        "purpose": "Measures whether the user is ready for entity formation or structure upgrade.",
+        "inputs": [
+          "incomeProfile.estimatedAnnualGrossIncome",
+          "businessProfile.entityType",
+          "businessProfile.separateBusinessBankAccount",
+          "complianceProfile.recordkeepingStrength",
+          "complianceProfile.usesWrittenContracts",
+          "complianceProfile.hasInsurance"
+        ]
+      }
+    },
+    "thresholds": {
+      "low": [0, 24],
+      "moderate": [25, 49],
+      "strong": [50, 74],
+      "high": [75, 100]
+    },
+    "labels": {
+      "classificationScore": {
+        "0-24": "unclear",
+        "25-49": "partially_clear",
+        "50-74": "mostly_clear",
+        "75-100": "clear"
+      },
+      "savingsOpportunityScore": {
+        "0-24": "minimal",
+        "25-49": "possible",
+        "50-74": "meaningful",
+        "75-100": "high_opportunity"
+      },
+      "riskScore": {
+        "0-24": "guarded",
+        "25-49": "elevated",
+        "50-74": "high",
+        "75-100": "critical"
+      },
+      "complaintStrengthScore": {
+        "0-24": "weak",
+        "25-49": "developing",
+        "50-74": "usable",
+        "75-100": "strong"
+      },
+      "documentReadinessScore": {
+        "0-24": "not_ready",
+        "25-49": "partial",
+        "50-74": "mostly_ready",
+        "75-100": "ready"
+      },
+      "entityReadinessScore": {
+        "0-24": "not_ready",
+        "25-49": "early",
+        "50-74": "emerging",
+        "75-100": "ready"
+      }
+    },
+    "ruleHints": {
+      "classificationScore": [
+        "Increase when workerType, payout type, and operating capacity align.",
+        "Decrease when income signals conflict or are missing."
+      ],
+      "savingsOpportunityScore": [
+        "Increase with higher income, weak recordkeeping, and deductible expense activity.",
+        "Increase when user lacks mileage tracking or structure despite meaningful income."
+      ],
+      "riskScore": [
+        "Increase when no entity, no separation of finances, no insurance, and no written contracts.",
+        "Increase when unpaid invoices or open complaints exist."
+      ],
+      "complaintStrengthScore": [
+        "Increase when target, incident narrative, timeline, harm, and evidence are present.",
+        "Decrease when complaint lacks dates, target, harm, or evidence links."
+      ],
+      "documentReadinessScore": [
+        "Increase when core identity and business fields are present and document flags are true."
+      ],
+      "entityReadinessScore": [
+        "Increase when income is meaningful and business practices show upgrade readiness."
+      ]
+    },
+    "derivedOutputs": {
+      "overallPositionLabel": {
+        "sourceScores": [
+          "classificationScore",
+          "savingsOpportunityScore",
+          "riskScore",
+          "complaintStrengthScore",
+          "entityReadinessScore"
+        ],
+        "possibleLabels": [
+          "early_stage",
+          "unprotected_operator",
+          "developing_business",
+          "growth_ready",
+          "complaint_ready",
+          "high_exposure"
+        ]
+      }
+    }
+  }
+}

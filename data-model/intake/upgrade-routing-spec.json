@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "v1",
+  "upgradeRouting": {
+    "modules": {
+      "tax_positioning": {
+        "label": "Tax Positioning",
+        "description": "Guides deduction setup, tax posture review, and quarterly tax readiness."
+      },
+      "business_formation": {
+        "label": "Business Formation",
+        "description": "Guides entity setup, EIN workflow, and structural separation."
+      },
+      "invoice_ops": {
+        "label": "Invoice + Payment Ops",
+        "description": "Sets up invoicing, receivables, payment logic, and profile delivery."
+      },
+      "complaint_curation": {
+        "label": "Complaint Curation",
+        "description": "Organizes disputes into timelines, summaries, and evidence-linked complaint packets."
+      },
+      "legal_intake": {
+        "label": "Legal Intake / Escalation",
+        "description": "Routes stronger matters toward civil, regulatory, or dispute-ready intake paths."
+      },
+      "protection_module": {
+        "label": "Protection Module",
+        "description": "Focuses on contracts, insurance, structural separation, and risk reduction."
+      },
+      "full_growth_package": {
+        "label": "Full Growth Package",
+        "description": "Combines positioning, protection, complaints, and business scaling."
+      }
+    },
+    "routingRules": [
+      {
+        "routeId": "route_tax_positioning",
+        "when": {
+          "savingsOpportunityScoreMin": 50
+        },
+        "recommend": [
+          "tax_positioning"
+        ],
+        "priorityActions": [
+          "review_deductions",
+          "enable_quarterly_tax_setup"
+        ]
+      },
+      {
+        "routeId": "route_business_formation",
+        "when": {
+          "entityReadinessScoreMin": 50,
+          "entityTypeIn": [
+            "none"
+          ]
+        },
+        "recommend": [
+          "business_formation"
+        ],
+        "priorityActions": [
+          "review_structure_options",
+          "prepare_entity_upgrade"
+        ]
+      },
+      {
+        "routeId": "route_invoice_ops",
+        "when": {
+          "workerTypeIn": [
+            "independent_contractor"
+          ],
+          "hasUnpaidInvoices": true
+        },
+        "recommend": [
+          "invoice_ops"
+        ],
+        "priorityActions": [
+          "generate_invoice",
+          "review_receivables"
+        ]
+      },
+      {
+        "routeId": "route_complaint_curation",
+        "when": {
+          "hasComplaintOrDispute": true
+        },
+        "recommend": [
+          "complaint_curation"
+        ],
+        "priorityActions": [
+          "build_timeline",
+          "map_evidence",
+          "generate_complaint_summary"
+        ]
+      },
+      {
+        "routeId": "route_legal_intake",
+        "when": {
+          "complaintStrengthScoreMin": 50
+        },
+        "recommend": [
+          "legal_intake"
+        ],
+        "priorityActions": [
+          "open_legal_intake",
+          "review_escalation_paths"
+        ]
+      },
+      {
+        "routeId": "route_protection_module",
+        "when": {
+          "riskScoreMin": 50
+        },
+        "recommend": [
+          "protection_module"
+        ],
+        "priorityActions": [
+          "review_contract_gaps",
+          "review_insurance_gaps",
+          "review_structure_risk"
+        ]
+      },
+      {
+        "routeId": "route_full_growth_package",
+        "when": {
+          "savingsOpportunityScoreMin": 50,
+          "entityReadinessScoreMin": 50,
+          "riskScoreMin": 25
+        },
+        "recommend": [
+          "full_growth_package"
+        ],
+        "priorityActions": [
+          "view_growth_plan",
+          "unlock_full_system"
+        ]
+      }
+    ],
+    "oneClickRoutes": {
+      "tax_positioning": "/upgrade/tax-positioning",
+      "business_formation": "/upgrade/business-formation",
+      "invoice_ops": "/upgrade/invoice-ops",
+      "complaint_curation": "/upgrade/complaint-curation",
+      "legal_intake": "/upgrade/legal-intake",
+      "protection_module": "/upgrade/protection",
+      "full_growth_package": "/upgrade/full-growth"
+    },
+    "blockedActionRules": [
+      {
+        "blockId": "block_entity_upgrade_if_not_ready",
+        "when": {
+          "entityReadinessScoreMax": 24
+        },
+        "block": [
+          "business_formation"
+        ],
+        "reason": "Entity readiness too low"
+      },
+      {
+        "blockId": "block_legal_escalation_if_weak",
+        "when": {
+          "complaintStrengthScoreMax": 24
+        },
+        "block": [
+          "legal_intake"
+        ],
+        "reason": "Complaint too weak for escalation"
+      }
+    ],
+    "outputShape": {
+      "recommendedModules": [],
+      "upgradePaths": [],
+      "priorityActions": [],
+      "blockedActions": [],
+      "oneClickRoutes": []
+    }
+  }
+}

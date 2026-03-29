@@ -1,0 +1,76 @@
+{
+  "intakeId": "",
+  "intakeVersion": "v1",
+  "createdAt": "",
+  "updatedAt": "",
+  "userId": "",
+  "mode": "general",
+  "status": "draft",
+  "completionPercent": 0,
+  "identityProfile": {
+    "fullLegalName": "",
+    "firstName": "",
+    "lastName": "",
+    "dateOfBirth": "",
+    "phone": "",
+    "email": "",
+    "residentialAddress": {
+      "street1": "",
+      "city": "",
+      "state": "",
+      "postalCode": "",
+      "country": "US"
+    }
+  },
+  "businessProfile": {
+    "operatingCapacity": "individual",
+    "entityType": "none",
+    "businessName": "",
+    "einAvailable": false,
+    "separateBusinessBankAccount": false
+  },
+  "workProfile": {
+    "workerType": "independent_contractor",
+    "platformsOrClients": [],
+    "setsOwnSchedule": false,
+    "providesOwnTools": false,
+    "weeklyHoursAverage": 0
+  },
+  "incomeProfile": {
+    "receivesW2": false,
+    "receives1099": false,
+    "estimatedAnnualGrossIncome": 0,
+    "estimatedAnnualNetIncome": 0,
+    "hasUnpaidInvoices": false
+  },
+  "expenseProfile": {
+    "usesVehicleForWork": false,
+    "tracksMileage": false,
+    "estimatedAnnualBusinessExpenses": 0
+  },
+  "complianceProfile": {
+    "hasSeparateFinances": false,
+    "usesWrittenContracts": false,
+    "hasInsurance": false,
+    "recordkeepingStrength": "weak"
+  },
+  "complaintProfile": {
+    "hasComplaintOrDispute": false,
+    "complaints": []
+  },
+  "documentProfile": {
+    "w9Ready": false,
+    "invoiceReady": false,
+    "contractorProfileReady": false
+  },
+  "evidenceProfile": {
+    "hasEvidence": false,
+    "evidenceItems": []
+  },
+  "scoringProfile": {
+    "classificationScore": 0,
+    "savingsOpportunityScore": 0,
+    "riskScore": 0,
+    "complaintStrengthScore": 0
+  }
+}

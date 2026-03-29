@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "v1",
+  "complaintCurationProfile": {
+    "hasComplaintOrDispute": false,
+    "complaintCount": 0,
+    "complaintCategories": [],
+    "complaints": []
+  },
+  "complaintTemplate": {
+    "complaintId": "",
+    "status": "draft",
+    "category": "",
+    "subcategory": "",
+    "priorityLevel": "normal",
+    "targetType": "company",
+    "targetName": "",
+    "targetDepartment": "",
+    "targetPerson": "",
+    "incidentDateStart": "",
+    "incidentDateEnd": "",
+    "locationType": "unknown",
+    "locationText": "",
+    "shortTitle": "",
+    "plainLanguageSummary": "",
+    "whatHappened": "",
+    "whatWasSaid": "",
+    "userActionsTaken": [],
+    "harmTypes": [],
+    "financialLossAmount": 0,
+    "workLossAmount": 0,
+    "timeLostHours": 0,
+    "reputationHarm": false,
+    "emotionalStressClaimed": false,
+    "injuryClaimed": false,
+    "propertyDamageClaimed": false,
+    "identityMisuseClaimed": false,
+    "creditImpactClaimed": false,
+    "priorComplaintMade": false,
+    "priorComplaintTargets": [],
+    "priorComplaintDates": [],
+    "desiredOutcome": "",
+    "urgencyReason": "",
+    "witnesses": [],
+    "relatedDocuments": [],
+    "relatedEvidenceIds": [],
+    "timelineEvents": [],
+    "curation": {
+      "summaryReady": false,
+      "timelineReady": false,
+      "evidenceMapped": false,
+      "strengthLabel": "unknown",
+      "recommendedRoute": "",
+      "recommendedNextStep": ""
+    }
+  },
+  "timelineEventTemplate": {
+    "eventId": "",
+    "complaintId": "",
+    "eventDate": "",
+    "eventType": "",
+    "actor": "",
+    "action": "",
+    "details": "",
+    "harmLinked": [],
+    "evidenceLinked": []
+  },
+  "witnessTemplate": {
+    "name": "",
+    "role": "",
+    "contactInfo": "",
+    "witnessSummary": ""
+  },
+  "controlledLists": {
+    "category": [
+      "unpaid_invoice",
+      "unpaid_wages",
+      "deactivation",
+      "payout_hold",
+      "discrimination",
+      "retaliation",
+      "harassment",
+      "unsafe_conditions",
+      "contract_breach",
+      "customer_fraud",
+      "false_report",
+      "property_damage",
+      "injury",
+      "identity_misuse",
+      "credit_reporting",
+      "unauthorized_eft",
+      "other"
+    ],
+    "priorityLevel": [
+      "low",
+      "normal",
+      "high",
+      "urgent"
+    ],
+    "targetType": [
+      "company",
+      "platform",
+      "manager",
+      "client",
+      "customer",
+      "coworker",
+      "agency",
+      "other"
+    ],
+    "locationType": [
+      "online",
+      "job_site",
+      "vehicle",
+      "office",
+      "platform_app",
+      "phone_call",
+      "email",
+      "text_message",
+      "unknown"
+    ],
+    "harmTypes": [
+      "financial_loss",
+      "lost_work",
+      "reputation_harm",
+      "emotional_distress",
+      "physical_injury",
+      "property_damage",
+      "identity_misuse",
+      "credit_impact",
+      "other"
+    ],
+    "eventType": [
+      "assignment",
+      "communication",
+      "payment_issue",
+      "deactivation_notice",
+      "threat",
+      "report_made",
+      "report_received",
+      "account_action",
+      "injury_event",
+      "document_sent",
+      "document_received",
+      "other"
+    ],
+    "strengthLabel": [
+      "unknown",
+      "weak",
+      "moderate",
+      "strong"
+    ],
+    "recommendedRoute": [
+      "internal_dispute",
+      "invoice_demand",
+      "labor_complaint",
+      "consumer_complaint",
+      "regulator_complaint",
+      "small_claims",
+      "civil_intake",
+      "insurance_claim",
+      "other"
+    ]
+  }
+}
