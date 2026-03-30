@@ -11,7 +11,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from routes.core_routes import core_routes
+
 app = FastAPI(title="Nautical Compass")
+app.include_router(core_routes)
 
 UPLOAD_ROOT = Path("uploads")
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
@@ -957,7 +960,14 @@ async def intake_production_submit(
 
 @app.get("/intake/labor", response_class=HTMLResponse)
 def intake_labor(request: Request):
-    return render(request, "intake_labor.html")
+    return render(
+        request,
+        "intake_form.html",
+        {
+            "token": "",
+            "email": "",
+        },
+    )
 
 
 @app.post("/intake/labor")
