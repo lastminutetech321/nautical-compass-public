@@ -11,11 +11,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from routes.financial_engine_test import financial_engine_router
+from routes.financial_engine_panel import financial_engine_panel_router
 from routes.core_routes import core_routes
 
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
 app.include_router(financial_engine_router)
+app.include_router(financial_engine_panel_router)
 
 UPLOAD_ROOT = Path("uploads")
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
