@@ -1044,6 +1044,48 @@ def labor_profile_summary(request: Request):
             break
 
     latest = latest or {}
+    worker_id = latest.get("nc_worker_id")
+
+    history_rows = []
+    if worker_id:
+        for existing in reversed(LABOR_SUBMISSIONS):
+            if existing.get("nc_worker_id") == worker_id:
+                history_rows.append(
+                    {
+                        "created_at": existing.get("created_at"),
+                        "primary_role": existing.get("primary_role"),
+                        "market_area": existing.get("market_area"),
+                        "availability": existing.get("availability"),
+                        "certifications": existing.get("certifications"),
+                        "email": existing.get("email"),
+                        "phone": existing.get("phone"),
+                    }
+                )
+            if len(history_rows) >= 5:
+                break
+
+    role_history = []
+    market_history = []
+    availability_history = []
+    certification_history = []
+
+    for row in history_rows:
+        role = row.get("primary_role")
+        market = row.get("market_area")
+        availability = row.get("availability")
+        certs = row.get("certifications")
+
+        if role and role not in role_history:
+            role_history.append(role)
+
+        if market and market not in market_history:
+            market_history.append(market)
+
+        if availability and availability not in availability_history:
+            availability_history.append(availability)
+
+        if certs and certs not in certification_history:
+            certification_history.append(certs)
 
     return render(
         request,
@@ -1056,6 +1098,11 @@ def labor_profile_summary(request: Request):
             "market_area": latest.get("market_area"),
             "availability": latest.get("availability"),
             "certifications": latest.get("certifications"),
+            "history_rows": history_rows,
+            "role_history": role_history,
+            "market_history": market_history,
+            "availability_history": availability_history,
+            "certification_history": certification_history,
         },
     )
 

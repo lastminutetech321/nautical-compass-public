@@ -5,7 +5,7 @@
     <div class="eyebrow">Career DNA</div>
     <h2>Worker Summary</h2>
     <p class="hero-copy">
-      This is the first visible layer of worker identity, readiness, and role memory inside Nautical Compass.
+      This is the visible worker-memory layer for identity, readiness, and role history inside Nautical Compass.
     </p>
   </div>
 
@@ -19,7 +19,7 @@
     </div>
 
     <div class="feature-card">
-      <div class="feature-kicker">Role Layer</div>
+      <div class="feature-kicker">Current Layer</div>
       <h3>Career DNA Start</h3>
       <p><strong>Primary Role:</strong> {{ primary_role or "Not provided" }}</p>
       <p><strong>Market:</strong> {{ market_area or "Not provided" }}</p>
@@ -27,18 +27,83 @@
     </div>
 
     <div class="feature-card">
-      <div class="feature-kicker">Certifications</div>
-      <h3>Credential Notes</h3>
-      <pre style="white-space: pre-wrap;">{{ certifications or "None listed" }}</pre>
+      <div class="feature-kicker">Role History</div>
+      <h3>Recent Roles</h3>
+      {% if role_history %}
+        <ul class="signal-list">
+          {% for item in role_history %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No role history yet.</p>
+      {% endif %}
     </div>
 
     <div class="feature-card">
-      <div class="feature-kicker">Next Move</div>
-      <h3>Continue Building</h3>
-      <a class="feature-link" href="/modules/labor-signal">Back to Labor Signal ↗</a>
-      <a class="feature-link" href="/admin/ledger-preview">Open Ledger Preview ↗</a>
-      <a class="feature-link" href="/labor/profile/start">Edit Career DNA Start ↗</a>
+      <div class="feature-kicker">Market History</div>
+      <h3>Recent Markets</h3>
+      {% if market_history %}
+        <ul class="signal-list">
+          {% for item in market_history %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No market history yet.</p>
+      {% endif %}
     </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Availability History</div>
+      <h3>Recent Availability</h3>
+      {% if availability_history %}
+        <ul class="signal-list">
+          {% for item in availability_history %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No availability history yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Certification History</div>
+      <h3>Credential Notes</h3>
+      {% if certification_history %}
+        {% for item in certification_history %}
+          <pre style="white-space: pre-wrap; margin-bottom: 12px;">{{ item }}</pre>
+        {% endfor %}
+      {% else %}
+        <p>No certifications listed yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <div class="feature-kicker">Recent Activity</div>
+    <h3>Last 5 Worker Entries</h3>
+    {% if history_rows %}
+      {% for row in history_rows %}
+        <div class="feature-card" style="margin-top: 12px;">
+          <p><strong>Role:</strong> {{ row.primary_role or "Not provided" }}</p>
+          <p><strong>Market:</strong> {{ row.market_area or "Not provided" }}</p>
+          <p><strong>Availability:</strong> {{ row.availability or "Not provided" }}</p>
+          <p><strong>Created At:</strong> {{ row.created_at or "Unknown" }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No recent activity yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <div class="feature-kicker">Next Move</div>
+    <h3>Continue Building</h3>
+    <a class="feature-link" href="/modules/labor-signal">Back to Labor Signal ↗</a>
+    <a class="feature-link" href="/admin/ledger-preview">Open Ledger Preview ↗</a>
+    <a class="feature-link" href="/labor/profile/start">Edit Career DNA Start ↗</a>
   </div>
 </section>
 {% endblock %}
