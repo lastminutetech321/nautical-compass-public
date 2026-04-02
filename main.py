@@ -1033,6 +1033,75 @@ async def intake_production_submit(
     )
 
 
+
+@app.get("/labor/profile/start", response_class=HTMLResponse)
+def labor_profile_start(request: Request):
+    return render(request, "labor_profile_start.html")
+
+
+@app.post("/labor/profile/start", response_class=HTMLResponse)
+async def labor_profile_start_submit(
+    request: Request,
+    email: str = Form(""),
+    phone: str = Form(""),
+    primary_role: str = Form(""),
+    market_area: str = Form(""),
+    certifications: str = Form(""),
+    availability: str = Form(""),
+):
+    nc_worker_id = None
+    normalized_email = (email or "").strip().lower()
+    normalized_phone = (phone or "").strip()
+
+    for existing in LABOR_SUBMISSIONS:
+        existing_email = (existing.get("email") or "").strip().lower()
+        existing_phone = (existing.get("phone") or "").strip()
+
+        if normalized_email and existing_email == normalized_email:
+            nc_worker_id = existing.get("nc_worker_id")
+            break
+
+        if normalized_phone and existing_phone == normalized_phone:
+            nc_worker_id = existing.get("nc_worker_id")
+            break
+
+    if not nc_worker_id:
+        nc_worker_id = f"wrk_{uuid4().hex}"
+
+    cert_list = [c.strip() for c in (certifications or "").replace(";", ",").split(",") if c.strip()]
+
+    CareerDNALedger().record(
+        worker_id=nc_worker_id,
+        event_type="career_dna_profile_started",
+        role=primary_role or None,
+        market=market_area or None,
+        verification_source="labor_profile_start",
+        certifications=cert_list,
+        payload={
+            "email": email,
+            "phone": phone,
+            "availability": availability,
+        },
+    )
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Career DNA Started",
+            "summary": "Your worker identity baseline has been captured for Career DNA.",
+            "return_href": "/modules/labor-signal",
+            "return_label": "Back to Labor Signal",
+            "next_href": "/admin/ledger-preview",
+            "next_label": "Open Ledger Preview",
+            "record_id": nc_worker_id,
+            "step_number": 1,
+            "step_total": 3,
+            "step_name": "Career DNA Start",
+            "why_next": "Your role, market, certifications, and availability are now stored as the first Career DNA layer.",
+        },
+    )
+
 @app.get("/intake/labor", response_class=HTMLResponse)
 def intake_labor(request: Request):
     return render(request, "intake_form.html")
