@@ -50,6 +50,7 @@ for folder in [
 
 PRODUCTION_SUBMISSIONS = []
 LABOR_SUBMISSIONS = []
+EMPLOYER_REQUESTS = []
 PARTNER_SUBMISSIONS = []
 
 
@@ -1033,6 +1034,67 @@ async def intake_production_submit(
     )
 
 
+
+@app.get("/labor/employer-request/start", response_class=HTMLResponse)
+def employer_request_start(request: Request):
+    return render(request, "employer_request_start.html")
+
+
+@app.post("/labor/employer-request/start", response_class=HTMLResponse)
+async def employer_request_start_submit(
+    request: Request,
+    requested_roles_headcount: str = Form(""),
+    event_date: str = Form(""),
+    shift_window: str = Form(""),
+    location: str = Form(""),
+    notes: str = Form(""),
+):
+    request_id = f"req_{uuid4().hex}"
+
+    EMPLOYER_REQUESTS.append(
+        {
+            "request_id": request_id,
+            "requested_roles_headcount": requested_roles_headcount,
+            "event_date": event_date,
+            "shift_window": shift_window,
+            "location": location,
+            "notes": notes,
+            "created_at": int(time.time()),
+        }
+    )
+
+    EventLedger().record(
+        event_type="employer_request_started",
+        module="employer_request",
+        status="submitted",
+        service_id="employer_request",
+        route="/labor/employer-request/start",
+        payload={
+            "request_id": request_id,
+            "requested_roles_headcount": requested_roles_headcount,
+            "event_date": event_date,
+            "shift_window": shift_window,
+            "location": location,
+        },
+    )
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Employer Request Captured",
+            "summary": "Your labor request has been stored for matching and dispatch review.",
+            "return_href": "/labor/employer-view",
+            "return_label": "Back to Employer View",
+            "next_href": "/admin/ledger-preview",
+            "next_label": "Open Ledger Preview",
+            "record_id": request_id,
+            "step_number": 1,
+            "step_total": 2,
+            "step_name": "Employer Request Start",
+            "why_next": "Your request now exists as the employer-side matching target.",
+        },
+    )
 
 @app.get("/labor/employer-view", response_class=HTMLResponse)
 def labor_employer_view(request: Request):
