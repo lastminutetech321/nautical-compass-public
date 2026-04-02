@@ -1034,6 +1034,31 @@ async def intake_production_submit(
 
 
 
+@app.get("/labor/profile/summary", response_class=HTMLResponse)
+def labor_profile_summary(request: Request):
+    latest = None
+
+    for existing in reversed(LABOR_SUBMISSIONS):
+        if existing.get("nc_worker_id"):
+            latest = existing
+            break
+
+    latest = latest or {}
+
+    return render(
+        request,
+        "career_dna_summary.html",
+        {
+            "worker_id": latest.get("nc_worker_id"),
+            "email": latest.get("email"),
+            "phone": latest.get("phone"),
+            "primary_role": latest.get("primary_role"),
+            "market_area": latest.get("market_area"),
+            "availability": latest.get("availability"),
+            "certifications": latest.get("certifications"),
+        },
+    )
+
 @app.get("/labor/profile/start", response_class=HTMLResponse)
 def labor_profile_start(request: Request):
     return render(request, "labor_profile_start.html")
@@ -1092,7 +1117,7 @@ async def labor_profile_start_submit(
             "summary": "Your worker identity baseline has been captured for Career DNA.",
             "return_href": "/modules/labor-signal",
             "return_label": "Back to Labor Signal",
-            "next_href": "/admin/ledger-preview",
+            "next_href": "/labor/profile/summary",
             "next_label": "Open Ledger Preview",
             "record_id": nc_worker_id,
             "step_number": 1,

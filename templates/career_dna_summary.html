@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">Career DNA</div>
+    <h2>Worker Summary</h2>
+    <p class="hero-copy">
+      This is the first visible layer of worker identity, readiness, and role memory inside Nautical Compass.
+    </p>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Identity</div>
+      <h3>Worker Record</h3>
+      <p><strong>Worker ID:</strong> {{ worker_id or "Not found" }}</p>
+      <p><strong>Email:</strong> {{ email or "Not provided" }}</p>
+      <p><strong>Phone:</strong> {{ phone or "Not provided" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Role Layer</div>
+      <h3>Career DNA Start</h3>
+      <p><strong>Primary Role:</strong> {{ primary_role or "Not provided" }}</p>
+      <p><strong>Market:</strong> {{ market_area or "Not provided" }}</p>
+      <p><strong>Availability:</strong> {{ availability or "Not provided" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Certifications</div>
+      <h3>Credential Notes</h3>
+      <pre style="white-space: pre-wrap;">{{ certifications or "None listed" }}</pre>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Next Move</div>
+      <h3>Continue Building</h3>
+      <a class="feature-link" href="/modules/labor-signal">Back to Labor Signal ↗</a>
+      <a class="feature-link" href="/admin/ledger-preview">Open Ledger Preview ↗</a>
+      <a class="feature-link" href="/labor/profile/start">Edit Career DNA Start ↗</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
