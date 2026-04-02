@@ -1107,6 +1107,55 @@ def labor_employer_view(request: Request):
 
         return flags
 
+    def build_match_result(primary_role: str | None, market_area: str | None, availability: str | None, certification_tags: list[str], skill_flags: list[str]) -> dict:
+        role = (primary_role or "").strip()
+        market = (market_area or "").strip()
+        readiness = normalize_dispatch_readiness(availability)
+
+        score = 0
+        labels = []
+        next_move = "Complete worker profile"
+
+        if role:
+            score += 40
+        if market:
+            score += 20
+
+        if readiness == "ready":
+            score += 25
+            labels.append("Ready Now")
+            next_move = "Open Worker Dashboard"
+        elif readiness == "limited":
+            score += 10
+            labels.append("Limited Availability")
+            next_move = "Clarify availability for dispatch"
+        elif readiness == "unavailable":
+            labels.append("Currently Unavailable")
+            next_move = "Update availability before dispatch"
+        else:
+            labels.append("Availability Needs Clarification")
+            next_move = "Add clearer availability"
+
+        if certification_tags or skill_flags:
+            score += 15
+            labels.append("Strong Match")
+        else:
+            labels.append("Certification Opportunity")
+            if next_move == "Open Worker Dashboard":
+                next_move = "Add certifications to strengthen dispatch trust"
+
+        if not market:
+            labels.append("Market Alignment Needed")
+            next_move = "Add market area for stronger matching"
+
+        score = max(0, min(score, 100))
+
+        return {
+            "match_score": score,
+            "match_labels": labels,
+            "next_move": next_move,
+        }
+
     latest = None
     for existing in reversed(LABOR_SUBMISSIONS):
         if existing.get("nc_worker_id"):
@@ -1117,6 +1166,13 @@ def labor_employer_view(request: Request):
     cert_tags = parse_certification_tags(latest.get("certifications"))
     skill_flags = detect_common_skill_flags(cert_tags)
     dispatch_readiness = normalize_dispatch_readiness(latest.get("availability"))
+    match_result = build_match_result(
+        latest.get("primary_role"),
+        latest.get("market_area"),
+        latest.get("availability"),
+        cert_tags,
+        skill_flags,
+    )
 
     history_rows = []
     worker_id = latest.get("nc_worker_id")
@@ -1146,6 +1202,9 @@ def labor_employer_view(request: Request):
             "dispatch_readiness": dispatch_readiness,
             "certification_tags": cert_tags,
             "skill_flags": skill_flags,
+            "match_score": match_result["match_score"],
+            "match_labels": match_result["match_labels"],
+            "next_move": match_result["next_move"],
             "history_rows": history_rows,
         },
     )
@@ -1233,6 +1292,13 @@ def labor_dashboard(request: Request):
     cert_tags = parse_certification_tags(latest.get("certifications"))
     skill_flags = detect_common_skill_flags(cert_tags)
     dispatch_readiness = normalize_dispatch_readiness(latest.get("availability"))
+    match_result = build_match_result(
+        latest.get("primary_role"),
+        latest.get("market_area"),
+        latest.get("availability"),
+        cert_tags,
+        skill_flags,
+    )
 
     history_rows = []
     worker_id = latest.get("nc_worker_id")
@@ -1263,6 +1329,9 @@ def labor_dashboard(request: Request):
             "dispatch_readiness": dispatch_readiness,
             "certification_tags": cert_tags,
             "skill_flags": skill_flags,
+            "match_score": match_result["match_score"],
+            "match_labels": match_result["match_labels"],
+            "next_move": match_result["next_move"],
             "history_rows": history_rows,
         },
     )
@@ -1415,6 +1484,13 @@ def labor_profile_summary(request: Request):
     current_readiness = normalize_dispatch_readiness(latest.get("availability"))
     current_certification_tags = parse_certification_tags(latest.get("certifications"))
     current_skill_flags = detect_common_skill_flags(current_certification_tags)
+    current_match_result = build_match_result(
+        latest.get("primary_role"),
+        latest.get("market_area"),
+        latest.get("availability"),
+        current_certification_tags,
+        current_skill_flags,
+    )
 
     for tag in current_certification_tags:
         if tag not in certification_tags:
@@ -1438,6 +1514,9 @@ def labor_profile_summary(request: Request):
             "certifications": latest.get("certifications"),
             "certification_tags": certification_tags,
             "skill_flags": skill_flags,
+            "match_score": current_match_result["match_score"],
+            "match_labels": current_match_result["match_labels"],
+            "next_move": current_match_result["next_move"],
             "history_rows": history_rows,
             "role_history": role_history,
             "market_history": market_history,

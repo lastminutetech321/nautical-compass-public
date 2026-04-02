@@ -28,6 +28,20 @@
     </div>
 
     <div class="feature-card">
+      <div class="feature-kicker">Match Result</div>
+      <h3>Fit Signal</h3>
+      <p><strong>Match Score:</strong> {{ match_score or 0 }}</p>
+      {% if match_labels %}
+        <ul class="signal-list">
+          {% for item in match_labels %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <p><strong>Next Move:</strong> {{ next_move or "Complete worker profile" }}</p>
+    </div>
+
+    <div class="feature-card">
       <div class="feature-kicker">Skill Flags</div>
       <h3>Detected Capabilities</h3>
       {% if skill_flags %}
