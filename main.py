@@ -10,6 +10,8 @@ from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from modules.ledger import EventLedger, CareerDNALedger
+from modules.ledger.preview_helper import get_ledger_preview
 from routes.financial_engine_test import financial_engine_router
 from routes.financial_engine_panel import financial_engine_panel_router
 from routes.financial_engine_actions import financial_engine_actions_router
@@ -862,6 +864,15 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
+    EventLedger().record(
+        event_type="checkout_opened",
+        module="access",
+        status="started",
+        provider_expected="stripe",
+        service_id="nc_access",
+        route="/checkout",
+        payload={"source": "route_open"},
+    )
     return render(request, "checkout.html", get_checkout_links())
 
 
@@ -876,6 +887,20 @@ def checkout_plan(request: Request, plan_key: str):
         "labor_signal_basic": "Labor Signal Basic",
         "labor_signal_pro": "Labor Signal Pro",
     }
+
+    EventLedger().record(
+        event_type="checkout_plan_selected",
+        module="access",
+        status="redirect_ready" if checkout_url else "missing_link",
+        provider_expected="stripe",
+        service_id=plan_key,
+        route=f"/checkout/{plan_key}",
+        payload={
+            "plan_key": plan_key,
+            "plan_title": plan_titles.get(plan_key, "Selected Plan"),
+            "has_checkout_url": bool(checkout_url),
+        },
+    )
 
     if checkout_url:
         return RedirectResponse(checkout_url, status_code=302)
@@ -1497,8 +1522,28 @@ async def equity_engine_submit(
     )
 
 
+
+@app.get("/admin/ledger-preview", response_class=HTMLResponse)
+def ledger_preview_page(request: Request):
+    data = get_ledger_preview(10)
+    return render(request, "ledger_preview.html", data)
+
 @app.get("/modules/labor-signal", response_class=HTMLResponse)
 def labor_signal_page(request: Request):
+    EventLedger().record(
+        event_type="labor_signal_page_opened",
+        module="labor_signal",
+        status="started",
+        service_id="labor_signal",
+        route="/modules/labor-signal",
+        payload={"source": "route_open"},
+    )
+    CareerDNALedger().record(
+        worker_id="anonymous",
+        event_type="profile_started",
+        market="unknown",
+        payload={"route": "/modules/labor-signal", "source": "route_open"},
+    )
     return render(request, "labor_signal.html")
 
 

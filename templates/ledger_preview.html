@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">NC Memory Preview</div>
+    <h2>Ledger Preview</h2>
+    <p class="hero-copy">Latest ecosystem memory across event, transaction, Career DNA, company relation, and referral ledgers.</p>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">System</div>
+      <h3>Event Ledger</h3>
+      <pre style="white-space: pre-wrap;">{{ event_ledger | tojson(indent=2) }}</pre>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Money</div>
+      <h3>Transaction Ledger</h3>
+      <pre style="white-space: pre-wrap;">{{ transaction_ledger | tojson(indent=2) }}</pre>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Worker</div>
+      <h3>Career DNA Ledger</h3>
+      <pre style="white-space: pre-wrap;">{{ career_dna_ledger | tojson(indent=2) }}</pre>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Company</div>
+      <h3>Company Relation Ledger</h3>
+      <pre style="white-space: pre-wrap;">{{ company_relation_ledger | tojson(indent=2) }}</pre>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Lineage</div>
+      <h3>Referral Ledger</h3>
+      <pre style="white-space: pre-wrap;">{{ referral_ledger | tojson(indent=2) }}</pre>
+    </div>
+  </div>
+</section>
+{% endblock %}
