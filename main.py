@@ -1034,6 +1034,122 @@ async def intake_production_submit(
 
 
 
+@app.get("/labor/employer-view", response_class=HTMLResponse)
+def labor_employer_view(request: Request):
+    def normalize_dispatch_readiness(value: str | None) -> str:
+        raw = (value or "").strip().lower()
+
+        if not raw:
+            return "unknown"
+
+        unavailable_terms = [
+            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
+            "off", "no availability", "not free"
+        ]
+        limited_terms = [
+            "limited", "part-time", "part time", "weekend", "weekends", "evening",
+            "evenings", "after", "partial", "some days", "select days", "certain days"
+        ]
+        ready_terms = [
+            "ready", "available", "open", "flexible", "full-time", "full time",
+            "anytime", "open availability", "immediate"
+        ]
+
+        for term in unavailable_terms:
+            if term in raw:
+                return "unavailable"
+
+        for term in limited_terms:
+            if term in raw:
+                return "limited"
+
+        for term in ready_terms:
+            if term in raw:
+                return "ready"
+
+        return "limited"
+
+    def parse_certification_tags(value: str | None) -> list[str]:
+        raw = (value or "").strip()
+        if not raw:
+            return []
+
+        normalized = raw.replace(";", ",").replace("|", ",")
+        tags = []
+
+        for part in normalized.split(","):
+            item = part.strip()
+            if item and item not in tags:
+                tags.append(item)
+
+        return tags[:12]
+
+    def detect_common_skill_flags(tags: list[str]) -> list[str]:
+        joined = " | ".join(tags).lower()
+        flags = []
+
+        checks = [
+            ("OSHA", ["osha"]),
+            ("Forklift", ["forklift"]),
+            ("Rigging", ["rigging", "rigger"]),
+            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
+            ("ETCP", ["etcp"]),
+            ("CDL", ["cdl"]),
+            ("Audio", ["audio", "a1", "a2"]),
+            ("Video", ["video", "v1", "v2"]),
+            ("Lighting", ["lighting", "lx", "l1", "l2"]),
+            ("Stagehand", ["stagehand"]),
+        ]
+
+        for label, needles in checks:
+            if any(needle in joined for needle in needles):
+                flags.append(label)
+
+        return flags
+
+    latest = None
+    for existing in reversed(LABOR_SUBMISSIONS):
+        if existing.get("nc_worker_id"):
+            latest = existing
+            break
+
+    latest = latest or {}
+    cert_tags = parse_certification_tags(latest.get("certifications"))
+    skill_flags = detect_common_skill_flags(cert_tags)
+    dispatch_readiness = normalize_dispatch_readiness(latest.get("availability"))
+
+    history_rows = []
+    worker_id = latest.get("nc_worker_id")
+    if worker_id:
+        for existing in reversed(LABOR_SUBMISSIONS):
+            if existing.get("nc_worker_id") == worker_id:
+                history_rows.append(
+                    {
+                        "created_at": existing.get("created_at"),
+                        "primary_role": existing.get("primary_role"),
+                        "market_area": existing.get("market_area"),
+                        "availability": existing.get("availability"),
+                        "dispatch_readiness": normalize_dispatch_readiness(existing.get("availability")),
+                    }
+                )
+            if len(history_rows) >= 5:
+                break
+
+    return render(
+        request,
+        "employer_worker_view.html",
+        {
+            "worker_id": latest.get("nc_worker_id"),
+            "primary_role": latest.get("primary_role"),
+            "market_area": latest.get("market_area"),
+            "availability": latest.get("availability"),
+            "dispatch_readiness": dispatch_readiness,
+            "certification_tags": cert_tags,
+            "skill_flags": skill_flags,
+            "history_rows": history_rows,
+        },
+    )
+
 @app.get("/labor/dashboard", response_class=HTMLResponse)
 def labor_dashboard(request: Request):
     def normalize_dispatch_readiness(value: str | None) -> str:
