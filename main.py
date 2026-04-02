@@ -1055,9 +1055,29 @@ async def intake_labor_submit(
     saved_files = save_uploads(files, LABOR_UPLOADS)
     submission_id = len(LABOR_SUBMISSIONS) + 1
 
+    nc_worker_id = None
+    normalized_email = (email or "").strip().lower()
+    normalized_phone = (phone or "").strip()
+
+    for existing in LABOR_SUBMISSIONS:
+        existing_email = (existing.get("email") or "").strip().lower()
+        existing_phone = (existing.get("phone") or "").strip()
+
+        if normalized_email and existing_email == normalized_email:
+            nc_worker_id = existing.get("nc_worker_id")
+            break
+
+        if normalized_phone and existing_phone == normalized_phone:
+            nc_worker_id = existing.get("nc_worker_id")
+            break
+
+    if not nc_worker_id:
+        nc_worker_id = f"wrk_{uuid4().hex}"
+
     LABOR_SUBMISSIONS.append(
         {
             "id": submission_id,
+            "nc_worker_id": nc_worker_id,
             "full_name": full_name,
             "email": email,
             "phone": phone,
@@ -1070,6 +1090,24 @@ async def intake_labor_submit(
             "files": saved_files,
             "created_at": int(time.time()),
         }
+    )
+
+    cert_list = [c.strip() for c in (certifications or "").replace(";", ",").split(",") if c.strip()]
+
+    CareerDNALedger().record(
+        worker_id=nc_worker_id,
+        event_type="labor_profile_submitted",
+        role=primary_role or None,
+        market=market_area or None,
+        verification_source="labor_intake",
+        certifications=cert_list,
+        payload={
+            "submission_id": submission_id,
+            "email": email,
+            "phone": phone,
+            "availability": availability,
+            "transport": transport,
+        },
     )
 
     return render(
