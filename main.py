@@ -1447,6 +1447,74 @@ def labor_profile_summary(request: Request):
         },
     )
 
+@app.get("/labor/profile/edit", response_class=HTMLResponse)
+def labor_profile_edit(request: Request):
+    latest = None
+
+    for existing in reversed(LABOR_SUBMISSIONS):
+        if existing.get("nc_worker_id"):
+            latest = existing
+            break
+
+    latest = latest or {}
+
+    return render(
+        request,
+        "labor_profile_edit.html",
+        {
+            "worker_id": latest.get("nc_worker_id", ""),
+            "email": latest.get("email", ""),
+            "phone": latest.get("phone", ""),
+            "primary_role": latest.get("primary_role", ""),
+            "market_area": latest.get("market_area", ""),
+            "certifications": latest.get("certifications", ""),
+            "availability": latest.get("availability", ""),
+        },
+    )
+
+@app.post("/labor/profile/edit", response_class=HTMLResponse)
+async def labor_profile_edit_submit(
+    request: Request,
+    worker_id: str = Form(""),
+    email: str = Form(""),
+    phone: str = Form(""),
+    primary_role: str = Form(""),
+    market_area: str = Form(""),
+    certifications: str = Form(""),
+    availability: str = Form(""),
+):
+    updated = False
+
+    for existing in reversed(LABOR_SUBMISSIONS):
+        if existing.get("nc_worker_id") == worker_id and worker_id:
+            existing["email"] = email
+            existing["phone"] = phone
+            existing["primary_role"] = primary_role
+            existing["market_area"] = market_area
+            existing["certifications"] = certifications
+            existing["availability"] = availability
+            existing["updated_at"] = int(time.time())
+            updated = True
+            break
+
+    return render(
+        request,
+        "submission_success.html",
+        {
+            "title": "Worker Profile Updated",
+            "summary": "Your Career DNA profile has been updated.",
+            "return_href": "/labor/dashboard",
+            "return_label": "Back to Worker Dashboard",
+            "next_href": "/labor/profile/summary",
+            "next_label": "Open Career DNA Summary",
+            "record_id": worker_id or "not-found",
+            "step_number": 1,
+            "step_total": 2,
+            "step_name": "Worker Edit",
+            "why_next": "Your updated worker profile can now be reviewed through the summary and dashboard views.",
+        },
+    )
+
 @app.get("/labor/profile/start", response_class=HTMLResponse)
 def labor_profile_start(request: Request):
     return render(request, "labor_profile_start.html")
