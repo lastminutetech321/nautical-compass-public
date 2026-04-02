@@ -1036,6 +1036,39 @@ async def intake_production_submit(
 
 @app.get("/labor/profile/summary", response_class=HTMLResponse)
 def labor_profile_summary(request: Request):
+    def normalize_dispatch_readiness(value: str | None) -> str:
+        raw = (value or "").strip().lower()
+
+        if not raw:
+            return "unknown"
+
+        unavailable_terms = [
+            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
+            "off", "no availability", "not free"
+        ]
+        limited_terms = [
+            "limited", "part-time", "part time", "weekend", "weekends", "evening",
+            "evenings", "after", "partial", "some days", "select days", "certain days"
+        ]
+        ready_terms = [
+            "ready", "available", "open", "flexible", "full-time", "full time",
+            "anytime", "open availability", "immediate"
+        ]
+
+        for term in unavailable_terms:
+            if term in raw:
+                return "unavailable"
+
+        for term in limited_terms:
+            if term in raw:
+                return "limited"
+
+        for term in ready_terms:
+            if term in raw:
+                return "ready"
+
+        return "limited"
+
     latest = None
 
     for existing in reversed(LABOR_SUBMISSIONS):
@@ -1056,6 +1089,7 @@ def labor_profile_summary(request: Request):
                         "primary_role": existing.get("primary_role"),
                         "market_area": existing.get("market_area"),
                         "availability": existing.get("availability"),
+                        "dispatch_readiness": normalize_dispatch_readiness(existing.get("availability")),
                         "certifications": existing.get("certifications"),
                         "email": existing.get("email"),
                         "phone": existing.get("phone"),
@@ -1068,11 +1102,13 @@ def labor_profile_summary(request: Request):
     market_history = []
     availability_history = []
     certification_history = []
+    readiness_history = []
 
     for row in history_rows:
         role = row.get("primary_role")
         market = row.get("market_area")
         availability = row.get("availability")
+        readiness = row.get("dispatch_readiness")
         certs = row.get("certifications")
 
         if role and role not in role_history:
@@ -1084,8 +1120,13 @@ def labor_profile_summary(request: Request):
         if availability and availability not in availability_history:
             availability_history.append(availability)
 
+        if readiness and readiness not in readiness_history:
+            readiness_history.append(readiness)
+
         if certs and certs not in certification_history:
             certification_history.append(certs)
+
+    current_readiness = normalize_dispatch_readiness(latest.get("availability"))
 
     return render(
         request,
@@ -1097,11 +1138,13 @@ def labor_profile_summary(request: Request):
             "primary_role": latest.get("primary_role"),
             "market_area": latest.get("market_area"),
             "availability": latest.get("availability"),
+            "dispatch_readiness": current_readiness,
             "certifications": latest.get("certifications"),
             "history_rows": history_rows,
             "role_history": role_history,
             "market_history": market_history,
             "availability_history": availability_history,
+            "readiness_history": readiness_history,
             "certification_history": certification_history,
         },
     )

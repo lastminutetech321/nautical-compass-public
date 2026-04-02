@@ -24,6 +24,7 @@
       <p><strong>Primary Role:</strong> {{ primary_role or "Not provided" }}</p>
       <p><strong>Market:</strong> {{ market_area or "Not provided" }}</p>
       <p><strong>Availability:</strong> {{ availability or "Not provided" }}</p>
+      <p><strong>Dispatch Readiness:</strong> {{ dispatch_readiness or "unknown" }}</p>
     </div>
 
     <div class="feature-card">
@@ -90,6 +91,7 @@
           <p><strong>Role:</strong> {{ row.primary_role or "Not provided" }}</p>
           <p><strong>Market:</strong> {{ row.market_area or "Not provided" }}</p>
           <p><strong>Availability:</strong> {{ row.availability or "Not provided" }}</p>
+          <p><strong>Readiness:</strong> {{ row.dispatch_readiness or "unknown" }}</p>
           <p><strong>Created At:</strong> {{ row.created_at or "Unknown" }}</p>
         </div>
       {% endfor %}
