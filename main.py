@@ -119,20 +119,26 @@ def render(request: Request, template: str, data=None):
 
 
 def get_checkout_links():
-    entry_access = (
-        os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
+    nc_access_link = (
+        os.getenv("STRIPE_LINK_NC_ACCESS", "").strip()
+        or os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
     )
-    further_action = (
-        os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
-        or os.getenv("STRIPE_LINK_LEGAL_PRO", "").strip()
+    nc_protection_link = (
+        os.getenv("STRIPE_LINK_NC_PROTECTION", "").strip()
+        or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
+    )
+    nc_command_link = (
+        os.getenv("STRIPE_LINK_NC_COMMAND", "").strip()
+        or os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
     )
     labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
     labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
 
     return {
-        "entry_access": entry_access,
-        "further_action": further_action,
+        "nc_access_link": nc_access_link,
+        "nc_protection_link": nc_protection_link,
+        "nc_command_link": nc_command_link,
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
     }
@@ -799,7 +805,7 @@ def health():
     module_error = None
 
     try:
-        from modules.labor_signal.router import router as labor_signal_router  # noqa: F401
+        from labor_signal.router import router as labor_signal_router  # noqa: F401
         module_imported = True
     except Exception as exc:
         module_error = str(exc)
@@ -856,7 +862,7 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
-    return render(request, "checkout.html", {"checkout_links": get_checkout_links()})
+    return render(request, "checkout.html", get_checkout_links())
 
 
 @app.get("/checkout/{plan_key}", response_class=HTMLResponse)
@@ -1510,7 +1516,7 @@ def draft_packet(request: Request):
 
 try:
     if labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]:
-        from modules.labor_signal.router import router as labor_signal_router
+        from labor_signal.router import router as labor_signal_router
         app.include_router(labor_signal_router)
 except Exception as exc:
     print(f"[labor_signal] router not loaded: {exc}")

@@ -1,12 +1,22 @@
 """
-Route stub for payment webhook handling.
+Provider-aware payment webhook routing for NC.
 """
 
 from __future__ import annotations
 
+from typing import Any, Dict
+
 from modules.financial_engine.services.payment_service import PaymentService
 
 
-def payment_webhook(invoice_id: str = "demo-invoice", amount: float = 100.0, provider: str = "stripe") -> dict:
+def payment_webhook(
+    provider: str,
+    headers: Dict[str, Any],
+    body: bytes,
+) -> Dict[str, Any]:
     service = PaymentService()
-    return service.record_payment(invoice_id=invoice_id, amount=amount, provider=provider)
+    return service.parse_webhook(
+        provider=provider,
+        headers=headers,
+        body=body,
+    )
