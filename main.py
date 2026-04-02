@@ -1069,6 +1069,44 @@ def labor_profile_summary(request: Request):
 
         return "limited"
 
+    def parse_certification_tags(value: str | None) -> list[str]:
+        raw = (value or "").strip()
+        if not raw:
+            return []
+
+        normalized = raw.replace(";", ",").replace("|", ",")
+        tags = []
+
+        for part in normalized.split(","):
+            item = part.strip()
+            if item and item not in tags:
+                tags.append(item)
+
+        return tags[:12]
+
+    def detect_common_skill_flags(tags: list[str]) -> list[str]:
+        joined = " | ".join(tags).lower()
+        flags = []
+
+        checks = [
+            ("OSHA", ["osha"]),
+            ("Forklift", ["forklift"]),
+            ("Rigging", ["rigging", "rigger"]),
+            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
+            ("ETCP", ["etcp"]),
+            ("CDL", ["cdl"]),
+            ("Audio", ["audio", "a1", "a2"]),
+            ("Video", ["video", "v1", "v2"]),
+            ("Lighting", ["lighting", "lx", "l1", "l2"]),
+            ("Stagehand", ["stagehand"]),
+        ]
+
+        for label, needles in checks:
+            if any(needle in joined for needle in needles):
+                flags.append(label)
+
+        return flags
+
     latest = None
 
     for existing in reversed(LABOR_SUBMISSIONS):
@@ -1083,6 +1121,7 @@ def labor_profile_summary(request: Request):
     if worker_id:
         for existing in reversed(LABOR_SUBMISSIONS):
             if existing.get("nc_worker_id") == worker_id:
+                cert_tags = parse_certification_tags(existing.get("certifications"))
                 history_rows.append(
                     {
                         "created_at": existing.get("created_at"),
@@ -1091,6 +1130,8 @@ def labor_profile_summary(request: Request):
                         "availability": existing.get("availability"),
                         "dispatch_readiness": normalize_dispatch_readiness(existing.get("availability")),
                         "certifications": existing.get("certifications"),
+                        "certification_tags": cert_tags,
+                        "skill_flags": detect_common_skill_flags(cert_tags),
                         "email": existing.get("email"),
                         "phone": existing.get("phone"),
                     }
@@ -1103,6 +1144,8 @@ def labor_profile_summary(request: Request):
     availability_history = []
     certification_history = []
     readiness_history = []
+    certification_tags = []
+    skill_flags = []
 
     for row in history_rows:
         role = row.get("primary_role")
@@ -1110,6 +1153,8 @@ def labor_profile_summary(request: Request):
         availability = row.get("availability")
         readiness = row.get("dispatch_readiness")
         certs = row.get("certifications")
+        row_tags = row.get("certification_tags") or []
+        row_flags = row.get("skill_flags") or []
 
         if role and role not in role_history:
             role_history.append(role)
@@ -1126,7 +1171,25 @@ def labor_profile_summary(request: Request):
         if certs and certs not in certification_history:
             certification_history.append(certs)
 
+        for tag in row_tags:
+            if tag not in certification_tags:
+                certification_tags.append(tag)
+
+        for flag in row_flags:
+            if flag not in skill_flags:
+                skill_flags.append(flag)
+
     current_readiness = normalize_dispatch_readiness(latest.get("availability"))
+    current_certification_tags = parse_certification_tags(latest.get("certifications"))
+    current_skill_flags = detect_common_skill_flags(current_certification_tags)
+
+    for tag in current_certification_tags:
+        if tag not in certification_tags:
+            certification_tags.append(tag)
+
+    for flag in current_skill_flags:
+        if flag not in skill_flags:
+            skill_flags.append(flag)
 
     return render(
         request,
@@ -1140,6 +1203,8 @@ def labor_profile_summary(request: Request):
             "availability": latest.get("availability"),
             "dispatch_readiness": current_readiness,
             "certifications": latest.get("certifications"),
+            "certification_tags": certification_tags,
+            "skill_flags": skill_flags,
             "history_rows": history_rows,
             "role_history": role_history,
             "market_history": market_history,

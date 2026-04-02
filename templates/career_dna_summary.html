@@ -70,6 +70,34 @@
     </div>
 
     <div class="feature-card">
+      <div class="feature-kicker">Skill Flags</div>
+      <h3>Dispatch Signals</h3>
+      {% if skill_flags %}
+        <ul class="signal-list">
+          {% for item in skill_flags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No skill flags detected yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Certification Tags</div>
+      <h3>Parsed Credentials</h3>
+      {% if certification_tags %}
+        <ul class="signal-list">
+          {% for item in certification_tags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No certification tags yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="feature-card">
       <div class="feature-kicker">Certification History</div>
       <h3>Credential Notes</h3>
       {% if certification_history %}
@@ -92,6 +120,7 @@
           <p><strong>Market:</strong> {{ row.market_area or "Not provided" }}</p>
           <p><strong>Availability:</strong> {{ row.availability or "Not provided" }}</p>
           <p><strong>Readiness:</strong> {{ row.dispatch_readiness or "unknown" }}</p>
+          <p><strong>Cert Tags:</strong> {{ (row.certification_tags or []) | join(", ") or "None" }}</p>
           <p><strong>Created At:</strong> {{ row.created_at or "Unknown" }}</p>
         </div>
       {% endfor %}
