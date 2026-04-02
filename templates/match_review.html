@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">Match Review</div>
+    <h2>Worker vs Employer Request</h2>
+    <p class="hero-copy">
+      This is the first visible comparison surface between a labor request and a worker profile.
+    </p>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Employer Request</div>
+      <h3>Request Snapshot</h3>
+      <p><strong>Request ID:</strong> {{ request_id or "Not found" }}</p>
+      <p><strong>Roles + Headcount:</strong> {{ requested_roles_headcount or "Not provided" }}</p>
+      <p><strong>Event Date:</strong> {{ event_date or "Not provided" }}</p>
+      <p><strong>Shift Window:</strong> {{ shift_window or "Not provided" }}</p>
+      <p><strong>Location:</strong> {{ location or "Not provided" }}</p>
+      <p><strong>Notes:</strong> {{ notes or "None" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Worker Snapshot</div>
+      <h3>Profile View</h3>
+      <p><strong>Worker ID:</strong> {{ worker_id or "Not found" }}</p>
+      <p><strong>Role:</strong> {{ primary_role or "Not provided" }}</p>
+      <p><strong>Market:</strong> {{ market_area or "Not provided" }}</p>
+      <p><strong>Availability:</strong> {{ availability or "Not provided" }}</p>
+      <p><strong>Readiness:</strong> {{ dispatch_readiness or "unknown" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Match Result</div>
+      <h3>Fit Signal</h3>
+      <p><strong>Match Score:</strong> {{ match_score or 0 }}</p>
+      {% if match_labels %}
+        <ul class="signal-list">
+          {% for item in match_labels %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No labels yet.</p>
+      {% endif %}
+      <p><strong>Next Move:</strong> {{ next_move or "Complete worker profile" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Worker Strength</div>
+      <h3>Signals</h3>
+      {% if skill_flags %}
+        <p><strong>Skill Flags:</strong></p>
+        <ul class="signal-list">
+          {% for item in skill_flags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if certification_tags %}
+        <p><strong>Certification Tags:</strong></p>
+        <ul class="signal-list">
+          {% for item in certification_tags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if not skill_flags and not certification_tags %}
+        <p>Certification Opportunity</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <h3>Next Views</h3>
+    <a class="feature-link" href="/labor/employer-request/start">Start Employer Request ↗</a>
+    <a class="feature-link" href="/labor/employer-view">Open Employer View ↗</a>
+    <a class="feature-link" href="/labor/dashboard">Open Worker Dashboard ↗</a>
+    <a class="feature-link" href="/labor/profile/summary">Open Career DNA Summary ↗</a>
+  </div>
+</section>
+{% endblock %}

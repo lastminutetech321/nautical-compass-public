@@ -1271,6 +1271,170 @@ def labor_employer_view(request: Request):
         },
     )
 
+@app.get("/labor/match-review", response_class=HTMLResponse)
+def labor_match_review(request: Request):
+    def normalize_dispatch_readiness(value: str | None) -> str:
+        raw = (value or "").strip().lower()
+
+        if not raw:
+            return "unknown"
+
+        unavailable_terms = [
+            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
+            "off", "no availability", "not free"
+        ]
+        limited_terms = [
+            "limited", "part-time", "part time", "weekend", "weekends", "evening",
+            "evenings", "after", "partial", "some days", "select days", "certain days"
+        ]
+        ready_terms = [
+            "ready", "available", "open", "flexible", "full-time", "full time",
+            "anytime", "open availability", "immediate"
+        ]
+
+        for term in unavailable_terms:
+            if term in raw:
+                return "unavailable"
+
+        for term in limited_terms:
+            if term in raw:
+                return "limited"
+
+        for term in ready_terms:
+            if term in raw:
+                return "ready"
+
+        return "limited"
+
+    def parse_certification_tags(value: str | None) -> list[str]:
+        raw = (value or "").strip()
+        if not raw:
+            return []
+
+        normalized = raw.replace(";", ",").replace("|", ",")
+        tags = []
+
+        for part in normalized.split(","):
+            item = part.strip()
+            if item and item not in tags:
+                tags.append(item)
+
+        return tags[:12]
+
+    def detect_common_skill_flags(tags: list[str]) -> list[str]:
+        joined = " | ".join(tags).lower()
+        flags = []
+
+        checks = [
+            ("OSHA", ["osha"]),
+            ("Forklift", ["forklift"]),
+            ("Rigging", ["rigging", "rigger"]),
+            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
+            ("ETCP", ["etcp"]),
+            ("CDL", ["cdl"]),
+            ("Audio", ["audio", "a1", "a2"]),
+            ("Video", ["video", "v1", "v2"]),
+            ("Lighting", ["lighting", "lx", "l1", "l2"]),
+            ("Stagehand", ["stagehand"]),
+        ]
+
+        for label, needles in checks:
+            if any(needle in joined for needle in needles):
+                flags.append(label)
+
+        return flags
+
+    def build_match_result(primary_role: str | None, market_area: str | None, availability: str | None, certification_tags: list[str], skill_flags: list[str]) -> dict:
+        role = (primary_role or "").strip()
+        market = (market_area or "").strip()
+        readiness = normalize_dispatch_readiness(availability)
+
+        score = 0
+        labels = []
+        next_move = "Complete worker profile"
+
+        if role:
+            score += 40
+        if market:
+            score += 20
+
+        if readiness == "ready":
+            score += 25
+            labels.append("Ready Now")
+            next_move = "Open Worker Dashboard"
+        elif readiness == "limited":
+            score += 10
+            labels.append("Limited Availability")
+            next_move = "Clarify availability for dispatch"
+        elif readiness == "unavailable":
+            labels.append("Currently Unavailable")
+            next_move = "Update availability before dispatch"
+        else:
+            labels.append("Availability Needs Clarification")
+            next_move = "Add clearer availability"
+
+        if certification_tags or skill_flags:
+            score += 15
+            labels.append("Strong Match")
+        else:
+            labels.append("Certification Opportunity")
+            if next_move == "Open Worker Dashboard":
+                next_move = "Add certifications to strengthen dispatch trust"
+
+        if not market:
+            labels.append("Market Alignment Needed")
+            next_move = "Add market area for stronger matching"
+
+        score = max(0, min(score, 100))
+
+        return {
+            "match_score": score,
+            "match_labels": labels,
+            "next_move": next_move,
+        }
+
+    latest_worker = {}
+    for existing in reversed(LABOR_SUBMISSIONS):
+        if existing.get("nc_worker_id"):
+            latest_worker = existing
+            break
+
+    latest_request = EMPLOYER_REQUESTS[-1] if EMPLOYER_REQUESTS else {}
+
+    cert_tags = parse_certification_tags(latest_worker.get("certifications"))
+    skill_flags = detect_common_skill_flags(cert_tags)
+    dispatch_readiness = normalize_dispatch_readiness(latest_worker.get("availability"))
+    match_result = build_match_result(
+        latest_worker.get("primary_role"),
+        latest_worker.get("market_area"),
+        latest_worker.get("availability"),
+        cert_tags,
+        skill_flags,
+    )
+
+    return render(
+        request,
+        "match_review.html",
+        {
+            "worker_id": latest_worker.get("nc_worker_id"),
+            "primary_role": latest_worker.get("primary_role"),
+            "market_area": latest_worker.get("market_area"),
+            "availability": latest_worker.get("availability"),
+            "dispatch_readiness": dispatch_readiness,
+            "certification_tags": cert_tags,
+            "skill_flags": skill_flags,
+            "match_score": match_result["match_score"],
+            "match_labels": match_result["match_labels"],
+            "next_move": match_result["next_move"],
+            "request_id": latest_request.get("request_id"),
+            "requested_roles_headcount": latest_request.get("requested_roles_headcount"),
+            "event_date": latest_request.get("event_date"),
+            "shift_window": latest_request.get("shift_window"),
+            "location": latest_request.get("location"),
+            "notes": latest_request.get("notes"),
+        },
+    )
+
 @app.get("/labor/dashboard", response_class=HTMLResponse)
 def labor_dashboard(request: Request):
     def normalize_dispatch_readiness(value: str | None) -> str:
