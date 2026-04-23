@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "v1",
+  "generator": {
+    "id": "w9_generator",
+    "label": "W-9 Generator",
+    "sourceSchema": "master-intake-schema",
+    "sourceMapping": "prefill-mapping-spec",
+    "targetOutput": "w9_payload",
+    "generationMode": "prefill_only",
+    "description": "Builds a W-9-ready payload from intake data for review and later document rendering."
+  },
+  "requirements": {
+    "requiredFields": [
+      "identityProfile.fullLegalName",
+      "identityProfile.residentialAddress.street1",
+      "identityProfile.residentialAddress.city",
+      "identityProfile.residentialAddress.state",
+      "identityProfile.residentialAddress.postalCode"
+    ],
+    "optionalFields": [
+      "businessProfile.businessName",
+      "businessProfile.entityType",
+      "businessProfile.einAvailable"
+    ],
+    "blockIfMissingRequired": true
+  },
+  "fieldResolution": {
+    "nameLine": {
+      "primary": "identityProfile.fullLegalName",
+      "fallback": ""
+    },
+    "businessNameLine": {
+      "primary": "businessProfile.businessName",
+      "fallback": ""
+    },
+    "federalTaxClassification": {
+      "source": "businessProfile.entityType",
+      "map": {
+        "none": "individual_sole_proprietor",
+        "llc": "llc",
+        "corporation": "c_corporation",
+        "partnership": "partnership",
+        "nonprofit": "other",
+        "other": "other"
+      },
+      "fallback": "individual_sole_proprietor"
+    },
+    "addressLine1": {
+      "source": "identityProfile.residentialAddress.street1"
+    },
+    "city": {
+      "source": "identityProfile.residentialAddress.city"
+    },
+    "state": {
+      "source": "identityProfile.residentialAddress.state"
+    },
+    "zip": {
+      "source": "identityProfile.residentialAddress.postalCode"
+    },
+    "tinType": {
+      "source": "businessProfile.einAvailable",
+      "map": {
+        "true": "ein",
+        "false": "ssn_or_individual_tin"
+      },
+      "fallback": "ssn_or_individual_tin"
+    }
+  },
+  "outputShape": {
+    "documentType": "w9",
+    "status": "prefilled",
+    "reviewRequired": true,
+    "payload": {
+      "nameLine": "",
+      "businessNameLine": "",
+      "federalTaxClassification": "",
+      "addressLine1": "",
+      "city": "",
+      "state": "",
+      "zip": "",
+      "tinType": "",
+      "tinValue": ""
+    }
+  },
+  "validationRules": [
+    {
+      "ruleId": "require_name",
+      "field": "payload.nameLine",
+      "type": "required"
+    },
+    {
+      "ruleId": "require_address",
+      "field": "payload.addressLine1",
+      "type": "required"
+    },
+    {
+      "ruleId": "require_city",
+      "field": "payload.city",
+      "type": "required"
+    },
+    {
+      "ruleId": "require_state",
+      "field": "payload.state",
+      "type": "required"
+    },
+    {
+      "ruleId": "require_zip",
+      "field": "payload.zip",
+      "type": "required"
+    }
+  ],
+  "postGenerationActions": {
+    "setDocumentFlag": "documentProfile.w9Ready",
+    "historyDocumentType": "w9",
+    "historyStatus": "generated",
+    "allowUserReviewBeforeExport": true
+  },
+  "uiActions": {
+    "primaryButton": "Generate W-9",
+    "successState": "W-9 payload ready for review",
+    "failureState": "Missing required intake fields"
+  }
+}

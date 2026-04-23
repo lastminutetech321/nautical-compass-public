@@ -57,6 +57,31 @@
           </ul>
         </div>
 
+        {% if case_context.route.module_state.signal_dock.status == "complete" %}
+        <div class="module-box module-box-full">
+          <h3>Signal Dock Review</h3>
+          <ul class="recommendation-list">
+            <li><strong>Critical Deadlines:</strong> {{ case_context.route.module_state.signal_dock.review.critical_deadlines or "No deadlines captured yet." }}</li>
+            <li><strong>Notice Signals:</strong> {{ case_context.route.module_state.signal_dock.review.notice_signals or "No notices captured yet." }}</li>
+            <li><strong>Risk Flags:</strong> {{ case_context.route.module_state.signal_dock.review.risk_flags or "No risk flags captured yet." }}</li>
+            <li><strong>Signal Summary:</strong> {{ case_context.route.module_state.signal_dock.review.signal_summary or "No signal summary captured yet." }}</li>
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if case_context.route.module_state.equity_engine.status == "complete" %}
+        <div class="module-box module-box-full">
+          <h3>Equity Engine Review</h3>
+          <ul class="recommendation-list">
+            <li><strong>Relief Sought:</strong> {{ case_context.route.module_state.equity_engine.review.relief_sought or case_context.requested_outcome }}</li>
+            <li><strong>Equitable Posture:</strong> {{ case_context.route.module_state.equity_engine.review.equitable_posture or "No equitable posture captured yet." }}</li>
+            <li><strong>Pressure Path:</strong> {{ case_context.route.module_state.equity_engine.review.pressure_path or "Not selected" }}</li>
+            <li><strong>Urgency Level:</strong> {{ case_context.route.module_state.equity_engine.review.urgency_level or "Not selected" }}</li>
+            <li><strong>Additional Notes:</strong> {{ case_context.route.module_state.equity_engine.review.equity_notes or "No additional equity notes captured yet." }}</li>
+          </ul>
+        </div>
+        {% endif %}
+
         {% if case_context.compliance_gate %}
         <div class="module-box module-box-full">
           <h3>Legal Basis</h3>

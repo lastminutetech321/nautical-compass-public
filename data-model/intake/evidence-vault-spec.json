@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "v1",
+  "evidenceVault": {
+    "vaultStatus": "active",
+    "documentHistoryEnabled": true,
+    "evidenceItems": [],
+    "documentHistory": []
+  },
+  "evidenceItemTemplate": {
+    "evidenceId": "",
+    "linkedComplaintId": "",
+    "title": "",
+    "description": "",
+    "evidenceType": "",
+    "source": "",
+    "fileName": "",
+    "filePath": "",
+    "fileRef": "",
+    "uploadedAt": "",
+    "dateCaptured": "",
+    "capturedBy": "",
+    "authenticityNotes": "",
+    "tags": [],
+    "visibility": "private",
+    "isPrimary": false,
+    "relatedTimelineEventIds": [],
+    "relatedDocumentIds": []
+  },
+  "documentHistoryTemplate": {
+    "documentId": "",
+    "documentType": "",
+    "title": "",
+    "fileName": "",
+    "filePath": "",
+    "createdAt": "",
+    "updatedAt": "",
+    "sourceSchema": "",
+    "linkedComplaintId": "",
+    "linkedEvidenceIds": [],
+    "status": "draft",
+    "version": 1,
+    "notes": ""
+  },
+  "controlledLists": {
+    "evidenceType": [
+      "screenshot",
+      "email",
+      "text_message",
+      "invoice",
+      "contract",
+      "payout_log",
+      "app_notice",
+      "photo",
+      "video",
+      "audio",
+      "witness_statement",
+      "government_notice",
+      "bank_record",
+      "other"
+    ],
+    "visibility": [
+      "private",
+      "internal_use",
+      "shareable"
+    ],
+    "documentType": [
+      "w9",
+      "invoice",
+      "complaint_summary",
+      "contractor_profile",
+      "demand_letter",
+      "dispute_packet",
+      "evidence_index",
+      "other"
+    ],
+    "status": [
+      "draft",
+      "generated",
+      "reviewed",
+      "final"
+    ]
+  },
+  "vaultRules": {
+    "allowMultipleEvidencePerComplaint": true,
+    "allowUnlinkedEvidence": true,
+    "requireEvidenceId": true,
+    "requireDocumentId": true,
+    "defaultVisibility": "private",
+    "historyTracking": "append_only"
+  }
+}

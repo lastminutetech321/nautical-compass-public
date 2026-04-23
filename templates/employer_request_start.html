@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">Employer Request</div>
+    <h2>Start Labor Request</h2>
+    <p class="hero-copy">
+      Capture the first employer-side request so the system has something real to match workers against.
+    </p>
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <form method="post" action="/labor/employer-request/start" class="stack" style="display:grid; gap:16px;">
+      <div>
+        <label for="requested_roles_headcount">Requested Roles + Headcount</label>
+        <input id="requested_roles_headcount" name="requested_roles_headcount" type="text" placeholder="A2 x2, V1 x1, Stagehand x4" required />
+      </div>
+
+      <div>
+        <label for="event_date">Event Date</label>
+        <input id="event_date" name="event_date" type="text" placeholder="2026-04-10" required />
+      </div>
+
+      <div>
+        <label for="shift_window">Shift Window</label>
+        <input id="shift_window" name="shift_window" type="text" placeholder="7AM–3PM" required />
+      </div>
+
+      <div>
+        <label for="location">Location</label>
+        <input id="location" name="location" type="text" placeholder="Convention Center, DC" required />
+      </div>
+
+      <div>
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="4" placeholder="Special requirements, show notes, access notes, etc."></textarea>
+      </div>
+
+      <div class="actions" style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn" type="submit">Save Employer Request</button>
+        <a class="feature-link" href="/labor/employer-view">Back to Employer View ↗</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

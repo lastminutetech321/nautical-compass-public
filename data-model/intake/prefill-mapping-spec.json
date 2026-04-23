@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "v1",
+  "prefillMappings": {
+    "w9": {
+      "source": "master-intake-schema",
+      "targetFile": "w9",
+      "requiredFields": [
+        "identityProfile.fullLegalName",
+        "identityProfile.residentialAddress.street1",
+        "identityProfile.residentialAddress.city",
+        "identityProfile.residentialAddress.state",
+        "identityProfile.residentialAddress.postalCode"
+      ],
+      "fieldMap": {
+        "name": "identityProfile.fullLegalName",
+        "businessName": "businessProfile.businessName",
+        "addressLine1": "identityProfile.residentialAddress.street1",
+        "city": "identityProfile.residentialAddress.city",
+        "state": "identityProfile.residentialAddress.state",
+        "zip": "identityProfile.residentialAddress.postalCode",
+        "taxClassification": "businessProfile.entityType",
+        "einAvailable": "businessProfile.einAvailable"
+      }
+    },
+    "invoice": {
+      "source": "master-intake-schema",
+      "targetFile": "invoice",
+      "requiredFields": [
+        "identityProfile.fullLegalName",
+        "businessProfile.businessName",
+        "documentProfile.invoiceReady"
+      ],
+      "fieldMap": {
+        "fromName": "businessProfile.businessName",
+        "fromContact": "identityProfile.email",
+        "fromPhone": "identityProfile.phone",
+        "serviceProviderName": "identityProfile.fullLegalName",
+        "workerType": "workProfile.workerType",
+        "platformsOrClients": "workProfile.platformsOrClients",
+        "estimatedAnnualGrossIncome": "incomeProfile.estimatedAnnualGrossIncome"
+      }
+    },
+    "complaintSummary": {
+      "source": "complaint-curation-schema",
+      "targetFile": "complaint_summary",
+      "requiredFields": [
+        "complaintTemplate.shortTitle",
+        "complaintTemplate.plainLanguageSummary",
+        "complaintTemplate.whatHappened",
+        "complaintTemplate.desiredOutcome"
+      ],
+      "fieldMap": {
+        "title": "complaintTemplate.shortTitle",
+        "summary": "complaintTemplate.plainLanguageSummary",
+        "incidentNarrative": "complaintTemplate.whatHappened",
+        "targetName": "complaintTemplate.targetName",
+        "incidentDateStart": "complaintTemplate.incidentDateStart",
+        "incidentDateEnd": "complaintTemplate.incidentDateEnd",
+        "harmTypes": "complaintTemplate.harmTypes",
+        "financialLossAmount": "complaintTemplate.financialLossAmount",
+        "desiredOutcome": "complaintTemplate.desiredOutcome",
+        "recommendedRoute": "complaintTemplate.curation.recommendedRoute"
+      }
+    },
+    "contractorProfile": {
+      "source": "master-intake-schema",
+      "targetFile": "contractor_profile",
+      "requiredFields": [
+        "identityProfile.fullLegalName",
+        "workProfile.workerType",
+        "workProfile.platformsOrClients"
+      ],
+      "fieldMap": {
+        "fullName": "identityProfile.fullLegalName",
+        "email": "identityProfile.email",
+        "phone": "identityProfile.phone",
+        "businessName": "businessProfile.businessName",
+        "workerType": "workProfile.workerType",
+        "platformsOrClients": "workProfile.platformsOrClients",
+        "setsOwnSchedule": "workProfile.setsOwnSchedule",
+        "providesOwnTools": "workProfile.providesOwnTools",
+        "weeklyHoursAverage": "workProfile.weeklyHoursAverage",
+        "estimatedAnnualGrossIncome": "incomeProfile.estimatedAnnualGrossIncome",
+        "recordkeepingStrength": "complianceProfile.recordkeepingStrength"
+      }
+    }
+  },
+  "mappingRules": {
+    "emptyStringHandling": "allow",
+    "missingRequiredFieldBehavior": "block_generation",
+    "optionalFieldBehavior": "skip_if_empty",
+    "arrayBehavior": "preserve_array",
+    "booleanBehavior": "preserve_boolean",
+    "numericBehavior": "preserve_numeric"
+  }
+}

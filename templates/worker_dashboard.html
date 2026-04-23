@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">Worker Dashboard</div>
+    <h2>Operations View</h2>
+    <p class="hero-copy">
+      This is the worker-facing operations surface for identity, readiness, skills, and recent memory.
+    </p>
+  </div>
+
+  <div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Identity</div>
+      <h3>Worker Record</h3>
+      <p><strong>Worker ID:</strong> {{ worker_id or "Not found" }}</p>
+      <p><strong>Email:</strong> {{ email or "Not provided" }}</p>
+      <p><strong>Phone:</strong> {{ phone or "Not provided" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Current Position</div>
+      <h3>Dispatch Layer</h3>
+      <p><strong>Primary Role:</strong> {{ primary_role or "Not provided" }}</p>
+      <p><strong>Market:</strong> {{ market_area or "Not provided" }}</p>
+      <p><strong>Availability:</strong> {{ availability or "Not provided" }}</p>
+      <p><strong>Readiness:</strong> {{ dispatch_readiness or "unknown" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Match Result</div>
+      <h3>Fit Signal</h3>
+      <p><strong>Match Score:</strong> {{ match_score or 0 }}</p>
+      {% if match_labels %}
+        <ul class="signal-list">
+          {% for item in match_labels %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <p><strong>Next Move:</strong> {{ next_move or "Complete worker profile" }}</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Skill Flags</div>
+      <h3>Detected Capabilities</h3>
+      {% if skill_flags %}
+        <ul class="signal-list">
+          {% for item in skill_flags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No skill flags detected yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Certification Tags</div>
+      <h3>Parsed Credentials</h3>
+      {% if certification_tags %}
+        <ul class="signal-list">
+          {% for item in certification_tags %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No certification tags yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <div class="feature-kicker">Recent Activity</div>
+    <h3>Last 5 Worker Entries</h3>
+    {% if history_rows %}
+      {% for row in history_rows %}
+        <div class="feature-card" style="margin-top: 12px;">
+          <p><strong>Role:</strong> {{ row.primary_role or "Not provided" }}</p>
+          <p><strong>Market:</strong> {{ row.market_area or "Not provided" }}</p>
+          <p><strong>Availability:</strong> {{ row.availability or "Not provided" }}</p>
+          <p><strong>Created At:</strong> {{ row.created_at or "Unknown" }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No recent activity yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <h3>Worker Actions</h3>
+    <a class="feature-link" href="/modules/labor-signal">Back to Labor Signal ↗</a>
+    <a class="feature-link" href="/labor/profile/start">Start Career DNA ↗</a>
+    <a class="feature-link" href="/labor/profile/edit">Edit Worker Profile ↗</a>
+    <a class="feature-link" href="/labor/profile/summary">Open Career DNA Summary ↗</a>
+    <a class="feature-link" href="/admin/ledger-preview">Open Ledger Preview ↗</a>
+  </div>
+</section>
+{% endblock %}

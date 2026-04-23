@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+  <div class="hero-card">
+    <div class="eyebrow">Career DNA</div>
+    <h2>Edit Worker Profile</h2>
+    <p class="hero-copy">
+      Update your worker identity, role, market, certifications, and availability.
+    </p>
+  </div>
+
+  <div class="feature-card" style="margin-top: 24px;">
+    <form method="post" action="/labor/profile/edit" class="stack" style="display:grid; gap:16px;">
+      <div>
+        <label for="worker_id">Worker ID</label>
+        <input id="worker_id" name="worker_id" type="text" value="{{ worker_id }}" readonly />
+      </div>
+
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" value="{{ email }}" required />
+      </div>
+
+      <div>
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="text" value="{{ phone }}" />
+      </div>
+
+      <div>
+        <label for="primary_role">Primary Role</label>
+        <input id="primary_role" name="primary_role" type="text" value="{{ primary_role }}" required />
+      </div>
+
+      <div>
+        <label for="market_area">Market Area</label>
+        <input id="market_area" name="market_area" type="text" value="{{ market_area }}" required />
+      </div>
+
+      <div>
+        <label for="certifications">Certifications</label>
+        <textarea id="certifications" name="certifications" rows="4">{{ certifications }}</textarea>
+      </div>
+
+      <div>
+        <label for="availability">Availability</label>
+        <input id="availability" name="availability" type="text" value="{{ availability }}" />
+      </div>
+
+      <div class="actions" style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn" type="submit">Save Worker Updates</button>
+        <a class="feature-link" href="/labor/dashboard">Back to Worker Dashboard ↗</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
