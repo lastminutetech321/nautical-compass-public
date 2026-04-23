@@ -17,11 +17,15 @@ from routes.financial_engine_panel import financial_engine_panel_router
 from routes.financial_engine_actions import financial_engine_actions_router
 from routes.core_routes import core_routes
 
+from routes.core_routes import core_routes
+
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
+
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
 app.include_router(financial_engine_actions_router)
+
 
 UPLOAD_ROOT = Path("uploads")
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
@@ -122,6 +126,7 @@ def render(request: Request, template: str, data=None):
 
 
 def get_checkout_links():
+
     nc_access_link = (
         os.getenv("STRIPE_LINK_NC_ACCESS", "").strip()
         or os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
@@ -144,6 +149,11 @@ def get_checkout_links():
         "nc_command_link": nc_command_link,
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
+    return {
+        "access": os.getenv("STRIPE_LINK_NC_ACCESS", "").strip(),
+        "protection": os.getenv("STRIPE_LINK_NC_PROTECTION", "").strip(),
+        "command": os.getenv("STRIPE_LINK_NC_COMMAND", "").strip(),
+
     }
 
 
@@ -865,6 +875,7 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
+
     EventLedger().record(
         event_type="checkout_opened",
         module="access",
@@ -876,6 +887,18 @@ def checkout(request: Request):
     )
     return render(request, "checkout.html", get_checkout_links())
 
+    links = get_checkout_links()
+    return render(
+        request,
+        "checkout.html",
+        {
+            "nc_access_link": links.get("access", ""),
+            "nc_protection_link": links.get("protection", ""),
+            "nc_command_link": links.get("command", ""),
+        },
+    )
+
+
 
 @app.get("/checkout/{plan_key}", response_class=HTMLResponse)
 def checkout_plan(request: Request, plan_key: str):
@@ -883,10 +906,9 @@ def checkout_plan(request: Request, plan_key: str):
     checkout_url = links.get(plan_key, "")
 
     plan_titles = {
-        "entry_access": "Entry Access — $25",
-        "further_action": "Further Action Required — $135",
-        "labor_signal_basic": "Labor Signal Basic",
-        "labor_signal_pro": "Labor Signal Pro",
+        "access": "NC Access — $25/month",
+        "protection": "NC Protection — $75/month",
+        "command": "NC Command — $135/month",
     }
 
     EventLedger().record(
@@ -1890,7 +1912,18 @@ async def labor_profile_start_submit(
 
 @app.get("/intake/labor", response_class=HTMLResponse)
 def intake_labor(request: Request):
+
     return render(request, "intake_form.html")
+
+    return render(
+        request,
+        "intake_form.html",
+        {
+            "token": "",
+            "email": "",
+        },
+    )
+
 
 
 @app.post("/intake/labor")

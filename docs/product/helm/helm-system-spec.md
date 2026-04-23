@@ -1,3 +1,4 @@
+
 # Nautical Compass — Helm System Spec
 
 ## Purpose
@@ -78,3 +79,5 @@ It should tell the user at a glance:
 - what is strong
 - what is exposed
 - where to go next
+
+
