@@ -143,18 +143,14 @@ def get_checkout_links():
     labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
     labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
 
+   }
     return {
         "nc_access_link": nc_access_link,
         "nc_protection_link": nc_protection_link,
         "nc_command_link": nc_command_link,
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
-    return {
-        "access": os.getenv("STRIPE_LINK_NC_ACCESS", "").strip(),
-        "protection": os.getenv("STRIPE_LINK_NC_PROTECTION", "").strip(),
-        "command": os.getenv("STRIPE_LINK_NC_COMMAND", "").strip(),
-
-    }
+    
 
 
 def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
