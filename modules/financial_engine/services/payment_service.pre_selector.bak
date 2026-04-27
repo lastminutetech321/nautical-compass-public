@@ -1,0 +1,103 @@
+"""
+Payment service for NC provider orchestration.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Dict, Optional
+
+from modules.financial_engine.providers.bank_provider_placeholder import BankProviderPlaceholder
+from modules.financial_engine.providers.mercury_provider import MercuryProvider
+from modules.financial_engine.schemas.payment_event import build_payment_event
+from modules.financial_engine.providers.stripe_provider import StripeProvider
+
+
+class PaymentService:
+    """NC payment orchestration layer."""
+
+    def __init__(self) -> None:
+        self.providers = {
+            "stripe": StripeProvider(),
+            "mercury": MercuryProvider(),
+            "bank_2": BankProviderPlaceholder("bank_2"),
+            "bank_3": BankProviderPlaceholder("bank_3"),
+        }
+
+    def get_provider(self, provider: str):
+        key = (provider or "").strip().lower()
+        if key not in self.providers:
+            raise ValueError(f"Unsupported payment provider: {provider}")
+        return self.providers[key]
+
+    def healthcheck(self) -> Dict[str, Any]:
+        return {
+            name: client.healthcheck()
+            for name, client in self.providers.items()
+        }
+
+    def create_charge(self, provider: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        client = self.get_provider(provider)
+        result = client.create_charge(payload)
+        return self._normalize_result(provider, "create_charge", result, payload)
+
+    def create_payout(self, provider: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        client = self.get_provider(provider)
+        result = client.create_payout(payload)
+        return self._normalize_result(provider, "create_payout", result, payload)
+
+    def fetch_transaction(self, provider: str, provider_txn_id: str) -> Dict[str, Any]:
+        client = self.get_provider(provider)
+        result = client.fetch_transaction(provider_txn_id)
+        return self._normalize_result(
+            provider,
+            "fetch_transaction",
+            result,
+            {"provider_txn_id": provider_txn_id},
+        )
+
+    def parse_webhook(
+        self,
+        provider: str,
+        headers: Dict[str, Any],
+        body: bytes,
+    ) -> Dict[str, Any]:
+        client = self.get_provider(provider)
+        result = client.parse_webhook(headers, body)
+        return self._normalize_result(provider, "parse_webhook", result, {})
+
+    def record_payment(self, invoice_id: str, amount: float, provider: str) -> Dict[str, Any]:
+        return {
+            "status": "recorded",
+            "invoice_id": invoice_id,
+            "amount": amount,
+            "provider": provider,
+            "message": "Payment recorded successfully.",
+        }
+
+    def _normalize_result(
+        self,
+        provider: str,
+        action: str,
+        result: Dict[str, Any],
+        payload: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        data = result.get("data", {})
+        provider_txn_id = None
+
+        if isinstance(data, dict):
+            provider_txn_id = (
+                data.get("id")
+                or data.get("transaction_id")
+                or data.get("payment_id")
+            )
+
+        return build_payment_event(
+            provider=provider,
+            action=action,
+            ok=result.get("ok", False),
+            status_code=result.get("status_code"),
+            provider_txn_id=provider_txn_id,
+            payload=payload or {},
+            data=data,
+            raw=result.get("raw", result),
+        )

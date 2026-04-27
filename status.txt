@@ -1,0 +1,68 @@
+gtOn branch legal-flow-bounded-20260327
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+	new file:   docs/product/helm/data-model/intake/master-intake-schema.json
+	modified:   docs/product/helm/helm-system-spec.md
+	modified:   main.py
+	modified:   modules/financial_engine/api/__init__.py
+	new file:   modules/financial_engine/api/modules/financial_engine/services/account_service.py modules/financial_engine/services/invoice_service.py modules/financial_engine/services/payment_service.py
+	new file:   modules/financial_engine/models/modules/financial_engine/models/__init__.py
+	new file:   modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/business_account.py
+	new file:   modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/invoice.py
+	new file:   modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/services/invoice_service.py
+	new file:   modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/models/modules/financial_engine/services/modules/financial_engine/services/payment_service.py
+	modified:   templates/base.html
+	modified:   templates/checkout.html
+	modified:   templates/get_access.html
+	modified:   templates/hall.html
+	modified:   templates/index.html
+	modified:   templates/services.html
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	0001-Add-NC-payment-provider-spine-and-checkout-link-fall.patch
+	docs/product/runtime/actual-route-handlers-plan.md
+	docs/product/runtime/first-working-loop-implementation.md
+	docs/product/runtime/frontend-api-helper-plan.md
+	docs/product/runtime/frontend-api-helper-plan.mdtouch
+	docs/product/runtime/frontend-core-loop-wiring-plan.md
+	docs/product/runtime/repo-level-code-implementation-plan.md
+	docs/product/runtime/route-wiring-plan.md
+	docs/product/runtime/service-expansion-map.md
+	engines/
+	main.pre_checkout_link_fix.bak
+	main.pre_ledger_preview_route.bak
+	main.pre_ledger_touchpoints.bak
+	main.py.bak
+	modules/financial_engine/routes/payment_webhook.pre_router.bak
+	modules/financial_engine/services/event_ledger.py
+	modules/financial_engine/services/payment_service.pre_future_rails.bak
+	modules/financial_engine/services/payment_service.pre_orchestration.bak
+	modules/financial_engine/services/payment_service.pre_policy_file.bak
+	modules/financial_engine/services/payment_service.pre_schema.bak
+	modules/financial_engine/services/payment_service.pre_selector.bak
+	nautical_compass.db
+	routes/core_routes.py
+	runtime/
+	services/
+	static/js/
+	static/labor-port.contractors.bak
+	static/labor-port.crewpanel.bak
+	static/labor-port.finalcheck.html
+	static/labor-port.html.bak
+	static/labor-port.jobs.bak
+	static/labor-port.schedules.bak
+	static/labor-port.working.html
+	static/styles.finalcheck.csspwd
+	static/styles.working.css
+	status.txt
+	templates/intake_form.html.bak
+	templates/labor_signal.pre_alert_backup.html
+	templates/labor_signal.pre_ledger_link.bak
+	templates/services.dispatchcopy.bak
+	templates/services.productioncopy.bak
+	templates/signal_dock.pre_alert_backup.html
+	utils/
+

@@ -1,0 +1,2 @@
+{"ts": 1775123597, "company_id": "company_001", "event_type": "worker_requested", "worker_id": "worker_001", "service_id": null, "role": "A2", "outcome": null, "payload": {}}
+{"ts": 1775123833, "company_id": "company_001", "event_type": "worker_requested", "worker_id": "worker_001", "service_id": null, "role": "A2", "outcome": null, "payload": {}}

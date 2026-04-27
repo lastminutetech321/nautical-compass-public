@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Subscriber Intake • Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Subscriber Intake</h2>
+  <p class="muted">Member-only intake. Authorized email: <strong>{{ email }}</strong></p>
+
+  <div class="alert">
+    <strong>What happens after you submit:</strong>
+    <div class="muted" style="margin-top:6px;">
+      We’ll generate a Results page that shows “Risk Flags” (if any) so your next steps are clean and organized.
+    </div>
+  </div>
+
+  <form class="form" method="post" action="/intake?token={{ token }}">
+    <div>
+      <label class="label">Name</label>
+      <input name="name" required />
+    </div>
+
+    <div>
+      <label class="label">Email</label>
+      <input name="email" type="email" required />
+    </div>
+
+    <div>
+      <label class="label">Service Requested</label>
+      <select name="service_requested" required>
+        <option value="">Select a service…</option>
+        <option>Legal Intake Strategy</option>
+        <option>Contract Review & Risk Mapping</option>
+        <option>Demand Letter Drafting</option>
+        <option>Arbitration Package Assembly</option>
+        <option>Record Request Packet (CPRA/FOIA-style)</option>
+        <option>Dispute Timeline & Evidence Organization</option>
+        <option>Complaint Framing & Narrative Structuring</option>
+        <option>Platform / Marketplace Dispute Structuring</option>
+        <option>Billing / Payments Dispute Structuring</option>
+        <option>Other (explain in notes)</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="label">Notes (optional)</label>
+      <textarea name="notes" placeholder="Key facts, deadlines, what happened, what you want done…"></textarea>
+      <div class="muted" style="margin-top:6px;font-size:12px;">
+        Tip: If there’s a deadline, write it clearly. Don’t paste SSNs or full ID numbers into notes.
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn btn-primary" type="submit">Submit Intake</button>
+      <a class="btn" href="/dashboard?token={{ token }}">Back to Dashboard</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
