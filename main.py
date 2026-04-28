@@ -887,9 +887,9 @@ def checkout(request: Request):
         request,
         "checkout.html",
         {
-            "nc_access_link": links.get("access", ""),
-            "nc_protection_link": links.get("protection", ""),
-            "nc_command_link": links.get("command", ""),
+            "nc_access_link": links.get("nc_access_link", ""),
+            "nc_protection_link": links.get("nc_protection_link", ""),
+            "nc_command_link": links.get("nc_command_link", ""),
         },
     )
 
@@ -1597,7 +1597,7 @@ def labor_profile_summary(request: Request):
         ]
         ready_terms = [
             "ready", "available", "open", "flexible", "full-time", "full time",
-            "anytime", "open availability", "immediate"
+             "anytime", "open availability", "immediate"
         ]
 
         for term in unavailable_terms:
