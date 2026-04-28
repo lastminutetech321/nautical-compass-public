@@ -1,34 +1,14 @@
-<!doctype html>
-<html>
-<head>
-  <title>Nautical Compass Services</title>
-  <style>
-    body { background:#07101f; color:#eef4ff; font-family:Arial, sans-serif; padding:32px; }
-    a { color:#d9aa3f; text-decoration:none; }
-    .grid { display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
-    .card { border:1px solid #2d3a50; border-radius:18px; padding:20px; background:#111b2b; }
-    .group { margin:34px 0 16px; color:#d9aa3f; letter-spacing:.08em; text-transform:uppercase; }
-    .top { margin-bottom:22px; }
-  </style>
-</head>
-<body>
-  <div class="top">
-    <a href="/">← Back to Bridge</a>
-    <h1>Service Ports</h1>
-    <p>Structured Nautical Compass service rails. Active routes open now; deeper modules expand from this catalog.</p>
-  </div>
-
-  {% for group, services in service_groups.items() %}
-    <h2 class="group">{{ group }}</h2>
-    <div class="grid">
-      {% for slug, name, description in services %}
-        <div class="card">
-          <h3>{{ name }}</h3>
-          <p>{{ description }}</p>
-          <a href="/services/{{ slug }}">Open {{ name }} →</a>
-        </div>
-      {% endfor %}
-    </div>
-  {% endfor %}
-</body>
-</html>
+<html><body><h1>Services Page</h1><ul>
+<li><div><strong>Legal Flow</strong>: "Coming Soon"</div></li>
+<li><div><strong>Case Dock</strong>: "Coming Soon"</div></li>
+<li><div><strong>Draft Packet</strong>: "Coming Soon"</div></li>
+<li><div><strong>Legalese</strong>: "Coming Soon"</div></li>
+<li><div><strong>Standing</strong>: "Coming Soon"</div></li>
+<li><div><strong>Labor Signal</strong>: "Coming Soon"</div></li>
+<li><div><strong>Partner Intake</strong>: "Coming Soon"</div></li>
+<li><div><strong>Payment Rail</strong>: "Coming Soon"</div></li>
+<li><div><strong>Banking</strong>: "Coming Soon"</div></li>
+<li><div><strong>Tax</strong>: "Coming Soon"</div></li>
+<li><div><strong>Invoice</strong>: "Coming Soon"</div></li>
+<li><div><strong>Compliance</strong>: "Coming Soon"</div></li>
+</ul></body></html>
