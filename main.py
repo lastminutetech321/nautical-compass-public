@@ -139,12 +139,8 @@ def get_checkout_links():
     nc_command_link = (
         os.getenv("STRIPE_LINK_NC_COMMAND", "").strip()
         or os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
-    )
-    labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
-    labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
-
-   }
-    return {
+ 
+    Oreturn {
         "nc_access_link": nc_access_link,
         "nc_protection_link": nc_protection_link,
         "nc_command_link": nc_command_link,
