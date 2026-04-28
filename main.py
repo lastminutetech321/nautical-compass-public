@@ -2547,3 +2547,14 @@ def legalese_post(request: Request, text: str = Form(...)):
         {"request": request, "result": result}
     )
 
+
+from fastapi import Form
+
+@app.post("/legalese")
+def legalese_post(request: Request, text: str = Form(...)):
+    result = f"LEGAL FORM:\n{text.upper()}"
+    return templates.TemplateResponse(
+        "legalese-practice-room/index.html",
+        {"request": request, "result": result}
+    )
+
