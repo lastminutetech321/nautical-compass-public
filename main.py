@@ -2529,3 +2529,21 @@ def system_status():
         "stripe_keys_present": [k for k in stripe_keys if os.getenv(k)],
         "modules_detected": os.listdir("modules") if os.path.isdir("modules") else [],
     }
+@app.get("/legalese")
+def legalese(request: Request):
+    return templates.TemplateResponse(
+        "legalese-practice-room/index.html",
+        {"request": request}
+    )
+
+
+from fastapi import Form
+
+@app.post("/legalese")
+def legalese_post(request: Request, text: str = Form(...)):
+    result = f"LEGAL FORM:\n{text.upper()}"
+    return templates.TemplateResponse(
+        "legalese-practice-room/index.html",
+        {"request": request, "result": result}
+    )
+

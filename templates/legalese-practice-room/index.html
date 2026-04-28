@@ -1,8 +1,22 @@
 <!doctype html>
 <html>
-<head><title>Legalese Practice Room</title></head>
+<head>
+  <title>Legalese Practice Room</title>
+</head>
 <body>
+
 <h1>Legalese Practice Room</h1>
-<p>Dictionary lookup, plain-to-legal translation, courtroom speech practice prompts, and warning banner will be added here.</p>
+
+<form method="post" action="/legalese">
+  <textarea name="text" rows="6" cols="60" placeholder="Enter plain English or legal text"></textarea>
+  <br><br>
+  <button type="submit">Translate</button>
+</form>
+
+{% if result %}
+  <h3>Output:</h3>
+  <pre>{{ result }}</pre>
+{% endif %}
+
 </body>
 </html>
