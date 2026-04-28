@@ -154,8 +154,6 @@ def get_checkout_links():
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
     }
-
-
 def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
     saved_files = []
 
