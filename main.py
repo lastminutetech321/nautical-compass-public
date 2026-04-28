@@ -2509,3 +2509,23 @@ def system_status():
         "stripe_configured": stripe_configured,
         "modules_detected": modules_detected
     }
+
+@app.get("/system-status")
+def system_status():
+    stripe_keys = [
+        "STRIPE_LINK_NC_ACCESS",
+        "STRIPE_LINK_NC_PROTECTION",
+        "STRIPE_LINK_NC_COMMAND",
+        "STRIPE_LINK_LABOR_SIGNAL_BASIC",
+        "STRIPE_LINK_LABOR_SIGNAL_PRO",
+        "STRIPE_LINK_ENTRY_ACCESS",
+        "STRIPE_LINK_LEGAL_BASIC",
+        "STRIPE_LINK_FURTHER_ACTION",
+    ]
+
+    return {
+        "app_status": "running",
+        "stripe_configured": any(os.getenv(k) for k in stripe_keys),
+        "stripe_keys_present": [k for k in stripe_keys if os.getenv(k)],
+        "modules_detected": os.listdir("modules") if os.path.isdir("modules") else [],
+    }
