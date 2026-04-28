@@ -2486,3 +2486,26 @@ try:
 except Exception as exc:
     print(f"[labor_signal] router not loaded: {exc}")
 
+import os
+
+@app.get("/system-status")
+def system_status():
+    stripe_keys = [
+        "STRIPE_LINK_NC_ACCESS",
+        "STRIPE_LINK_NC_PROTECTION",
+        "STRIPE_LINK_NC_COMMAND",
+        "STRIPE_LINK_LABOR_SIGNAL_BASIC",
+        "STRIPE_LINK_LABOR_SIGNAL_PRO"
+    ]
+
+    stripe_configured = any(os.getenv(k) for k in stripe_keys)
+
+    modules_detected = []
+    if os.path.isdir("modules"):
+        modules_detected = os.listdir("modules")
+
+    return {
+        "app_status": "running",
+        "stripe_configured": stripe_configured,
+        "modules_detected": modules_detected
+    }
