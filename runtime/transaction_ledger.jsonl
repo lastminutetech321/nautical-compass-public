@@ -1,0 +1,2 @@
+{"ts": 1775123597, "provider": "stripe", "action": "create_charge", "status": "pending", "amount": 25.0, "currency": "USD", "invoice_id": null, "service_id": "nc_access", "user_id": null, "case_id": null, "labor_order_id": null, "provider_txn_id": null, "payload": {}}
+{"ts": 1775123833, "provider": "stripe", "action": "create_charge", "status": "pending", "amount": 25.0, "currency": "USD", "invoice_id": null, "service_id": "nc_access", "user_id": null, "case_id": null, "labor_order_id": null, "provider_txn_id": null, "payload": {}}

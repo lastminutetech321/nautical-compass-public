@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Labor Signal • Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-shell">
+  <div class="hero-card">
+    <div class="eyebrow">Labor Intelligence Layer</div>
+    <h1>Labor Signal</h1>
+    <p class="muted">
+      This module makes the labor-market engine visible in the app now, while preserving the deeper routing and Stripe reconnect for the next phase.
+    </p>
+  </div>
+
+  <div class="card-grid three-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">Engine 01</div>
+      <h3>Labor Signal Engine</h3>
+      <p>
+        Collects and normalizes market signals such as demand, openings, industry concentration, wage direction, and regional employment pressure.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Engine 02</div>
+      <h3>Opportunity Scoring</h3>
+      <p>
+        Ranks occupations and lanes by demand strength, growth potential, wage weight, transferability, and entry friction.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Engine 03</div>
+      <h3>Skill Gap Routing</h3>
+      <p>
+        Compares a user profile against target roles and determines whether the next move is direct match, upskill, pivot, or training first.
+      </p>
+    </div>
+  </div>
+
+  <div class="hero-card" style="margin-top: 28px;">
+    <div class="eyebrow">Visible Build State</div>
+    <h2>What this page means right now</h2>
+    <ul class="signal-list">
+      <li>The module is installed as an additive layer, not a replacement.</li>
+      <li>The app can now visibly point to labor intelligence without forcing deployment rewrites.</li>
+      <li>Stripe reconnect remains a separate bridge step and is not required for this page to exist.</li>
+      <li>Deeper widgets can be added here later once deployment access is restored.</li>
+    </ul>
+  </div>
+
+  
+<div class="alert-center">
+  <h3>Alert Center</h3>
+  <div class="alert system">System Alert</div>
+  <div class="alert dispatch">Dispatch Alert</div>
+  <div class="alert compliance">Compliance Alert</div>
+  <div class="alert signal">Signal Alert</div>
+</div>
+
+<div class="card-grid two-up" style="margin-top: 24px;">
+    <div class="feature-card">
+      <div class="feature-kicker">API Endpoints</div>
+      <h3>Current module routes</h3>
+      <p><code>/modules/labor-signal/health</code></p>
+      <p><code>/modules/labor-signal/ingest</code></p>
+      <p><code>/modules/labor-signal/snapshot/DC</code></p>
+      <p><code>/modules/labor-signal/score/DC</code></p>
+      <p><code>/modules/labor-signal/skill-gap</code></p>
+      <p><code>/modules/labor-signal/route</code></p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-kicker">Next phase</div>
+      <h3>What gets added later</h3>
+      <p>Admin widgets, live stored records, user-facing role recommendations, and Stripe-gated access to premium labor intelligence views.</p>
+      <a class="feature-link" href="/dashboards">Return to Dashboard Hub →</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

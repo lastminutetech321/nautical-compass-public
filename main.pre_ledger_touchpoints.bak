@@ -10,22 +10,16 @@ from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from modules.ledger import EventLedger, CareerDNALedger
-from modules.ledger.preview_helper import get_ledger_preview
 from routes.financial_engine_test import financial_engine_router
 from routes.financial_engine_panel import financial_engine_panel_router
 from routes.financial_engine_actions import financial_engine_actions_router
 from routes.core_routes import core_routes
 
-from routes.core_routes import core_routes
-
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
-
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
 app.include_router(financial_engine_actions_router)
-
 
 UPLOAD_ROOT = Path("uploads")
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
@@ -54,7 +48,6 @@ for folder in [
 
 PRODUCTION_SUBMISSIONS = []
 LABOR_SUBMISSIONS = []
-EMPLOYER_REQUESTS = []
 PARTNER_SUBMISSIONS = []
 
 
@@ -125,25 +118,20 @@ def render(request: Request, template: str, data=None):
     return templates.TemplateResponse(template, ctx)
 
 
-
-
 def get_checkout_links():
     nc_access_link = (
         os.getenv("STRIPE_LINK_NC_ACCESS", "").strip()
         or os.getenv("STRIPE_LINK_ENTRY_ACCESS", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
     )
-
     nc_protection_link = (
         os.getenv("STRIPE_LINK_NC_PROTECTION", "").strip()
         or os.getenv("STRIPE_LINK_LEGAL_BASIC", "").strip()
     )
-
     nc_command_link = (
         os.getenv("STRIPE_LINK_NC_COMMAND", "").strip()
         or os.getenv("STRIPE_LINK_FURTHER_ACTION", "").strip()
     )
-
     labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
     labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
 
@@ -154,6 +142,8 @@ def get_checkout_links():
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
     }
+
+
 def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
     saved_files = []
 
@@ -167,12 +157,14 @@ def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
         with out_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        saved_files.append({
-            "name": file.filename,
-            "stored_name": safe_name,
-            "path": str(out_path),
-            "url": "/uploads/" + out_path.relative_to(UPLOAD_ROOT).as_posix(),
-        })
+        saved_files.append(
+            {
+                "name": file.filename,
+                "stored_name": safe_name,
+                "path": str(out_path),
+                "url": f"/uploads/{out_path.relative_to(UPLOAD_ROOT).as_posix()}",
+            }
+        )
 
     return saved_files
 
@@ -870,29 +862,7 @@ def sponsor(request: Request):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(request: Request):
-
-    EventLedger().record(
-        event_type="checkout_opened",
-        module="access",
-        status="started",
-        provider_expected="stripe",
-        service_id="nc_access",
-        route="/checkout",
-        payload={"source": "route_open"},
-    )
     return render(request, "checkout.html", get_checkout_links())
-
-    links = get_checkout_links()
-    return render(
-        request,
-        "checkout.html",
-        {
-            "nc_access_link": links.get("access", ""),
-            "nc_protection_link": links.get("protection", ""),
-            "nc_command_link": links.get("command", ""),
-        },
-    )
-
 
 
 @app.get("/checkout/{plan_key}", response_class=HTMLResponse)
@@ -901,24 +871,11 @@ def checkout_plan(request: Request, plan_key: str):
     checkout_url = links.get(plan_key, "")
 
     plan_titles = {
-        "access": "NC Access — $25/month",
-        "protection": "NC Protection — $75/month",
-        "command": "NC Command — $135/month",
+        "entry_access": "Entry Access — $25",
+        "further_action": "Further Action Required — $135",
+        "labor_signal_basic": "Labor Signal Basic",
+        "labor_signal_pro": "Labor Signal Pro",
     }
-
-    EventLedger().record(
-        event_type="checkout_plan_selected",
-        module="access",
-        status="redirect_ready" if checkout_url else "missing_link",
-        provider_expected="stripe",
-        service_id=plan_key,
-        route=f"/checkout/{plan_key}",
-        payload={
-            "plan_key": plan_key,
-            "plan_title": plan_titles.get(plan_key, "Selected Plan"),
-            "has_checkout_url": bool(checkout_url),
-        },
-    )
 
     if checkout_url:
         return RedirectResponse(checkout_url, status_code=302)
@@ -1051,873 +1008,9 @@ async def intake_production_submit(
     )
 
 
-
-@app.get("/labor/employer-request/start", response_class=HTMLResponse)
-def employer_request_start(request: Request):
-    return render(request, "employer_request_start.html")
-
-
-@app.post("/labor/employer-request/start", response_class=HTMLResponse)
-async def employer_request_start_submit(
-    request: Request,
-    requested_roles_headcount: str = Form(""),
-    event_date: str = Form(""),
-    shift_window: str = Form(""),
-    location: str = Form(""),
-    notes: str = Form(""),
-):
-    request_id = f"req_{uuid4().hex}"
-
-    EMPLOYER_REQUESTS.append(
-        {
-            "request_id": request_id,
-            "requested_roles_headcount": requested_roles_headcount,
-            "event_date": event_date,
-            "shift_window": shift_window,
-            "location": location,
-            "notes": notes,
-            "created_at": int(time.time()),
-        }
-    )
-
-    EventLedger().record(
-        event_type="employer_request_started",
-        module="employer_request",
-        status="submitted",
-        service_id="employer_request",
-        route="/labor/employer-request/start",
-        payload={
-            "request_id": request_id,
-            "requested_roles_headcount": requested_roles_headcount,
-            "event_date": event_date,
-            "shift_window": shift_window,
-            "location": location,
-        },
-    )
-
-    return render(
-        request,
-        "submission_success.html",
-        {
-            "title": "Employer Request Captured",
-            "summary": "Your labor request has been stored for matching and dispatch review.",
-            "return_href": "/labor/employer-view",
-            "return_label": "Back to Employer View",
-            "next_href": "/admin/ledger-preview",
-            "next_label": "Open Ledger Preview",
-            "record_id": request_id,
-            "step_number": 1,
-            "step_total": 2,
-            "step_name": "Employer Request Start",
-            "why_next": "Your request now exists as the employer-side matching target.",
-        },
-    )
-
-@app.get("/labor/employer-view", response_class=HTMLResponse)
-def labor_employer_view(request: Request):
-    def normalize_dispatch_readiness(value: str | None) -> str:
-        raw = (value or "").strip().lower()
-
-        if not raw:
-            return "unknown"
-
-        unavailable_terms = [
-            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
-            "off", "no availability", "not free"
-        ]
-        limited_terms = [
-            "limited", "part-time", "part time", "weekend", "weekends", "evening",
-            "evenings", "after", "partial", "some days", "select days", "certain days"
-        ]
-        ready_terms = [
-            "ready", "available", "open", "flexible", "full-time", "full time",
-            "anytime", "open availability", "immediate"
-        ]
-
-        for term in unavailable_terms:
-            if term in raw:
-                return "unavailable"
-
-        for term in limited_terms:
-            if term in raw:
-                return "limited"
-
-        for term in ready_terms:
-            if term in raw:
-                return "ready"
-
-        return "limited"
-
-    def parse_certification_tags(value: str | None) -> list[str]:
-        raw = (value or "").strip()
-        if not raw:
-            return []
-
-        normalized = raw.replace(";", ",").replace("|", ",")
-        tags = []
-
-        for part in normalized.split(","):
-            item = part.strip()
-            if item and item not in tags:
-                tags.append(item)
-
-        return tags[:12]
-
-    def detect_common_skill_flags(tags: list[str]) -> list[str]:
-        joined = " | ".join(tags).lower()
-        flags = []
-
-        checks = [
-            ("OSHA", ["osha"]),
-            ("Forklift", ["forklift"]),
-            ("Rigging", ["rigging", "rigger"]),
-            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
-            ("ETCP", ["etcp"]),
-            ("CDL", ["cdl"]),
-            ("Audio", ["audio", "a1", "a2"]),
-            ("Video", ["video", "v1", "v2"]),
-            ("Lighting", ["lighting", "lx", "l1", "l2"]),
-            ("Stagehand", ["stagehand"]),
-        ]
-
-        for label, needles in checks:
-            if any(needle in joined for needle in needles):
-                flags.append(label)
-
-        return flags
-
-    def build_match_result(primary_role: str | None, market_area: str | None, availability: str | None, certification_tags: list[str], skill_flags: list[str]) -> dict:
-        role = (primary_role or "").strip()
-        market = (market_area or "").strip()
-        readiness = normalize_dispatch_readiness(availability)
-
-        score = 0
-        labels = []
-        next_move = "Complete worker profile"
-
-        if role:
-            score += 40
-        if market:
-            score += 20
-
-        if readiness == "ready":
-            score += 25
-            labels.append("Ready Now")
-            next_move = "Open Worker Dashboard"
-        elif readiness == "limited":
-            score += 10
-            labels.append("Limited Availability")
-            next_move = "Clarify availability for dispatch"
-        elif readiness == "unavailable":
-            labels.append("Currently Unavailable")
-            next_move = "Update availability before dispatch"
-        else:
-            labels.append("Availability Needs Clarification")
-            next_move = "Add clearer availability"
-
-        if certification_tags or skill_flags:
-            score += 15
-            labels.append("Strong Match")
-        else:
-            labels.append("Certification Opportunity")
-            if next_move == "Open Worker Dashboard":
-                next_move = "Add certifications to strengthen dispatch trust"
-
-        if not market:
-            labels.append("Market Alignment Needed")
-            next_move = "Add market area for stronger matching"
-
-        score = max(0, min(score, 100))
-
-        return {
-            "match_score": score,
-            "match_labels": labels,
-            "next_move": next_move,
-        }
-
-    latest = None
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id"):
-            latest = existing
-            break
-
-    latest = latest or {}
-    cert_tags = parse_certification_tags(latest.get("certifications"))
-    skill_flags = detect_common_skill_flags(cert_tags)
-    dispatch_readiness = normalize_dispatch_readiness(latest.get("availability"))
-    match_result = build_match_result(
-        latest.get("primary_role"),
-        latest.get("market_area"),
-        latest.get("availability"),
-        cert_tags,
-        skill_flags,
-    )
-
-    history_rows = []
-    worker_id = latest.get("nc_worker_id")
-    if worker_id:
-        for existing in reversed(LABOR_SUBMISSIONS):
-            if existing.get("nc_worker_id") == worker_id:
-                history_rows.append(
-                    {
-                        "created_at": existing.get("created_at"),
-                        "primary_role": existing.get("primary_role"),
-                        "market_area": existing.get("market_area"),
-                        "availability": existing.get("availability"),
-                        "dispatch_readiness": normalize_dispatch_readiness(existing.get("availability")),
-                    }
-                )
-            if len(history_rows) >= 5:
-                break
-
-    return render(
-        request,
-        "employer_worker_view.html",
-        {
-            "worker_id": latest.get("nc_worker_id"),
-            "primary_role": latest.get("primary_role"),
-            "market_area": latest.get("market_area"),
-            "availability": latest.get("availability"),
-            "dispatch_readiness": dispatch_readiness,
-            "certification_tags": cert_tags,
-            "skill_flags": skill_flags,
-            "match_score": match_result["match_score"],
-            "match_labels": match_result["match_labels"],
-            "next_move": match_result["next_move"],
-            "history_rows": history_rows,
-        },
-    )
-
-@app.get("/labor/match-review", response_class=HTMLResponse)
-def labor_match_review(request: Request):
-    def normalize_dispatch_readiness(value: str | None) -> str:
-        raw = (value or "").strip().lower()
-
-        if not raw:
-            return "unknown"
-
-        unavailable_terms = [
-            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
-            "off", "no availability", "not free"
-        ]
-        limited_terms = [
-            "limited", "part-time", "part time", "weekend", "weekends", "evening",
-            "evenings", "after", "partial", "some days", "select days", "certain days"
-        ]
-        ready_terms = [
-            "ready", "available", "open", "flexible", "full-time", "full time",
-            "anytime", "open availability", "immediate"
-        ]
-
-        for term in unavailable_terms:
-            if term in raw:
-                return "unavailable"
-
-        for term in limited_terms:
-            if term in raw:
-                return "limited"
-
-        for term in ready_terms:
-            if term in raw:
-                return "ready"
-
-        return "limited"
-
-    def parse_certification_tags(value: str | None) -> list[str]:
-        raw = (value or "").strip()
-        if not raw:
-            return []
-
-        normalized = raw.replace(";", ",").replace("|", ",")
-        tags = []
-
-        for part in normalized.split(","):
-            item = part.strip()
-            if item and item not in tags:
-                tags.append(item)
-
-        return tags[:12]
-
-    def detect_common_skill_flags(tags: list[str]) -> list[str]:
-        joined = " | ".join(tags).lower()
-        flags = []
-
-        checks = [
-            ("OSHA", ["osha"]),
-            ("Forklift", ["forklift"]),
-            ("Rigging", ["rigging", "rigger"]),
-            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
-            ("ETCP", ["etcp"]),
-            ("CDL", ["cdl"]),
-            ("Audio", ["audio", "a1", "a2"]),
-            ("Video", ["video", "v1", "v2"]),
-            ("Lighting", ["lighting", "lx", "l1", "l2"]),
-            ("Stagehand", ["stagehand"]),
-        ]
-
-        for label, needles in checks:
-            if any(needle in joined for needle in needles):
-                flags.append(label)
-
-        return flags
-
-    def build_match_result(primary_role: str | None, market_area: str | None, availability: str | None, certification_tags: list[str], skill_flags: list[str]) -> dict:
-        role = (primary_role or "").strip()
-        market = (market_area or "").strip()
-        readiness = normalize_dispatch_readiness(availability)
-
-        score = 0
-        labels = []
-        next_move = "Complete worker profile"
-
-        if role:
-            score += 40
-        if market:
-            score += 20
-
-        if readiness == "ready":
-            score += 25
-            labels.append("Ready Now")
-            next_move = "Open Worker Dashboard"
-        elif readiness == "limited":
-            score += 10
-            labels.append("Limited Availability")
-            next_move = "Clarify availability for dispatch"
-        elif readiness == "unavailable":
-            labels.append("Currently Unavailable")
-            next_move = "Update availability before dispatch"
-        else:
-            labels.append("Availability Needs Clarification")
-            next_move = "Add clearer availability"
-
-        if certification_tags or skill_flags:
-            score += 15
-            labels.append("Strong Match")
-        else:
-            labels.append("Certification Opportunity")
-            if next_move == "Open Worker Dashboard":
-                next_move = "Add certifications to strengthen dispatch trust"
-
-        if not market:
-            labels.append("Market Alignment Needed")
-            next_move = "Add market area for stronger matching"
-
-        score = max(0, min(score, 100))
-
-        return {
-            "match_score": score,
-            "match_labels": labels,
-            "next_move": next_move,
-        }
-
-    latest_worker = {}
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id"):
-            latest_worker = existing
-            break
-
-    latest_request = EMPLOYER_REQUESTS[-1] if EMPLOYER_REQUESTS else {}
-
-    cert_tags = parse_certification_tags(latest_worker.get("certifications"))
-    skill_flags = detect_common_skill_flags(cert_tags)
-    dispatch_readiness = normalize_dispatch_readiness(latest_worker.get("availability"))
-    match_result = build_match_result(
-        latest_worker.get("primary_role"),
-        latest_worker.get("market_area"),
-        latest_worker.get("availability"),
-        cert_tags,
-        skill_flags,
-    )
-
-    return render(
-        request,
-        "match_review.html",
-        {
-            "worker_id": latest_worker.get("nc_worker_id"),
-            "primary_role": latest_worker.get("primary_role"),
-            "market_area": latest_worker.get("market_area"),
-            "availability": latest_worker.get("availability"),
-            "dispatch_readiness": dispatch_readiness,
-            "certification_tags": cert_tags,
-            "skill_flags": skill_flags,
-            "match_score": match_result["match_score"],
-            "match_labels": match_result["match_labels"],
-            "next_move": match_result["next_move"],
-            "request_id": latest_request.get("request_id"),
-            "requested_roles_headcount": latest_request.get("requested_roles_headcount"),
-            "event_date": latest_request.get("event_date"),
-            "shift_window": latest_request.get("shift_window"),
-            "location": latest_request.get("location"),
-            "notes": latest_request.get("notes"),
-        },
-    )
-
-@app.get("/labor/dashboard", response_class=HTMLResponse)
-def labor_dashboard(request: Request):
-    def normalize_dispatch_readiness(value: str | None) -> str:
-        raw = (value or "").strip().lower()
-
-        if not raw:
-            return "unknown"
-
-        unavailable_terms = [
-            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
-            "off", "no availability", "not free"
-        ]
-        limited_terms = [
-            "limited", "part-time", "part time", "weekend", "weekends", "evening",
-            "evenings", "after", "partial", "some days", "select days", "certain days"
-        ]
-        ready_terms = [
-            "ready", "available", "open", "flexible", "full-time", "full time",
-            "anytime", "open availability", "immediate"
-        ]
-
-        for term in unavailable_terms:
-            if term in raw:
-                return "unavailable"
-
-        for term in limited_terms:
-            if term in raw:
-                return "limited"
-
-        for term in ready_terms:
-            if term in raw:
-                return "ready"
-
-        return "limited"
-
-    def parse_certification_tags(value: str | None) -> list[str]:
-        raw = (value or "").strip()
-        if not raw:
-            return []
-
-        normalized = raw.replace(";", ",").replace("|", ",")
-        tags = []
-
-        for part in normalized.split(","):
-            item = part.strip()
-            if item and item not in tags:
-                tags.append(item)
-
-        return tags[:12]
-
-    def detect_common_skill_flags(tags: list[str]) -> list[str]:
-        joined = " | ".join(tags).lower()
-        flags = []
-
-        checks = [
-            ("OSHA", ["osha"]),
-            ("Forklift", ["forklift"]),
-            ("Rigging", ["rigging", "rigger"]),
-            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
-            ("ETCP", ["etcp"]),
-            ("CDL", ["cdl"]),
-            ("Audio", ["audio", "a1", "a2"]),
-            ("Video", ["video", "v1", "v2"]),
-            ("Lighting", ["lighting", "lx", "l1", "l2"]),
-            ("Stagehand", ["stagehand"]),
-        ]
-
-        for label, needles in checks:
-            if any(needle in joined for needle in needles):
-                flags.append(label)
-
-        return flags
-
-    latest = None
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id"):
-            latest = existing
-            break
-
-    latest = latest or {}
-    cert_tags = parse_certification_tags(latest.get("certifications"))
-    skill_flags = detect_common_skill_flags(cert_tags)
-    dispatch_readiness = normalize_dispatch_readiness(latest.get("availability"))
-    match_result = build_match_result(
-        latest.get("primary_role"),
-        latest.get("market_area"),
-        latest.get("availability"),
-        cert_tags,
-        skill_flags,
-    )
-
-    history_rows = []
-    worker_id = latest.get("nc_worker_id")
-    if worker_id:
-        for existing in reversed(LABOR_SUBMISSIONS):
-            if existing.get("nc_worker_id") == worker_id:
-                history_rows.append(
-                    {
-                        "created_at": existing.get("created_at"),
-                        "primary_role": existing.get("primary_role"),
-                        "market_area": existing.get("market_area"),
-                        "availability": existing.get("availability"),
-                    }
-                )
-            if len(history_rows) >= 5:
-                break
-
-    return render(
-        request,
-        "worker_dashboard.html",
-        {
-            "worker_id": latest.get("nc_worker_id"),
-            "email": latest.get("email"),
-            "phone": latest.get("phone"),
-            "primary_role": latest.get("primary_role"),
-            "market_area": latest.get("market_area"),
-            "availability": latest.get("availability"),
-            "dispatch_readiness": dispatch_readiness,
-            "certification_tags": cert_tags,
-            "skill_flags": skill_flags,
-            "match_score": match_result["match_score"],
-            "match_labels": match_result["match_labels"],
-            "next_move": match_result["next_move"],
-            "history_rows": history_rows,
-        },
-    )
-
-@app.get("/labor/profile/summary", response_class=HTMLResponse)
-def labor_profile_summary(request: Request):
-    def normalize_dispatch_readiness(value: str | None) -> str:
-        raw = (value or "").strip().lower()
-
-        if not raw:
-            return "unknown"
-
-        unavailable_terms = [
-            "unavailable", "not available", "booked", "busy", "full", "cannot", "can't",
-            "off", "no availability", "not free"
-        ]
-        limited_terms = [
-            "limited", "part-time", "part time", "weekend", "weekends", "evening",
-            "evenings", "after", "partial", "some days", "select days", "certain days"
-        ]
-        ready_terms = [
-            "ready", "available", "open", "flexible", "full-time", "full time",
-            "anytime", "open availability", "immediate"
-        ]
-
-        for term in unavailable_terms:
-            if term in raw:
-                return "unavailable"
-
-        for term in limited_terms:
-            if term in raw:
-                return "limited"
-
-        for term in ready_terms:
-            if term in raw:
-                return "ready"
-
-        return "limited"
-
-    def parse_certification_tags(value: str | None) -> list[str]:
-        raw = (value or "").strip()
-        if not raw:
-            return []
-
-        normalized = raw.replace(";", ",").replace("|", ",")
-        tags = []
-
-        for part in normalized.split(","):
-            item = part.strip()
-            if item and item not in tags:
-                tags.append(item)
-
-        return tags[:12]
-
-    def detect_common_skill_flags(tags: list[str]) -> list[str]:
-        joined = " | ".join(tags).lower()
-        flags = []
-
-        checks = [
-            ("OSHA", ["osha"]),
-            ("Forklift", ["forklift"]),
-            ("Rigging", ["rigging", "rigger"]),
-            ("Lift Cert", ["scissor", "boom lift", "lift cert"]),
-            ("ETCP", ["etcp"]),
-            ("CDL", ["cdl"]),
-            ("Audio", ["audio", "a1", "a2"]),
-            ("Video", ["video", "v1", "v2"]),
-            ("Lighting", ["lighting", "lx", "l1", "l2"]),
-            ("Stagehand", ["stagehand"]),
-        ]
-
-        for label, needles in checks:
-            if any(needle in joined for needle in needles):
-                flags.append(label)
-
-        return flags
-
-    latest = None
-
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id"):
-            latest = existing
-            break
-
-    latest = latest or {}
-    worker_id = latest.get("nc_worker_id")
-
-    history_rows = []
-    if worker_id:
-        for existing in reversed(LABOR_SUBMISSIONS):
-            if existing.get("nc_worker_id") == worker_id:
-                cert_tags = parse_certification_tags(existing.get("certifications"))
-                history_rows.append(
-                    {
-                        "created_at": existing.get("created_at"),
-                        "primary_role": existing.get("primary_role"),
-                        "market_area": existing.get("market_area"),
-                        "availability": existing.get("availability"),
-                        "dispatch_readiness": normalize_dispatch_readiness(existing.get("availability")),
-                        "certifications": existing.get("certifications"),
-                        "certification_tags": cert_tags,
-                        "skill_flags": detect_common_skill_flags(cert_tags),
-                        "email": existing.get("email"),
-                        "phone": existing.get("phone"),
-                    }
-                )
-            if len(history_rows) >= 5:
-                break
-
-    role_history = []
-    market_history = []
-    availability_history = []
-    certification_history = []
-    readiness_history = []
-    certification_tags = []
-    skill_flags = []
-
-    for row in history_rows:
-        role = row.get("primary_role")
-        market = row.get("market_area")
-        availability = row.get("availability")
-        readiness = row.get("dispatch_readiness")
-        certs = row.get("certifications")
-        row_tags = row.get("certification_tags") or []
-        row_flags = row.get("skill_flags") or []
-
-        if role and role not in role_history:
-            role_history.append(role)
-
-        if market and market not in market_history:
-            market_history.append(market)
-
-        if availability and availability not in availability_history:
-            availability_history.append(availability)
-
-        if readiness and readiness not in readiness_history:
-            readiness_history.append(readiness)
-        if certs and certs not in certification_history:
-            certification_history.append(certs)
-
-        for tag in row_tags:
-            if tag not in certification_tags:
-                certification_tags.append(tag)
-
-        for flag in row_flags:
-            if flag not in skill_flags:
-                skill_flags.append(flag)
-
-    current_readiness = normalize_dispatch_readiness(latest.get("availability"))
-    current_certification_tags = parse_certification_tags(latest.get("certifications"))
-    current_skill_flags = detect_common_skill_flags(current_certification_tags)
-    current_match_result = build_match_result(
-        latest.get("primary_role"),
-        latest.get("market_area"),
-        latest.get("availability"),
-        current_certification_tags,
-        current_skill_flags,
-    )
-
-    for tag in current_certification_tags:
-        if tag not in certification_tags:
-            certification_tags.append(tag)
-
-    for flag in current_skill_flags:
-        if flag not in skill_flags:
-            skill_flags.append(flag)
-
-    return render(
-        request,
-        "career_dna_summary.html",
-        {
-            "worker_id": latest.get("nc_worker_id"),
-            "email": latest.get("email"),
-            "phone": latest.get("phone"),
-            "primary_role": latest.get("primary_role"),
-            "market_area": latest.get("market_area"),
-            "availability": latest.get("availability"),
-            "dispatch_readiness": current_readiness,
-            "certifications": latest.get("certifications"),
-            "certification_tags": certification_tags,
-            "skill_flags": skill_flags,
-            "match_score": current_match_result["match_score"],
-            "match_labels": current_match_result["match_labels"],
-            "next_move": current_match_result["next_move"],
-            "history_rows": history_rows,
-            "role_history": role_history,
-            "market_history": market_history,
-            "availability_history": availability_history,
-            "readiness_history": readiness_history,
-            "certification_history": certification_history,
-        },
-    )
-
-@app.get("/labor/profile/edit", response_class=HTMLResponse)
-def labor_profile_edit(request: Request):
-    latest = None
-
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id"):
-            latest = existing
-            break
-
-    latest = latest or {}
-
-    return render(
-        request,
-        "labor_profile_edit.html",
-        {
-            "worker_id": latest.get("nc_worker_id", ""),
-            "email": latest.get("email", ""),
-            "phone": latest.get("phone", ""),
-            "primary_role": latest.get("primary_role", ""),
-            "market_area": latest.get("market_area", ""),
-            "certifications": latest.get("certifications", ""),
-            "availability": latest.get("availability", ""),
-        },
-    )
-
-@app.post("/labor/profile/edit", response_class=HTMLResponse)
-async def labor_profile_edit_submit(
-    request: Request,
-    worker_id: str = Form(""),
-    email: str = Form(""),
-    phone: str = Form(""),
-    primary_role: str = Form(""),
-    market_area: str = Form(""),
-    certifications: str = Form(""),
-    availability: str = Form(""),
-):
-    updated = False
-
-    for existing in reversed(LABOR_SUBMISSIONS):
-        if existing.get("nc_worker_id") == worker_id and worker_id:
-            existing["email"] = email
-            existing["phone"] = phone
-            existing["primary_role"] = primary_role
-            existing["market_area"] = market_area
-            existing["certifications"] = certifications
-            existing["availability"] = availability
-            existing["updated_at"] = int(time.time())
-            updated = True
-            break
-
-    return render(
-        request,
-        "submission_success.html",
-        {
-            "title": "Worker Profile Updated",
-            "summary": "Your Career DNA profile has been updated.",
-            "return_href": "/labor/dashboard",
-            "return_label": "Back to Worker Dashboard",
-            "next_href": "/labor/profile/summary",
-            "next_label": "Open Career DNA Summary",
-            "record_id": worker_id or "not-found",
-            "step_number": 1,
-            "step_total": 2,
-            "step_name": "Worker Edit",
-            "why_next": "Your updated worker profile can now be reviewed through the summary and dashboard views.",
-        },
-    )
-
-@app.get("/labor/profile/start", response_class=HTMLResponse)
-def labor_profile_start(request: Request):
-    return render(request, "labor_profile_start.html")
-
-
-@app.post("/labor/profile/start", response_class=HTMLResponse)
-async def labor_profile_start_submit(
-    request: Request,
-    email: str = Form(""),
-    phone: str = Form(""),
-    primary_role: str = Form(""),
-    market_area: str = Form(""),
-    certifications: str = Form(""),
-    availability: str = Form(""),
-):
-    nc_worker_id = None
-    normalized_email = (email or "").strip().lower()
-    normalized_phone = (phone or "").strip()
-
-    for existing in LABOR_SUBMISSIONS:
-        existing_email = (existing.get("email") or "").strip().lower()
-        existing_phone = (existing.get("phone") or "").strip()
-
-        if normalized_email and existing_email == normalized_email:
-            nc_worker_id = existing.get("nc_worker_id")
-            break
-
-        if normalized_phone and existing_phone == normalized_phone:
-            nc_worker_id = existing.get("nc_worker_id")
-            break
-
-    if not nc_worker_id:
-        nc_worker_id = f"wrk_{uuid4().hex}"
-
-    cert_list = [c.strip() for c in (certifications or "").replace(";", ",").split(",") if c.strip()]
-
-    CareerDNALedger().record(
-        worker_id=nc_worker_id,
-        event_type="career_dna_profile_started",
-        role=primary_role or None,
-        market=market_area or None,
-        verification_source="labor_profile_start",
-        certifications=cert_list,
-        payload={
-            "email": email,
-            "phone": phone,
-            "availability": availability,
-        },
-    )
-
-    return render(
-        request,
-        "submission_success.html",
-        {
-            "title": "Career DNA Started",
-            "summary": "Your worker identity baseline has been captured for Career DNA.",
-            "return_href": "/modules/labor-signal",
-            "return_label": "Back to Labor Signal",
-            "next_href": "/labor/profile/summary",
-            "next_label": "Open Ledger Preview",
-            "record_id": nc_worker_id,
-            "step_number": 1,
-            "step_total": 3,
-            "step_name": "Career DNA Start",
-            "why_next": "Your role, market, certifications, and availability are now stored as the first Career DNA layer.",
-        },
-    )
-
 @app.get("/intake/labor", response_class=HTMLResponse)
 def intake_labor(request: Request):
-
     return render(request, "intake_form.html")
-
-    return render(
-        request,
-        "intake_form.html",
-        {
-            "token": "",
-            "email": "",
-        },
-    )
-
 
 
 @app.post("/intake/labor")
@@ -1937,29 +1030,9 @@ async def intake_labor_submit(
     saved_files = save_uploads(files, LABOR_UPLOADS)
     submission_id = len(LABOR_SUBMISSIONS) + 1
 
-    nc_worker_id = None
-    normalized_email = (email or "").strip().lower()
-    normalized_phone = (phone or "").strip()
-
-    for existing in LABOR_SUBMISSIONS:
-        existing_email = (existing.get("email") or "").strip().lower()
-        existing_phone = (existing.get("phone") or "").strip()
-
-        if normalized_email and existing_email == normalized_email:
-            nc_worker_id = existing.get("nc_worker_id")
-            break
-
-        if normalized_phone and existing_phone == normalized_phone:
-            nc_worker_id = existing.get("nc_worker_id")
-            break
-
-    if not nc_worker_id:
-        nc_worker_id = f"wrk_{uuid4().hex}"
-
     LABOR_SUBMISSIONS.append(
         {
             "id": submission_id,
-            "nc_worker_id": nc_worker_id,
             "full_name": full_name,
             "email": email,
             "phone": phone,
@@ -1972,24 +1045,6 @@ async def intake_labor_submit(
             "files": saved_files,
             "created_at": int(time.time()),
         }
-    )
-
-    cert_list = [c.strip() for c in (certifications or "").replace(";", ",").split(",") if c.strip()]
-
-    CareerDNALedger().record(
-        worker_id=nc_worker_id,
-        event_type="labor_profile_submitted",
-        role=primary_role or None,
-        market=market_area or None,
-        verification_source="labor_intake",
-        certifications=cert_list,
-        payload={
-            "submission_id": submission_id,
-            "email": email,
-            "phone": phone,
-            "availability": availability,
-            "transport": transport,
-        },
     )
 
     return render(
@@ -2442,28 +1497,8 @@ async def equity_engine_submit(
     )
 
 
-
-@app.get("/admin/ledger-preview", response_class=HTMLResponse)
-def ledger_preview_page(request: Request):
-    data = get_ledger_preview(10)
-    return render(request, "ledger_preview.html", data)
-
 @app.get("/modules/labor-signal", response_class=HTMLResponse)
 def labor_signal_page(request: Request):
-    EventLedger().record(
-        event_type="labor_signal_page_opened",
-        module="labor_signal",
-        status="started",
-        service_id="labor_signal",
-        route="/modules/labor-signal",
-        payload={"source": "route_open"},
-    )
-    CareerDNALedger().record(
-        worker_id="anonymous",
-        event_type="profile_started",
-        market="unknown",
-        payload={"route": "/modules/labor-signal", "source": "route_open"},
-    )
     return render(request, "labor_signal.html")
 
 
@@ -2485,4 +1520,3 @@ try:
         app.include_router(labor_signal_router)
 except Exception as exc:
     print(f"[labor_signal] router not loaded: {exc}")
-

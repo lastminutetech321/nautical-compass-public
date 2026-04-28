@@ -1,0 +1,2 @@
+{"ts": 1775123597, "worker_id": "worker_001", "event_type": "shift_completed", "role": "A2", "company": "Example Co", "venue": "Convention Center", "market": null, "shift_status": null, "pay_band": null, "verification_source": null, "certifications": [], "tools_used": [], "payload": {}}
+{"ts": 1775123833, "worker_id": "worker_001", "event_type": "shift_completed", "role": "A2", "company": "Example Co", "venue": "Convention Center", "market": null, "shift_status": null, "pay_band": null, "verification_source": null, "certifications": [], "tools_used": [], "payload": {}}
