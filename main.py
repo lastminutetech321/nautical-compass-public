@@ -834,12 +834,6 @@ def hall(request: Request):
     return render(request, "hall.html")
 
 
-@app.get("/services", response_class=HTMLResponse)
-def services(request: Request):
-    return render(request, "services.html", {"service_groups": SERVICE_GROUPS})
-
-
-@app.get("/dashboards", response_class=HTMLResponse)
 def dashboards(request: Request):
     return render(request, "dashboards_hub.html")
 
