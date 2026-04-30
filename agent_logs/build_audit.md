@@ -174,3 +174,20 @@
 - **Git Diff Summary:** Added vessel motion keyframes + weather-based motion classes, gauge readability CSS, enhanced /health endpoint, build stamp in footer, DEPLOY.md
 - **Commit Hash:** `699da33`
 - **Next Planned Step:** Cycle 6 — Advanced weather visualization and ambient sound enhancements
+
+## Build Cycle 5 — Merge to Main
+- **Timestamp:** 2026-04-30 00:05:00 EDT
+- **Goal:** Merge cycle-5-command-deck-polish into main (vessel motion, gauge readability, deployment safeguards)
+- **Action:** Normal merge, no force push
+- **Tests Run:** Smoke test all routes + /health commit verification
+- **Test Results:**
+  - /health: 200 — commit `b3a7624`, starlette_compat `1.0+`
+  - /command-deck: 200
+  - /api/command-deck/status: 200
+  - /api/command-deck/weather: 200
+  - /static/command_deck.css: 200
+  - /static/command_deck.js: 200
+  - /static/command_deck_audio.js: 200
+- **Commit Hash:** `b3a7624`
+- **Branch Status:** main updated, cycle-6-water-lighthouse-motion created
+- **Next Planned Step:** Cycle 6 — Water movement + lighthouse parallax
