@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nautical Compass — Live Command Deck</title>
+  <link rel="stylesheet" href="/static/command_deck.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body class="weather-clear" id="commandDeck">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SKY LAYER — gradient background + weather particles + stars
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="skyLayer" class="sky-layer">
+    <!-- Star field (visible in clear weather) -->
+    <div id="starField" class="star-field"></div>
+    <!-- Sun -->
+    <div id="sunOrb" class="sun-orb"></div>
+    <!-- Clouds -->
+    <div id="cloudContainer" class="cloud-container">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+      <div class="cloud cloud-4"></div>
+      <div class="cloud cloud-5"></div>
+    </div>
+    <!-- Rain particles -->
+    <div id="rainContainer" class="rain-container"></div>
+    <!-- Snow particles -->
+    <div id="snowContainer" class="snow-container"></div>
+    <!-- Fog overlay -->
+    <div id="fogOverlay" class="fog-overlay"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       WATER LAYER — 4-depth wave system + vessel + wake + whitecaps
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="waterLayer" class="water-layer">
+    <div class="wave wave-deep"></div>
+    <div class="wave wave-back"></div>
+    <div class="wave wave-mid"></div>
+
+    <!-- WHITECAP / FOAM PARTICLES -->
+    <div id="whitecapContainer" class="whitecap-container"></div>
+
+    <!-- WAKE / SPRAY -->
+    <div id="wakeContainer" class="wake-container">
+      <div class="wake-spray"></div>
+      <div class="wake-spray"></div>
+      <div class="wake-spray"></div>
+      <div class="wake-spray"></div>
+      <div class="wake-spray"></div>
+    </div>
+
+    <!-- VESSEL -->
+    <div id="vessel" class="vessel">
+      <svg viewBox="0 0 200 100" class="vessel-svg" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hull -->
+        <path d="M20,70 Q30,90 100,90 Q170,90 180,70 L170,70 Q160,80 100,80 Q40,80 30,70 Z"
+              fill="#1a1a2e" stroke="#c9a84c" stroke-width="1.5"/>
+        <!-- Deck -->
+        <rect x="40" y="55" width="120" height="18" rx="3" fill="#16213e" stroke="#c9a84c" stroke-width="1"/>
+        <!-- Cabin -->
+        <rect x="70" y="30" width="60" height="28" rx="2" fill="#0f3460" stroke="#c9a84c" stroke-width="1"/>
+        <!-- Windows -->
+        <rect x="78" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+        <rect x="95" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+        <rect x="112" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+        <!-- Mast -->
+        <line x1="100" y1="30" x2="100" y2="5" stroke="#c9a84c" stroke-width="2"/>
+        <!-- Flag -->
+        <polygon points="100,5 120,12 100,19" fill="#e74c3c" opacity="0.9"/>
+        <!-- Antenna -->
+        <line x1="85" y1="30" x2="82" y2="15" stroke="#888" stroke-width="1"/>
+        <circle cx="82" cy="14" r="2" fill="#e74c3c"/>
+        <!-- Railing -->
+        <line x1="40" y1="55" x2="40" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="60" y1="55" x2="60" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="140" y1="55" x2="140" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="160" y1="55" x2="160" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="38" y1="48" x2="162" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+        <!-- Bow spray detail -->
+        <path d="M20,70 Q15,65 18,60" fill="none" stroke="rgba(200,220,240,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+      </svg>
+    </div>
+
+    <div class="wave wave-front"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DASHBOARD OVERLAY — instruments & panels
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="dashboard-overlay">
+
+    <!-- TOP BAR -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="logo-icon">&#9875;</span>
+        <h1>Nautical Compass <span class="subtitle">Live Command Deck</span></h1>
+      </div>
+      <div class="top-bar-center">
+        <nav class="deck-nav" id="deckNav">
+          <a href="/" class="deck-nav-link" title="Home">
+            <span class="nav-icon">&#8962;</span>
+            <span class="nav-label">Home</span>
+          </a>
+          <a href="/compass" class="deck-nav-link" title="Compass">
+            <span class="nav-icon">&#9788;</span>
+            <span class="nav-label">Compass</span>
+          </a>
+          <a href="/status" class="deck-nav-link" title="System Status">
+            <span class="nav-icon">&#9881;</span>
+            <span class="nav-label">Status</span>
+          </a>
+          <span class="deck-nav-divider"></span>
+          <span class="deck-nav-indicator" id="navWeatherIndicator" title="Current Weather">
+            <span class="indicator-dot weather-dot" id="navWeatherDot"></span>
+            <span class="indicator-label" id="navWeatherLabel">Clear</span>
+          </span>
+          <span class="deck-nav-indicator" id="navHealthIndicator" title="System Health">
+            <span class="indicator-dot health-dot" id="navHealthDot"></span>
+            <span class="indicator-label" id="navHealthLabel">Nominal</span>
+          </span>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <span id="clockDisplay" class="clock">00:00:00</span>
+        <span id="weatherBadge" class="weather-badge">CLEAR</span>
+      </div>
+    </header>
+
+    <!-- MAIN INSTRUMENT ROW -->
+    <div class="instrument-row">
+
+      <!-- COMPASS DIAL -->
+      <div class="instrument-panel compass-panel" id="compassPanel">
+        <div class="panel-label">Compass Heading</div>
+        <div class="dial-container dial-large">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#c9a84c" stroke-width="2"/>
+            <circle cx="100" cy="100" r="90" fill="rgba(10,15,30,0.85)" stroke="#2a3a5c" stroke-width="1"/>
+            <ellipse cx="85" cy="75" rx="40" ry="30" fill="rgba(255,255,255,0.03)"/>
+            <!-- Cardinal marks -->
+            <text x="100" y="25" text-anchor="middle" fill="#e2c275" font-size="14" font-family="Cinzel">N</text>
+            <text x="100" y="192" text-anchor="middle" fill="#c9a84c" font-size="12" font-family="Cinzel">S</text>
+            <text x="15" y="105" text-anchor="middle" fill="#c9a84c" font-size="12" font-family="Cinzel">W</text>
+            <text x="185" y="105" text-anchor="middle" fill="#c9a84c" font-size="12" font-family="Cinzel">E</text>
+            <!-- Degree ticks -->
+            <g id="compassTicks" stroke="#c9a84c" stroke-width="0.5"></g>
+            <!-- Needle -->
+            <g id="compassNeedle" class="dial-needle" transform="rotate(45, 100, 100)">
+              <polygon points="100,15 96,100 104,100" fill="#e74c3c"/>
+              <polygon points="100,185 96,100 104,100" fill="#f0f0f0" opacity="0.5"/>
+              <circle cx="100" cy="100" r="6" fill="#c9a84c"/>
+            </g>
+          </svg>
+          <div class="dial-readout" id="compassReadout">NE 45°</div>
+        </div>
+      </div>
+
+      <!-- WIND DIAL -->
+      <div class="instrument-panel wind-panel" id="windPanel">
+        <div class="panel-label">Wind Speed</div>
+        <div class="dial-container dial-medium">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle cx="100" cy="100" r="90" fill="rgba(10,15,30,0.85)" stroke="#c9a84c" stroke-width="2"/>
+            <ellipse cx="85" cy="75" rx="35" ry="25" fill="rgba(255,255,255,0.03)"/>
+            <!-- Scale arc -->
+            <path d="M 30,140 A 85,85 0 0,1 170,140" fill="none" stroke="#2a5a4c" stroke-width="8" stroke-linecap="round"/>
+            <!-- Scale labels -->
+            <text x="28" y="155" fill="#7a9a8c" font-size="9" font-family="Share Tech Mono">0</text>
+            <text x="55" y="48" fill="#7a9a8c" font-size="9" font-family="Share Tech Mono">20</text>
+            <text x="130" y="48" fill="#7a9a8c" font-size="9" font-family="Share Tech Mono">40</text>
+            <text x="165" y="155" fill="#7a9a8c" font-size="9" font-family="Share Tech Mono">60</text>
+            <!-- Needle -->
+            <g id="windNeedle" class="dial-needle" transform="rotate(-60, 100, 100)">
+              <line x1="100" y1="100" x2="100" y2="22" stroke="#e2c275" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="100" cy="100" r="5" fill="#c9a84c"/>
+            </g>
+          </svg>
+          <div class="dial-readout" id="windReadout">12 mph NE</div>
+        </div>
+      </div>
+
+      <!-- SYSTEM STATUS DIAL -->
+      <div class="instrument-panel status-panel" id="statusPanel">
+        <div class="panel-label">System Status</div>
+        <div class="dial-container dial-medium">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle cx="100" cy="100" r="90" fill="rgba(10,15,30,0.85)" stroke="#c9a84c" stroke-width="2"/>
+            <ellipse cx="85" cy="75" rx="35" ry="25" fill="rgba(255,255,255,0.03)"/>
+            <!-- Colored arc segments -->
+            <path d="M 30,140 A 85,85 0 0,1 58,52" fill="none" stroke="#e74c3c" stroke-width="8" stroke-linecap="round"/>
+            <path d="M 62,48 A 85,85 0 0,1 138,48" fill="none" stroke="#f39c12" stroke-width="8" stroke-linecap="round"/>
+            <path d="M 142,52 A 85,85 0 0,1 170,140" fill="none" stroke="#27ae60" stroke-width="8" stroke-linecap="round"/>
+            <!-- Labels -->
+            <text x="38" y="130" fill="#e74c3c" font-size="8" font-family="Share Tech Mono">LOW</text>
+            <text x="88" y="38" fill="#f39c12" font-size="8" font-family="Share Tech Mono">MED</text>
+            <text x="148" y="130" fill="#27ae60" font-size="8" font-family="Share Tech Mono">HIGH</text>
+            <!-- Needle -->
+            <g id="statusNeedle" class="dial-needle" transform="rotate(40, 100, 100)">
+              <line x1="100" y1="100" x2="100" y2="22" stroke="#e2c275" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="100" cy="100" r="5" fill="#c9a84c"/>
+            </g>
+          </svg>
+          <div class="dial-readout" id="statusReadout">Operational</div>
+        </div>
+      </div>
+
+      <!-- CASE-FLOW PROGRESS DIAL -->
+      <div class="instrument-panel caseflow-panel" id="caseflowPanel">
+        <div class="panel-label">Case-Flow Progress</div>
+        <div class="dial-container dial-medium">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle cx="100" cy="100" r="90" fill="rgba(10,15,30,0.85)" stroke="#c9a84c" stroke-width="2"/>
+            <ellipse cx="85" cy="75" rx="35" ry="25" fill="rgba(255,255,255,0.03)"/>
+            <!-- Progress arc background -->
+            <circle cx="100" cy="100" r="70" fill="none" stroke="#1a2a3c" stroke-width="10"/>
+            <!-- Progress arc fill -->
+            <circle id="caseFlowArc" cx="100" cy="100" r="70" fill="none" stroke="#3498db"
+                    stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="440" stroke-dashoffset="132"
+                    transform="rotate(-90, 100, 100)"/>
+            <!-- Center text -->
+            <text id="caseFlowPercent" x="100" y="105" text-anchor="middle" fill="#e2c275" font-size="28" font-family="Share Tech Mono">70%</text>
+          </svg>
+          <div class="dial-readout" id="caseFlowReadout">Active Cases: 14</div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE READINESS DIAL -->
+      <div class="instrument-panel compliance-panel" id="compliancePanel">
+        <div class="panel-label">Compliance Readiness</div>
+        <div class="dial-container dial-medium">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle cx="100" cy="100" r="90" fill="rgba(10,15,30,0.85)" stroke="#c9a84c" stroke-width="2"/>
+            <ellipse cx="85" cy="75" rx="35" ry="25" fill="rgba(255,255,255,0.03)"/>
+            <!-- Gauge arc background -->
+            <path d="M 30,140 A 85,85 0 0,1 170,140" fill="none" stroke="#1a2a3c" stroke-width="10" stroke-linecap="round"/>
+            <!-- Gauge arc fill -->
+            <path id="complianceArc" d="M 30,140 A 85,85 0 0,1 170,140" fill="none" stroke="#2ecc71"
+                  stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="268" stroke-dashoffset="16"/>
+            <!-- Needle -->
+            <g id="complianceNeedle" class="dial-needle" transform="rotate(55, 100, 100)">
+              <line x1="100" y1="100" x2="100" y2="22" stroke="#e2c275" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="100" cy="100" r="5" fill="#c9a84c"/>
+            </g>
+          </svg>
+          <div class="dial-readout" id="complianceReadout">94%</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ENVIRONMENT PANEL -->
+    <div class="environment-strip">
+      <div class="env-item">
+        <span class="env-icon">&#127777;</span>
+        <span class="env-label">Temperature</span>
+        <span class="env-value" id="tempValue">72°F</span>
+      </div>
+      <div class="env-item">
+        <span class="env-icon">&#128167;</span>
+        <span class="env-label">Humidity</span>
+        <span class="env-value" id="humidityValue">45%</span>
+      </div>
+      <div class="env-item">
+        <span class="env-icon">&#128065;</span>
+        <span class="env-label">Visibility</span>
+        <span class="env-value" id="visibilityValue">10 mi</span>
+      </div>
+      <div class="env-item">
+        <span class="env-icon">&#127788;</span>
+        <span class="env-label">Condition</span>
+        <span class="env-value" id="conditionValue">Clear</span>
+      </div>
+    </div>
+
+    <!-- 6 OPERATIONAL DIALS -->
+    <div class="ops-dial-row">
+      <div class="ops-dial" data-key="standing" id="opsDial-standing">
+        <div class="ops-dial-label">Standing</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#e2c275"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="42"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#e2c275" font-size="18" font-family="Share Tech Mono">85</text>
+          </svg>
+        </div>
+      </div>
+      <div class="ops-dial" data-key="capacity" id="opsDial-capacity">
+        <div class="ops-dial-label">Capacity</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#3498db"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="79"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#3498db" font-size="18" font-family="Share Tech Mono">72</text>
+          </svg>
+        </div>
+      </div>
+      <div class="ops-dial" data-key="jurisdiction" id="opsDial-jurisdiction">
+        <div class="ops-dial-label">Jurisdiction</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#2ecc71"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="28"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#2ecc71" font-size="18" font-family="Share Tech Mono">90</text>
+          </svg>
+        </div>
+      </div>
+      <div class="ops-dial" data-key="evidence" id="opsDial-evidence">
+        <div class="ops-dial-label">Evidence</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#e67e22"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="91"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#e67e22" font-size="18" font-family="Share Tech Mono">68</text>
+          </svg>
+        </div>
+      </div>
+      <div class="ops-dial" data-key="compliance" id="opsDial-compliance">
+        <div class="ops-dial-label">Compliance</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#1abc9c"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="17"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#1abc9c" font-size="18" font-family="Share Tech Mono">94</text>
+          </svg>
+        </div>
+      </div>
+      <div class="ops-dial" data-key="deployment" id="opsDial-deployment">
+        <div class="ops-dial-label">Deployment</div>
+        <div class="ops-dial-gauge">
+          <svg viewBox="0 0 120 120" class="ops-svg">
+            <circle cx="60" cy="60" r="54" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#1a2a3c" stroke-width="6"/>
+            <circle class="ops-arc" cx="60" cy="60" r="45" fill="none" stroke="#9b59b6"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="283" stroke-dashoffset="65"
+                    transform="rotate(-90, 60, 60)"/>
+            <text class="ops-val" x="60" y="65" text-anchor="middle" fill="#9b59b6" font-size="18" font-family="Share Tech Mono">77</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- AMBIENT SOUND CONTROL PANEL -->
+    <div id="audioPanel" class="audio-panel">
+      <div class="audio-panel-header">
+        <span class="audio-icon">&#9835;</span>
+        <span class="audio-title">Ambient Sound</span>
+      </div>
+      <div class="audio-controls">
+        <button id="audioToggle" class="audio-toggle-btn" title="Enable Ambient Sound">
+          <span class="toggle-icon" id="toggleIcon">&#9654;</span>
+          <span class="toggle-text" id="toggleText">Enable Ambient Sound</span>
+        </button>
+        <div class="volume-control" id="volumeControl">
+          <label for="volumeSlider" class="volume-label">Volume</label>
+          <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="30" disabled>
+          <span class="volume-value" id="volumeValue">30%</span>
+        </div>
+        <div class="sound-mode" id="soundModeDisplay">
+          <span class="mode-label">Sound Mode:</span>
+          <span class="mode-value" id="soundModeValue">Off</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="deck-footer">
+      <span>Nautical Compass System v2.1</span>
+      <span id="refreshTimer">Next update in 30s</span>
+      <span>All systems nominal</span>
+    </footer>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/command_deck_audio.js"></script>
+  <script src="/static/command_deck.js"></script>
+</body>
+</html>

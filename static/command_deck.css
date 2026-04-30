@@ -1,0 +1,1070 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Nautical Compass — Live Command Deck  ·  Master Stylesheet v2
+   Enhanced: multi-axis boat motion, layered water, dial glow,
+   stars, cinematic transitions, wake/spray, whitecaps
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── RESET & BASE ──────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --navy:       #0a0f1e;
+  --deep-navy:  #060b16;
+  --teal:       #0f3460;
+  --dark-teal:  #0a1f3a;
+  --brass:      #c9a84c;
+  --brass-dim:  #8a7333;
+  --gold:       #e2c275;
+  --sea-green:  #1a5a4c;
+  --red-accent: #e74c3c;
+  --glass:      rgba(255,255,255,0.04);
+  --panel-bg:   rgba(10,15,30,0.88);
+  --glow-brass: 0 0 12px rgba(201,168,76,0.35);
+  --glow-teal:  0 0 16px rgba(15,52,96,0.5);
+  --sky-transition: 3s ease-in-out;
+  --dial-transition: 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow-x: hidden;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  color: #c0c8d8;
+  background: var(--deep-navy);
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SKY LAYER — cinematic gradient transitions
+   ═══════════════════════════════════════════════════════════════════ */
+.sky-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  transition: background var(--sky-transition);
+  overflow: hidden;
+}
+
+/* Weather-state sky gradients */
+.weather-clear .sky-layer {
+  background: linear-gradient(180deg, #0b1628 0%, #162d50 30%, #1a4a6e 60%, #2a6a8a 85%, #3a8aaa 100%);
+}
+.weather-cloudy .sky-layer {
+  background: linear-gradient(180deg, #1a1a2e 0%, #2c3e50 35%, #4a5a6a 65%, #5a6a7a 100%);
+}
+.weather-rain .sky-layer {
+  background: linear-gradient(180deg, #0d0d1a 0%, #1a2030 35%, #2a3040 65%, #3a4050 100%);
+}
+.weather-fog .sky-layer {
+  background: linear-gradient(180deg, #2a2a3a 0%, #4a4a5a 35%, #6a6a7a 65%, #7a7a8a 100%);
+}
+.weather-storm .sky-layer {
+  background: linear-gradient(180deg, #050510 0%, #0d0d1a 25%, #1a1020 55%, #2a1530 80%, #1a0a20 100%);
+}
+.weather-snow .sky-layer {
+  background: linear-gradient(180deg, #1e2030 0%, #3a3e50 35%, #5a6070 65%, #7a8090 100%);
+}
+
+/* ── STAR FIELD (visible in clear weather) ─────────────────────── */
+.star-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity var(--sky-transition);
+}
+.weather-clear .star-field { opacity: 1; }
+.weather-cloudy .star-field { opacity: 0.2; }
+.weather-rain .star-field { opacity: 0; }
+.weather-fog .star-field { opacity: 0; }
+.weather-storm .star-field { opacity: 0; }
+.weather-snow .star-field { opacity: 0.1; }
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  animation: starTwinkle 3s ease-in-out infinite alternate;
+}
+@keyframes starTwinkle {
+  0%   { opacity: 0.3; transform: scale(0.8); }
+  50%  { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+/* ── SUN ORB ───────────────────────────────────────────────────── */
+.sun-orb {
+  position: absolute;
+  top: 6%; left: 75%;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe066 0%, #ffb347 50%, transparent 70%);
+  box-shadow: 0 0 40px 15px rgba(255,224,102,0.3), 0 0 80px 30px rgba(255,179,71,0.15);
+  animation: sunPulse 4s ease-in-out infinite;
+  transition: opacity var(--sky-transition);
+}
+.weather-clear .sun-orb  { opacity: 1; }
+.weather-cloudy .sun-orb { opacity: 0.3; }
+.weather-rain .sun-orb   { opacity: 0; }
+.weather-fog .sun-orb    { opacity: 0.1; }
+.weather-storm .sun-orb  { opacity: 0; }
+.weather-snow .sun-orb   { opacity: 0.2; }
+
+@keyframes sunPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 40px 15px rgba(255,224,102,0.3); }
+  50%      { transform: scale(1.08); box-shadow: 0 0 60px 25px rgba(255,224,102,0.45); }
+}
+
+/* ── CLOUDS ────────────────────────────────────────────────────── */
+.cloud-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity var(--sky-transition);
+}
+.weather-clear .cloud-container  { opacity: 0.15; }
+.weather-cloudy .cloud-container { opacity: 0.85; }
+.weather-rain .cloud-container   { opacity: 0.95; }
+.weather-fog .cloud-container    { opacity: 0.4; }
+.weather-storm .cloud-container  { opacity: 1; }
+.weather-snow .cloud-container   { opacity: 0.7; }
+
+.cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(180,190,200,0.6) 0%, rgba(120,130,140,0.2) 70%, transparent 100%);
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+.cloud-1 { width: 200px; height: 60px; top: 8%;  left: -200px; animation: cloudDrift 35s linear infinite; }
+.cloud-1::before { width: 80px; height: 50px; top: -20px; left: 40px; }
+.cloud-1::after  { width: 100px; height: 45px; top: -15px; left: 90px; }
+
+.cloud-2 { width: 160px; height: 50px; top: 15%; left: -160px; animation: cloudDrift 45s linear 8s infinite; }
+.cloud-2::before { width: 70px; height: 40px; top: -18px; left: 30px; }
+.cloud-2::after  { width: 80px; height: 38px; top: -12px; left: 70px; }
+
+.cloud-3 { width: 240px; height: 70px; top: 5%;  left: -240px; animation: cloudDrift 55s linear 15s infinite; }
+.cloud-3::before { width: 100px; height: 55px; top: -25px; left: 50px; }
+.cloud-3::after  { width: 120px; height: 50px; top: -18px; left: 110px; }
+
+.cloud-4 { width: 180px; height: 55px; top: 20%; left: -180px; animation: cloudDrift 40s linear 22s infinite; }
+.cloud-4::before { width: 75px; height: 42px; top: -16px; left: 35px; }
+.cloud-4::after  { width: 90px; height: 40px; top: -14px; left: 80px; }
+
+.cloud-5 { width: 140px; height: 45px; top: 12%; left: -140px; animation: cloudDrift 50s linear 30s infinite; }
+.cloud-5::before { width: 60px; height: 35px; top: -14px; left: 25px; }
+.cloud-5::after  { width: 70px; height: 32px; top: -10px; left: 60px; }
+
+.weather-storm .cloud {
+  background: radial-gradient(ellipse, rgba(40,30,50,0.8) 0%, rgba(30,20,40,0.4) 70%, transparent 100%);
+}
+
+@keyframes cloudDrift {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 300px)); }
+}
+
+/* ── RAIN ──────────────────────────────────────────────────────── */
+.rain-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity var(--sky-transition);
+}
+.weather-clear .rain-container  { opacity: 0; }
+.weather-cloudy .rain-container { opacity: 0; }
+.weather-rain .rain-container   { opacity: 0.7; }
+.weather-fog .rain-container    { opacity: 0; }
+.weather-storm .rain-container  { opacity: 1; }
+.weather-snow .rain-container   { opacity: 0; }
+
+.rain-drop {
+  position: absolute;
+  top: -10px;
+  width: 1.5px;
+  height: 18px;
+  background: linear-gradient(180deg, transparent, rgba(174,194,224,0.5));
+  animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+  0%   { transform: translateY(-10px) rotate(8deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(8deg); opacity: 0; }
+}
+
+.weather-storm .rain-drop {
+  width: 2px;
+  height: 24px;
+  background: linear-gradient(180deg, transparent, rgba(174,194,224,0.7));
+  animation-name: rainFallStorm;
+}
+@keyframes rainFallStorm {
+  0%   { transform: translateY(-10px) rotate(18deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(18deg); opacity: 0; }
+}
+
+/* ── SNOW ──────────────────────────────────────────────────────── */
+.snow-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity var(--sky-transition);
+}
+.weather-snow .snow-container { opacity: 1; }
+body:not(.weather-snow) .snow-container { opacity: 0; }
+
+.snow-flake {
+  position: absolute;
+  top: -8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(220,230,240,0.8);
+  animation: snowFall linear infinite;
+}
+
+@keyframes snowFall {
+  0%   { transform: translateY(-8px) translateX(0); opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { transform: translateY(50vh) translateX(20px); }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(100vh) translateX(-10px); opacity: 0; }
+}
+
+/* ── FOG OVERLAY ───────────────────────────────────────────────── */
+.fog-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity var(--sky-transition);
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(180,180,190,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 40%, rgba(180,180,190,0.2) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 70%, rgba(160,170,180,0.18) 0%, transparent 50%);
+  animation: fogDrift 12s ease-in-out infinite alternate;
+}
+.weather-clear .fog-overlay  { opacity: 0; }
+.weather-cloudy .fog-overlay { opacity: 0.1; }
+.weather-rain .fog-overlay   { opacity: 0.15; }
+.weather-fog .fog-overlay    { opacity: 0.85; }
+.weather-storm .fog-overlay  { opacity: 0.2; }
+.weather-snow .fog-overlay   { opacity: 0.3; }
+
+@keyframes fogDrift {
+  0%   { transform: translateX(-30px) scale(1); }
+  100% { transform: translateX(30px) scale(1.05); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WATER LAYER — 4-depth wave system
+   ═══════════════════════════════════════════════════════════════════ */
+.water-layer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 38%;
+  z-index: 1;
+  overflow: hidden;
+  transition: filter var(--sky-transition);
+}
+
+.wave {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  height: 100%;
+  border-radius: 40% 40% 0 0;
+}
+
+/* 4 wave layers: deep-back, back, mid, front */
+.wave-deep {
+  bottom: -15px;
+  background: rgba(5,20,40,0.8);
+  animation: waveDeep 9s ease-in-out infinite alternate;
+  z-index: 0;
+}
+.wave-back {
+  bottom: -10px;
+  background: rgba(8,30,55,0.7);
+  animation: waveBack 7s ease-in-out infinite alternate;
+  z-index: 1;
+}
+.wave-mid {
+  bottom: -5px;
+  background: rgba(12,40,70,0.6);
+  animation: waveMid 5s ease-in-out infinite alternate;
+  z-index: 2;
+}
+.wave-front {
+  bottom: 0;
+  background: rgba(16,50,85,0.5);
+  animation: waveFront 4s ease-in-out infinite alternate;
+  z-index: 4;
+}
+
+@keyframes waveDeep {
+  0%   { transform: translateX(-20px) translateY(0); border-radius: 40% 40% 0 0; }
+  100% { transform: translateX(20px) translateY(-4px); border-radius: 38% 42% 0 0; }
+}
+@keyframes waveBack {
+  0%   { transform: translateX(-15px) translateY(0); border-radius: 42% 38% 0 0; }
+  100% { transform: translateX(15px) translateY(-6px); border-radius: 38% 42% 0 0; }
+}
+@keyframes waveMid {
+  0%   { transform: translateX(10px) translateY(0); border-radius: 44% 36% 0 0; }
+  100% { transform: translateX(-10px) translateY(-8px); border-radius: 36% 44% 0 0; }
+}
+@keyframes waveFront {
+  0%   { transform: translateX(-8px) translateY(0); border-radius: 46% 34% 0 0; }
+  100% { transform: translateX(8px) translateY(-5px); border-radius: 34% 46% 0 0; }
+}
+
+/* Weather-driven wave intensity */
+.weather-clear .wave-deep  { animation-duration: 11s; }
+.weather-clear .wave-back  { animation-duration: 9s; }
+.weather-clear .wave-mid   { animation-duration: 7s; }
+.weather-clear .wave-front { animation-duration: 5.5s; }
+
+.weather-cloudy .wave-deep  { animation-duration: 8s; }
+.weather-cloudy .wave-back  { animation-duration: 6s; }
+.weather-cloudy .wave-mid   { animation-duration: 4.5s; }
+.weather-cloudy .wave-front { animation-duration: 3.5s; }
+
+.weather-rain .wave-deep  { animation-duration: 6s; }
+.weather-rain .wave-back  { animation-duration: 4.5s; }
+.weather-rain .wave-mid   { animation-duration: 3.5s; }
+.weather-rain .wave-front { animation-duration: 2.8s; }
+
+.weather-storm .wave-deep  { animation-duration: 3.5s; }
+.weather-storm .wave-back  { animation-duration: 2.8s; }
+.weather-storm .wave-mid   { animation-duration: 2.2s; }
+.weather-storm .wave-front { animation-duration: 1.8s; }
+.weather-storm .wave-deep  { background: rgba(3,10,20,0.85); }
+.weather-storm .wave-back  { background: rgba(5,15,30,0.8); }
+.weather-storm .wave-mid   { background: rgba(8,25,45,0.75); }
+.weather-storm .wave-front { background: rgba(12,35,60,0.65); }
+
+.weather-fog .wave-deep  { animation-duration: 14s; }
+.weather-fog .wave-back  { animation-duration: 12s; }
+.weather-fog .wave-mid   { animation-duration: 10s; }
+.weather-fog .wave-front { animation-duration: 8s; }
+
+.weather-snow .wave-deep  { animation-duration: 10s; }
+.weather-snow .wave-back  { animation-duration: 8s; }
+.weather-snow .wave-mid   { animation-duration: 6s; }
+.weather-snow .wave-front { animation-duration: 5s; }
+
+/* Water color tints driven by sky state */
+.weather-clear .water-layer  { filter: hue-rotate(0deg) brightness(1.1) saturate(1.1); }
+.weather-cloudy .water-layer { filter: hue-rotate(5deg) brightness(0.9) saturate(0.85); }
+.weather-rain .water-layer   { filter: hue-rotate(10deg) brightness(0.75) saturate(0.7); }
+.weather-fog .water-layer    { filter: hue-rotate(0deg) brightness(0.7) saturate(0.5); }
+.weather-storm .water-layer  { filter: hue-rotate(15deg) brightness(0.55) saturate(0.6); }
+.weather-snow .water-layer   { filter: hue-rotate(-5deg) brightness(0.8) saturate(0.6); }
+
+/* ── WHITECAP / FOAM PARTICLES (storm) ─────────────────────────── */
+.whitecap-container {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity var(--sky-transition);
+}
+.weather-storm .whitecap-container { opacity: 1; }
+.weather-rain .whitecap-container  { opacity: 0.4; }
+body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
+
+.whitecap {
+  position: absolute;
+  bottom: 20%;
+  width: 30px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.7) 0%, rgba(200,220,240,0.3) 60%, transparent 100%);
+  animation: whitecapDrift 3s ease-in-out infinite;
+}
+@keyframes whitecapDrift {
+  0%   { transform: translateX(0) scale(0.5); opacity: 0; }
+  30%  { opacity: 0.9; transform: translateX(15px) scale(1); }
+  70%  { opacity: 0.7; transform: translateX(30px) scale(0.9); }
+  100% { transform: translateX(50px) scale(0.3); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VESSEL — Multi-axis motion (pitch + roll + heave)
+   ═══════════════════════════════════════════════════════════════════ */
+.vessel {
+  position: absolute;
+  bottom: 42%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  z-index: 3;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  /* Default: clear weather — gentle multi-axis */
+  animation: vesselClear 5s ease-in-out infinite;
+}
+.vessel-svg { width: 100%; height: auto; }
+
+/* Clear — gentle heave + slight roll */
+@keyframes vesselClear {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+  20%  { transform: translateX(-50%) translateY(-4px) rotate(0.5deg); }
+  40%  { transform: translateX(-50%) translateY(-7px) rotate(-0.3deg); }
+  60%  { transform: translateX(-50%) translateY(-3px) rotate(0.4deg); }
+  80%  { transform: translateX(-50%) translateY(-6px) rotate(-0.5deg); }
+  100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+}
+
+/* Cloudy — moderate pitch + roll + heave */
+.weather-cloudy .vessel {
+  animation: vesselCloudy 4s ease-in-out infinite;
+}
+@keyframes vesselCloudy {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+  16%  { transform: translateX(-50%) translateY(-6px) rotate(1deg) skewY(0.3deg); }
+  33%  { transform: translateX(-50%) translateY(-10px) rotate(-0.8deg) skewY(-0.2deg); }
+  50%  { transform: translateX(-50%) translateY(-4px) rotate(1.2deg) skewY(0.2deg); }
+  66%  { transform: translateX(-50%) translateY(-9px) rotate(-1deg) skewY(-0.3deg); }
+  83%  { transform: translateX(-50%) translateY(-3px) rotate(0.5deg) skewY(0.1deg); }
+  100% { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+}
+
+/* Rain — heavier motion */
+.weather-rain .vessel {
+  animation: vesselRain 3.5s ease-in-out infinite;
+}
+@keyframes vesselRain {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+  14%  { transform: translateX(-50%) translateY(-8px) rotate(1.5deg) skewY(0.5deg); }
+  28%  { transform: translateX(-50%) translateY(-14px) rotate(-1.2deg) skewY(-0.4deg); }
+  42%  { transform: translateX(-50%) translateY(-5px) rotate(2deg) skewY(0.3deg); }
+  57%  { transform: translateX(-50%) translateY(-12px) rotate(-1.8deg) skewY(-0.5deg); }
+  71%  { transform: translateX(-50%) translateY(-3px) rotate(1deg) skewY(0.2deg); }
+  85%  { transform: translateX(-50%) translateY(-10px) rotate(-0.8deg) skewY(-0.3deg); }
+  100% { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+}
+
+/* Storm — dramatic pitch + roll + heave */
+.weather-storm .vessel {
+  animation: vesselStorm 2.2s ease-in-out infinite;
+}
+@keyframes vesselStorm {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+  12%  { transform: translateX(-48%) translateY(-12px) rotate(3.5deg) skewY(1deg); }
+  25%  { transform: translateX(-52%) translateY(-20px) rotate(-2.5deg) skewY(-0.8deg); }
+  37%  { transform: translateX(-49%) translateY(-8px) rotate(4deg) skewY(1.2deg); }
+  50%  { transform: translateX(-51%) translateY(-18px) rotate(-3.5deg) skewY(-1deg); }
+  62%  { transform: translateX(-48%) translateY(-5px) rotate(2.5deg) skewY(0.7deg); }
+  75%  { transform: translateX(-52%) translateY(-15px) rotate(-4deg) skewY(-1.2deg); }
+  87%  { transform: translateX(-50%) translateY(-10px) rotate(2deg) skewY(0.5deg); }
+  100% { transform: translateX(-50%) translateY(0px) rotate(0deg) skewY(0deg); }
+}
+
+/* Fog — very gentle, almost still */
+.weather-fog .vessel {
+  animation: vesselFog 7s ease-in-out infinite;
+  opacity: 0.85;
+}
+@keyframes vesselFog {
+  0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+  50%      { transform: translateX(-50%) translateY(-3px) rotate(0.3deg); }
+}
+
+/* Snow — moderate, slightly stiff */
+.weather-snow .vessel {
+  animation: vesselSnow 4.5s ease-in-out infinite;
+}
+@keyframes vesselSnow {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+  25%  { transform: translateX(-50%) translateY(-5px) rotate(0.8deg); }
+  50%  { transform: translateX(-50%) translateY(-9px) rotate(-0.6deg); }
+  75%  { transform: translateX(-50%) translateY(-3px) rotate(0.5deg); }
+  100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+}
+
+/* ── WAKE / SPRAY EFFECT ───────────────────────────────────────── */
+.wake-container {
+  position: absolute;
+  bottom: 38%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 40px;
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity var(--sky-transition);
+}
+.weather-clear .wake-container  { opacity: 0.3; }
+.weather-cloudy .wake-container { opacity: 0.5; }
+.weather-rain .wake-container   { opacity: 0.7; }
+.weather-storm .wake-container  { opacity: 1; }
+.weather-fog .wake-container    { opacity: 0.15; }
+.weather-snow .wake-container   { opacity: 0.4; }
+
+.wake-spray {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(200,220,240,0.5) 0%, transparent 70%);
+  animation: sprayBurst 2s ease-out infinite;
+}
+.wake-spray:nth-child(1) { left: 10%; width: 20px; height: 12px; animation-delay: 0s; }
+.wake-spray:nth-child(2) { left: 30%; width: 16px; height: 10px; animation-delay: 0.4s; }
+.wake-spray:nth-child(3) { right: 30%; width: 18px; height: 11px; animation-delay: 0.8s; }
+.wake-spray:nth-child(4) { right: 10%; width: 22px; height: 13px; animation-delay: 1.2s; }
+.wake-spray:nth-child(5) { left: 50%; width: 14px; height: 9px; animation-delay: 1.6s; }
+
+@keyframes sprayBurst {
+  0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+  20%  { opacity: 0.8; transform: translateY(-8px) scale(1); }
+  60%  { opacity: 0.5; transform: translateY(-18px) scale(1.3); }
+  100% { opacity: 0; transform: translateY(-30px) scale(0.3); }
+}
+
+/* Storm spray is more dramatic */
+.weather-storm .wake-spray {
+  animation-duration: 1.2s;
+}
+.weather-storm .wake-spray:nth-child(1) { width: 28px; height: 16px; }
+.weather-storm .wake-spray:nth-child(2) { width: 24px; height: 14px; }
+.weather-storm .wake-spray:nth-child(3) { width: 26px; height: 15px; }
+.weather-storm .wake-spray:nth-child(4) { width: 30px; height: 17px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DASHBOARD OVERLAY
+   ═══════════════════════════════════════════════════════════════════ */
+.dashboard-overlay {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 16px 16px;
+  pointer-events: none;
+}
+.dashboard-overlay > * { pointer-events: auto; }
+
+/* ── TOP BAR ───────────────────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--brass-dim);
+  backdrop-filter: blur(8px);
+  border-radius: 0 0 8px 8px;
+}
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  font-size: 28px;
+  color: var(--brass);
+  text-shadow: var(--glow-brass);
+}
+.top-bar h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-shadow: var(--glow-brass);
+}
+.top-bar .subtitle {
+  font-size: 12px;
+  color: var(--brass-dim);
+  letter-spacing: 3px;
+  margin-left: 8px;
+}
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.clock {
+  font-size: 18px;
+  color: var(--gold);
+  text-shadow: var(--glow-brass);
+}
+.weather-badge {
+  padding: 4px 14px;
+  border: 1px solid var(--brass);
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  text-shadow: var(--glow-brass);
+}
+
+/* ── INSTRUMENT ROW ────────────────────────────────────────────── */
+.instrument-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+
+.instrument-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--brass-dim);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--glow-teal), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: box-shadow 0.3s;
+}
+.instrument-panel:hover {
+  box-shadow: var(--glow-brass), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.panel-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: var(--brass);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: var(--glow-brass);
+}
+
+/* ── DIAL CONTAINERS ───────────────────────────────────────────── */
+.dial-container { position: relative; }
+.dial-large  { width: 180px; height: 180px; }
+.dial-medium { width: 155px; height: 155px; }
+
+.dial-svg {
+  width: 100%; height: 100%;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+.dial-readout {
+  font-size: 11px;
+  color: var(--gold);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+/* Needle transition with spring easing */
+.dial-needle {
+  transition: transform var(--dial-transition);
+  transform-origin: center center;
+}
+
+/* Needle vibration at rest */
+@keyframes needleVibrate {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(0.3deg); }
+  50%      { transform: rotate(-0.2deg); }
+  75%      { transform: rotate(0.15deg); }
+}
+.needle-resting {
+  animation: needleVibrate 2s ease-in-out infinite;
+}
+
+/* Dial glow pulse on value change */
+@keyframes dialGlowPulse {
+  0%   { box-shadow: var(--glow-teal); }
+  50%  { box-shadow: 0 0 20px rgba(201,168,76,0.6), 0 0 40px rgba(201,168,76,0.2); }
+  100% { box-shadow: var(--glow-teal); }
+}
+.dial-pulse {
+  animation: dialGlowPulse 0.8s ease-out;
+}
+
+/* ── ENVIRONMENT STRIP ─────────────────────────────────────────── */
+.environment-strip {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 10px 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--brass-dim);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  flex-wrap: wrap;
+  margin: 4px auto;
+  max-width: 700px;
+}
+.env-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.env-icon  { font-size: 18px; }
+.env-label { font-size: 10px; color: var(--brass-dim); text-transform: uppercase; letter-spacing: 1px; }
+.env-value { font-size: 14px; color: var(--gold); text-shadow: var(--glow-brass); }
+
+/* ── OPERATIONAL DIALS ROW ─────────────────────────────────────── */
+.ops-dial-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 0;
+  flex-wrap: wrap;
+}
+.ops-dial {
+  text-align: center;
+  background: var(--panel-bg);
+  border: 1px solid var(--brass-dim);
+  border-radius: 10px;
+  padding: 10px;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--glow-teal);
+  transition: transform 0.2s, box-shadow 0.8s;
+}
+.ops-dial:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glow-brass);
+}
+.ops-dial.ops-pulse {
+  animation: dialGlowPulse 0.8s ease-out;
+}
+.ops-dial-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--brass);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.ops-dial-gauge { width: 100px; height: 100px; }
+.ops-svg { width: 100%; height: 100%; }
+
+.ops-arc {
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.6s ease;
+}
+
+/* Color-coded ranges for ops arcs */
+.ops-arc-green  { stroke: #2ecc71; }
+.ops-arc-yellow { stroke: #f1c40f; }
+.ops-arc-red    { stroke: #e74c3c; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   AUDIO PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+.audio-panel {
+  position: fixed;
+  bottom: 60px;
+  right: 16px;
+  z-index: 20;
+  background: var(--panel-bg);
+  border: 1px solid var(--brass-dim);
+  border-radius: 10px;
+  padding: 12px 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--glow-teal);
+  min-width: 220px;
+  pointer-events: auto;
+}
+.audio-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  padding-bottom: 8px;
+}
+.audio-icon {
+  font-size: 18px;
+  color: var(--brass);
+}
+.audio-title {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  color: var(--brass);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.audio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.audio-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--brass-dim);
+  border-radius: 6px;
+  background: rgba(201,168,76,0.08);
+  color: var(--gold);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+  letter-spacing: 1px;
+}
+.audio-toggle-btn:hover {
+  background: rgba(201,168,76,0.18);
+  border-color: var(--brass);
+}
+.audio-toggle-btn.active {
+  background: rgba(46,204,113,0.15);
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+.toggle-icon { font-size: 14px; }
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.volume-label {
+  font-size: 10px;
+  color: var(--brass-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 45px;
+}
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dark-teal);
+  outline: none;
+  cursor: pointer;
+}
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--brass);
+  border: 2px solid var(--gold);
+  box-shadow: var(--glow-brass);
+  cursor: pointer;
+}
+.volume-slider::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--brass);
+  border: 2px solid var(--gold);
+  box-shadow: var(--glow-brass);
+  cursor: pointer;
+}
+.volume-slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.volume-value {
+  font-size: 11px;
+  color: var(--gold);
+  min-width: 30px;
+  text-align: right;
+}
+
+.sound-mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(201,168,76,0.15);
+}
+.mode-label {
+  font-size: 9px;
+  color: var(--brass-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.mode-value {
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+/* ── FOOTER ────────────────────────────────────────────────────── */
+.deck-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  background: var(--panel-bg);
+  border-top: 1px solid var(--brass-dim);
+  font-size: 10px;
+  color: var(--brass-dim);
+  letter-spacing: 1px;
+  backdrop-filter: blur(6px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTNING FLASH (storm)
+   ═══════════════════════════════════════════════════════════════════ */
+.lightning-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  animation: lightningFlash 0.3s ease-out forwards;
+}
+@keyframes lightningFlash {
+  0%   { background: rgba(255,255,255,0.25); }
+  15%  { background: rgba(255,255,255,0.05); }
+  30%  { background: rgba(255,255,255,0.18); }
+  50%  { background: rgba(255,255,255,0.02); }
+  100% { background: transparent; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DECK NAVIGATION BAR
+   ═══════════════════════════════════════════════════════════════════ */
+.top-bar-center {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.deck-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(10, 15, 30, 0.6);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.deck-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  color: var(--brass);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.deck-nav-link:hover {
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold);
+  text-shadow: var(--glow-brass);
+}
+
+.deck-nav-link .nav-icon {
+  font-size: 14px;
+}
+
+.deck-nav-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(201, 168, 76, 0.3);
+  margin: 0 6px;
+}
+
+.deck-nav-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  color: #8a9ab5;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background 0.6s ease, box-shadow 0.6s ease;
+}
+
+.indicator-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Weather dot colors */
+.weather-dot { background: #4ecdc4; box-shadow: 0 0 6px rgba(78, 205, 196, 0.5); }
+.weather-dot.weather-clear   { background: #4ecdc4; box-shadow: 0 0 6px rgba(78, 205, 196, 0.5); }
+.weather-dot.weather-cloudy  { background: #a0a8c0; box-shadow: 0 0 6px rgba(160, 168, 192, 0.5); }
+.weather-dot.weather-rain    { background: #5b9bd5; box-shadow: 0 0 6px rgba(91, 155, 213, 0.5); }
+.weather-dot.weather-fog     { background: #b8b8b8; box-shadow: 0 0 6px rgba(184, 184, 184, 0.5); }
+.weather-dot.weather-storm   { background: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.6); }
+.weather-dot.weather-snow    { background: #e8e8f0; box-shadow: 0 0 6px rgba(232, 232, 240, 0.5); }
+
+/* Health dot colors */
+.health-dot { background: #2ecc71; box-shadow: 0 0 6px rgba(46, 204, 113, 0.5); }
+.health-dot.health-green  { background: #2ecc71; box-shadow: 0 0 6px rgba(46, 204, 113, 0.5); }
+.health-dot.health-yellow { background: #f39c12; box-shadow: 0 0 6px rgba(243, 156, 18, 0.5); }
+.health-dot.health-red    { background: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.6); }
+
+/* Pulse animation for active indicators */
+@keyframes indicatorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.indicator-dot { animation: indicatorPulse 2.5s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .dial-large  { width: 150px; height: 150px; }
+  .dial-medium { width: 130px; height: 130px; }
+  .instrument-row { gap: 10px; }
+}
+
+@media (max-width: 800px) {
+  .instrument-row { flex-direction: column; align-items: center; }
+  .dial-large  { width: 170px; height: 170px; }
+  .dial-medium { width: 145px; height: 145px; }
+  .ops-dial-row { gap: 8px; }
+  .ops-dial-gauge { width: 80px; height: 80px; }
+  .environment-strip { gap: 12px; }
+  .top-bar h1 { font-size: 16px; }
+  .top-bar .subtitle { display: none; }
+  .vessel { width: 130px; }
+  .audio-panel { right: 8px; bottom: 50px; min-width: 190px; }
+  .deck-nav { gap: 3px; padding: 3px 8px; }
+  .deck-nav-link .nav-label { display: none; }
+  .deck-nav-link { padding: 4px 6px; }
+  .indicator-label { display: none; }
+  .top-bar-center { order: 3; flex-basis: 100%; justify-content: center; margin-top: 6px; }
+  .top-bar { flex-wrap: wrap; }
+}
+
+@media (max-width: 500px) {
+  .instrument-row { padding: 8px 0; }
+  .ops-dial-row { gap: 6px; }
+  .ops-dial { padding: 6px; }
+  .ops-dial-gauge { width: 70px; height: 70px; }
+  .environment-strip { flex-direction: column; align-items: center; gap: 6px; }
+  .audio-panel { left: 8px; right: 8px; min-width: unset; }
+}
