@@ -131,8 +131,6 @@ def command_deck_weather(
         if live:
             return JSONResponse(content=live)
     return JSONResponse(content=dict(MOCK_WEATHER))
- spine-1-intake-engine
-
 
 # ---------------------------------------------------------------------------
 # Intake Engine — injected into status response via monkey-patch override
@@ -163,4 +161,3 @@ def command_deck_status_with_intake():
 
     return JSONResponse(content=data)
 
- main
