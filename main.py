@@ -15,6 +15,7 @@ from modules.ledger.preview_helper import get_ledger_preview
 from routes.financial_engine_test import financial_engine_router
 from routes.financial_engine_panel import financial_engine_panel_router
 from routes.financial_engine_actions import financial_engine_actions_router
+from command_deck_route import router as command_deck_router
 from routes.core_routes import core_routes
 
 from routes.core_routes import core_routes
@@ -25,6 +26,7 @@ app.include_router(core_routes)
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
 app.include_router(financial_engine_actions_router)
+app.include_router(command_deck_router)
 
 
 UPLOAD_ROOT = Path("uploads")
@@ -122,7 +124,7 @@ def render(request: Request, template: str, data=None):
     ctx["v"] = int(time.time())
     ctx["labor_signal_flags"] = labor_signal_flags()
     ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
-    return templates.TemplateResponse(template, ctx)
+    return templates.TemplateResponse(request, template, context=ctx)
 
 
 
