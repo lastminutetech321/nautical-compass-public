@@ -151,3 +151,26 @@
 - **Commit Hash:** `765aa3a` (merge commit on main)
 - **Branch Status:** main updated and pushed to origin; cycle-5-command-deck-polish created from main
 - **Next Planned Step:** Cycle 5 — Final polish and refinements
+
+## Build Cycle 5
+- **Timestamp:** 2026-04-29 23:32:00 EDT
+- **Goal:** Real vessel motion, gauge readability, deployment safeguards (/health, build stamp, DEPLOY.md)
+- **Files Modified:** `main.py`, `command_deck_route.py`, `static/command_deck.css`, `static/command_deck.js`, `templates/command_deck.html`
+- **Files Created:** `DEPLOY.md`
+- **Tests Run:** py_compile (main.py, command_deck_route.py, command_deck_api.py), node --check (command_deck.js, command_deck_audio.js), uvicorn boot + route tests
+- **Test Results:**
+  - main.py syntax: PASS
+  - command_deck_route.py syntax: PASS
+  - command_deck_api.py syntax: PASS
+  - command_deck.js syntax: PASS
+  - command_deck_audio.js syntax: PASS
+  - /health: 200 (returns commit hash + build_time + starlette_compat)
+  - /command-deck: 200
+  - /api/command-deck/status: 200
+  - /api/command-deck/weather: 200
+  - /static/command_deck.css: 200
+  - /static/command_deck.js: 200
+  - /static/command_deck_audio.js: 200
+- **Git Diff Summary:** Added vessel motion keyframes + weather-based motion classes, gauge readability CSS, enhanced /health endpoint, build stamp in footer, DEPLOY.md
+- **Commit Hash:** `699da33`
+- **Next Planned Step:** Cycle 6 — Advanced weather visualization and ambient sound enhancements

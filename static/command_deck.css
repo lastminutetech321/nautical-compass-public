@@ -1268,3 +1268,202 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   .tooltip-title { font-size: 10px; }
   .tooltip-value { font-size: 12px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   VESSEL MOTION — Sea-state animations applied to vessel container
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes vesselPitch {
+  0%, 100% { transform: rotateX(0deg); }
+  25% { transform: rotateX(var(--pitch-deg)); }
+  75% { transform: rotateX(calc(var(--pitch-deg) * -0.6)); }
+}
+
+@keyframes vesselRoll {
+  0%, 100% { transform: rotateZ(0deg); }
+  30% { transform: rotateZ(var(--roll-deg)); }
+  70% { transform: rotateZ(calc(var(--roll-deg) * -1)); }
+}
+
+@keyframes vesselDrift {
+  0%, 100% { transform: translateX(0); }
+  40% { transform: translateX(var(--drift-px)); }
+  60% { transform: translateX(calc(var(--drift-px) * -0.7)); }
+}
+
+@keyframes vesselHeave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(var(--heave-px)); }
+}
+
+/* Parent perspective for 3D depth */
+.water-layer {
+  perspective: 800px;
+  perspective-origin: center 70%;
+}
+
+/* Vessel motion base */
+.vessel {
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+/* Motion intensity: CALM */
+.vessel.motion-calm {
+  --pitch-deg: 1.5deg;
+  --roll-deg: 0.5deg;
+  --drift-px: 2px;
+  --heave-px: 3px;
+  animation:
+    vesselPitch 10s ease-in-out infinite,
+    vesselRoll 12s ease-in-out infinite,
+    vesselDrift 14s ease-in-out infinite,
+    vesselHeave 8s ease-in-out infinite;
+}
+
+/* Motion intensity: MODERATE */
+.vessel.motion-moderate {
+  --pitch-deg: 3.5deg;
+  --roll-deg: 2deg;
+  --drift-px: 4px;
+  --heave-px: 6px;
+  animation:
+    vesselPitch 7s ease-in-out infinite,
+    vesselRoll 8s ease-in-out infinite,
+    vesselDrift 9s ease-in-out infinite,
+    vesselHeave 6s ease-in-out infinite;
+}
+
+/* Motion intensity: ROUGH */
+.vessel.motion-rough {
+  --pitch-deg: 6deg;
+  --roll-deg: 3.5deg;
+  --drift-px: 7px;
+  --heave-px: 10px;
+  animation:
+    vesselPitch 5s ease-in-out infinite,
+    vesselRoll 5.5s ease-in-out infinite,
+    vesselDrift 6s ease-in-out infinite,
+    vesselHeave 4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GAUGE READABILITY — Enhanced contrast and visibility
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Stronger dark backplate behind gauge panels */
+.instrument-panel {
+  background: rgba(5, 10, 20, 0.92) !important;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 8px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), var(--glow-brass);
+}
+
+/* Larger, brighter gauge value readouts */
+.dial-readout {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  color: var(--gold) !important;
+  text-shadow:
+    0 0 4px rgba(255, 200, 100, 0.6),
+    0 0 8px rgba(201, 168, 76, 0.3) !important;
+  letter-spacing: 0.5px;
+}
+
+/* Brighter needle elements */
+.dial-needle line,
+.dial-needle polygon {
+  filter: drop-shadow(0 0 3px rgba(226, 194, 117, 0.7));
+}
+
+/* Ops-dial value readability */
+.ops-value {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 4px rgba(255, 200, 100, 0.6);
+}
+
+.ops-label {
+  font-weight: 600;
+  color: rgba(200, 210, 220, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Environment strip readability */
+.env-value {
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+  color: var(--gold) !important;
+  text-shadow: 0 0 4px rgba(255, 200, 100, 0.5);
+}
+
+/* Reduce glass glare in gauge panel area only */
+.instrument-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure gauge content sits above any overlays */
+.instrument-panel > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Gauge update pulse — make more visible */
+@keyframes gaugeUpdatePulse {
+  0% { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.7); }
+  50% { box-shadow: 0 0 15px 4px rgba(201, 168, 76, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0); }
+}
+
+.gauge-pulse {
+  animation: gaugeUpdatePulse 0.8s ease-out !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUILD STAMP — Footer build info
+   ═══════════════════════════════════════════════════════════════ */
+.build-stamp {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: rgba(180, 180, 200, 0.5);
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Vessel motion + gauge adjustments for mobile
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .vessel.motion-calm {
+    --pitch-deg: 1deg;
+    --roll-deg: 0.3deg;
+    --drift-px: 1px;
+    --heave-px: 2px;
+  }
+  .vessel.motion-moderate {
+    --pitch-deg: 2deg;
+    --roll-deg: 1.2deg;
+    --drift-px: 2px;
+    --heave-px: 4px;
+  }
+  .vessel.motion-rough {
+    --pitch-deg: 3.5deg;
+    --roll-deg: 2deg;
+    --drift-px: 4px;
+    --heave-px: 6px;
+  }
+  .dial-readout {
+    font-size: 1.1rem !important;
+  }
+  .ops-value {
+    font-size: 1.2rem !important;
+  }
+  .env-value {
+    font-size: 1.1rem !important;
+  }
+}
