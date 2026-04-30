@@ -36,3 +36,24 @@
 - **Commit Hash:** `6943bcd` (merge commit on main)
 - **Branch Status:** main updated and pushed to origin; review/remote-main merged and preserved
 - **Next Planned Step:** Cycle 2 — Real-time data API integration on branch cycle-2-command-deck-data
+
+## Build Cycle 2
+- **Timestamp:** 2026-04-29 21:09:00 EDT
+- **Goal:** Add real-time data API endpoints (/api/command-deck/status, /api/command-deck/weather)
+- **Files Created:** `command_deck_api.py`
+- **Files Modified:** `main.py` (2 lines added), `static/command_deck.js` (API fetch logic + data source indicator), `static/command_deck.css` (data source badge styles), `templates/command_deck.html` (data source badge element)
+- **Tests Run:** py_compile main.py, py_compile command_deck_api.py, py_compile command_deck_route.py, node --check command_deck.js, uvicorn boot test, curl route tests
+- **Test Results:**
+  - `/` — 200 OK
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/status` — 200 OK (JSON)
+  - `/api/command-deck/weather` — 200 OK (JSON)
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **API Response Samples:**
+  - Status: `{"standing":85,"capacity":72,"jurisdiction":90,"evidence":68,"compliance":94,"deployment":77,"system_health":"operational","active_cases":15,"last_updated":"2026-04-30T01:09:35Z"}`
+  - Weather: `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+- **Git Diff Summary:** Added `command_deck_api.py` (new FastAPI APIRouter with 2 GET endpoints), modified `main.py` (+2 lines for import and registration), updated `command_deck.js` (added fetch logic, data source indicator), updated `command_deck.css` (badge styles), updated `command_deck.html` (badge element)
+- **Commit Hash:** `9188f2e`
+- **Next Planned Step:** Cycle 3 — Audio asset loading and ambient sound enhancement

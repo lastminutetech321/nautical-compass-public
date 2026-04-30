@@ -3,6 +3,7 @@
 ## Current Platform Modules
 - Base Application Core (`main.py`) — FastAPI, Jinja2Templates, StaticFiles
 - Command Deck V2 Dashboard (`command_deck_route.py`, `command_deck.html`, `command_deck.js`, `command_deck_audio.js`, `command_deck.css`)
+- Command Deck Data API (`command_deck_api.py`) — real-time status and weather endpoints with mock fallback
 - Financial Engine (`routes/financial_engine_test.py`, `routes/financial_engine_panel.py`, `routes/financial_engine_actions.py`)
 - Core Routes (`routes/core_routes.py`)
 - Labor Signal Module (`labor_signal/` — conditionally loaded via feature flag)
@@ -44,12 +45,14 @@
 | `/legalese` | GET/POST | Legalese practice room |
 | `/services` | GET | Services catalog |
 | `/services/{service_slug}` | GET | Service detail page |
-| `/command-deck` | GET | **Command Deck V2 dashboard** (new) |
+| `/command-deck` | GET | Command Deck V2 dashboard |
+| `/api/command-deck/status` | GET | **Command Deck system state JSON** (Cycle 2) |
+| `/api/command-deck/weather` | GET | **Command Deck weather data JSON** (Cycle 2) |
 
 ## Static/Template Files
-- `templates/command_deck.html` — Command Deck V2 template with navigation bar
-- `static/command_deck.css` — Command Deck styling (includes `.deck-nav` component)
-- `static/command_deck.js` — Command Deck UI logic with `updateNavIndicators()`
+- `templates/command_deck.html` — Command Deck V2 template with navigation bar and data source badge
+- `static/command_deck.css` — Command Deck styling (includes `.deck-nav`, `.data-source-badge`)
+- `static/command_deck.js` — Command Deck UI logic with API fetch polling (30s interval) and fallback
 - `static/command_deck_audio.js` — Command Deck ambient audio engine
 
 ## Dependency List
@@ -58,15 +61,15 @@
 - `uvicorn`
 - `jinja2`
 - `python-multipart`
-- Standard Python 3.11 libraries
+- Standard Python 3.11 libraries (`urllib.request`, `json`, `os`, `time`, `datetime`)
 
 ## Known Issues
 - `/status` and `/compass` return 404 — these routes do not exist in the remote app (they were part of the original local Flask scaffold and were not ported over).
-- Command Deck data is currently mocked/randomized via `setInterval` in `command_deck.js`. Real-time API integration is planned for Cycle 2.
 - `main.py` contains two duplicate `@app.get("/system-status")` definitions (pre-existing issue in remote code; the second one shadows the first).
 - `from routes.core_routes import core_routes` is imported twice in `main.py` (pre-existing duplicate import).
+- Command Deck status data is currently static mock values; integration with the helm_state_adapter for live metrics is a future enhancement.
 
 ## Next Build Queue
-- **Cycle 2:** Real-time data API integration on branch `cycle-2-command-deck-data` — replace mocked weather/system data with live API calls
 - **Cycle 3:** Audio enhancement — external `.mp3` file loading for ambient audio engine
 - **Cycle 4:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
+- **Cycle 5:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
