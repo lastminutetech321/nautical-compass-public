@@ -3,7 +3,7 @@
 ## Current Platform Modules
 - Base Application Core (`main.py`) — FastAPI, Jinja2Templates, StaticFiles
 - Command Deck V2 Dashboard (`command_deck_route.py`, `command_deck.html`, `command_deck.js`, `command_deck_audio.js`, `command_deck.css`)
-- Command Deck Data API (`command_deck_api.py`) — real-time status and weather endpoints with mock fallback
+- Command Deck Data API (`command_deck_api.py`) — real-time status and weather endpoints with mock fallback, accepts user lat/lon for location-based weather
 - Financial Engine (`routes/financial_engine_test.py`, `routes/financial_engine_panel.py`, `routes/financial_engine_actions.py`)
 - Core Routes (`routes/core_routes.py`)
 - Labor Signal Module (`labor_signal/` — conditionally loaded via feature flag)
@@ -52,7 +52,7 @@
 ## Static/Template Files
 - `templates/command_deck.html` — Command Deck V2 template with navigation bar and data source badge
 - `static/command_deck.css` — Command Deck styling (includes `.deck-nav`, `.data-source-badge`)
-- `static/command_deck.js` — Command Deck UI logic with API fetch polling (30s interval) and fallback
+- `static/command_deck.js` — Command Deck UI logic with API fetch polling (30s interval), browser geolocation, and graceful fallback
 - `static/command_deck_audio.js` — Command Deck ambient audio engine
 
 ## Dependency List
@@ -70,7 +70,7 @@
 - Command Deck status data is currently static mock values; integration with the helm_state_adapter for live metrics is a future enhancement.
 
 ## Next Build Queue
-- **Cycle 3 (ACTIVE — branch: `cycle-3-command-deck-interactions`):** Enhanced dial interactions and tooltip overlays
-- **Cycle 4:** Audio enhancement — external `.mp3` file loading for ambient audio engine
+- **Cycle 4 (NEXT):** Audio enhancement — external `.mp3` file loading for ambient audio engine
 - **Cycle 5:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
 - **Cycle 6:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
+- **Cycle 7:** Enhanced dial interactions and tooltip overlays

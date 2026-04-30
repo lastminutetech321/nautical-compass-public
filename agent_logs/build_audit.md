@@ -74,3 +74,23 @@
 - **Commit Hash:** `cd1c5e1` (merge commit on main)
 - **Branch Status:** main updated and pushed to origin; cycle-3-command-deck-interactions created from main
 - **Next Planned Step:** Cycle 3 — Enhanced dial interactions and tooltip overlays
+
+## Build Cycle 3
+- **Timestamp:** 2026-04-29 21:40:00 EDT
+- **Goal:** User-location-driven Command Deck atmosphere via browser geolocation
+- **Files Modified:** `command_deck_api.py` (accept optional lat/lon query params), `static/command_deck.js` (geolocation init, location-aware fetch, status UI), `templates/command_deck.html` (location status element), `static/command_deck.css` (location status styles)
+- **Tests Run:** py_compile main.py, py_compile command_deck_api.py, py_compile command_deck_route.py, node --check command_deck.js, node --check command_deck_audio.js, uvicorn boot test, curl route tests
+- **Test Results:**
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/weather` (no coords) — 200 OK
+  - `/api/command-deck/weather?lat=40.7128&lon=-74.0060` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **API Response Samples:**
+  - Weather (no coords): `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+  - Weather (with coords, no API key): `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+  - Note: Both return mock because WEATHER_API_KEY is not set. When set, the coords version will return live data with `"source":"live"`.
+- **Git Diff Summary:** Modified 4 files — added geolocation support to JS, lat/lon query params to API, location status UI element and CSS styling
+- **Commit Hash:** [pending]
+- **Next Planned Step:** Cycle 4 — Audio enhancement with external .mp3 file loading

@@ -12,15 +12,13 @@ Usage in main.py:
 Environment Variables:
     WEATHER_API_KEY  — If set, attempts to fetch live weather from OpenWeatherMap.
                        Falls back to mock data on failure or if unset.
-    WEATHER_LAT     — Latitude for weather lookup (default: 25.7617, Miami)
-    WEATHER_LON     — Longitude for weather lookup (default: -80.1918, Miami)
 """
 
 import os
-import time
 from datetime import datetime, timezone
+from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/command-deck", tags=["command-deck-api"])
@@ -64,17 +62,15 @@ MOCK_WEATHER = {
 }
 
 
-def _fetch_live_weather() -> dict | None:
+def _fetch_live_weather(lat: float, lon: float) -> dict | None:
     """
-    Attempt to fetch live weather from OpenWeatherMap.
+    Attempt to fetch live weather from OpenWeatherMap for given coordinates.
     Returns a normalized dict on success, or None on failure.
     """
     api_key = os.getenv("WEATHER_API_KEY", "").strip()
     if not api_key:
         return None
 
-    lat = os.getenv("WEATHER_LAT", "25.7617")
-    lon = os.getenv("WEATHER_LON", "-80.1918")
     url = (
         f"https://api.openweathermap.org/data/2.5/weather"
         f"?lat={lat}&lon={lon}&appid={api_key}&units=imperial"
@@ -119,9 +115,19 @@ def _fetch_live_weather() -> dict | None:
 
 
 @router.get("/weather")
-def command_deck_weather():
-    """Return weather data for the Command Deck. Live if API key is set, mock otherwise."""
-    live = _fetch_live_weather()
-    if live:
-        return JSONResponse(content=live)
+def command_deck_weather(
+    lat: Optional[float] = Query(None, description="User latitude from browser geolocation"),
+    lon: Optional[float] = Query(None, description="User longitude from browser geolocation"),
+):
+    """
+    Return weather data for the Command Deck.
+
+    - If lat/lon provided AND WEATHER_API_KEY is set: fetch real weather for those coordinates.
+    - If lat/lon provided but no WEATHER_API_KEY: return mock data with source "mock".
+    - If no lat/lon provided: return mock data as before.
+    """
+    if lat is not None and lon is not None:
+        live = _fetch_live_weather(lat, lon)
+        if live:
+            return JSONResponse(content=live)
     return JSONResponse(content=dict(MOCK_WEATHER))
