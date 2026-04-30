@@ -1,6 +1,6 @@
 """
 Nautical Compass — Command Deck Data API (FastAPI)
-====================================================
+# Command Deck Data API (FastAPI)
 Provides JSON endpoints for the Command Deck frontend:
   - /api/command-deck/status  — system state metrics
   - /api/command-deck/weather — weather conditions (mock or live)
@@ -131,3 +131,36 @@ def command_deck_weather(
         if live:
             return JSONResponse(content=live)
     return JSONResponse(content=dict(MOCK_WEATHER))
+ spine-1-intake-engine
+
+
+# ---------------------------------------------------------------------------
+# Intake Engine — injected into status response via monkey-patch override
+# We add a new endpoint that merges intake state into the status payload.
+# ---------------------------------------------------------------------------
+
+@router.get("/status/intake")
+def command_deck_status_with_intake():
+    """Extended status including Intake Engine telemetry."""
+    data = dict(MOCK_STATUS)
+    data["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    try:
+        from routes.intake_engine import load_latest_intake, count_submissions
+        latest = load_latest_intake()
+        total = count_submissions()
+        data["intake_engine"] = {
+            "status":            "active" if latest else "idle",
+            "total_submissions": total,
+            "latest_id":         latest.get("intake_id") if latest else None,
+            "latest_score":      latest.get("intake_score") if latest else None,
+            "latest_missing":    latest.get("missing_fields", []) if latest else [],
+            "latest_type":       latest.get("intake_type") if latest else None,
+            "latest_status":     latest.get("status") if latest else None,
+        }
+    except Exception as exc:
+        data["intake_engine"] = {"status": "error", "error": str(exc)}
+
+    return JSONResponse(content=data)
+
+ main

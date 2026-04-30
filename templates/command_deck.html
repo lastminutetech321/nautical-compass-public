@@ -257,6 +257,99 @@
 
     </div>
 
+ spine-1-intake-engine
+    <!-- ═══════════════════════════════════════════════════════════════
+         INTAKE ENGINE PANEL — spine-1-intake-engine
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="intake-deck-panel" id="intakeDeckPanel" style="
+      background: rgba(10,15,30,0.82);
+      border: 1px solid #c9a84c;
+      border-radius: 10px;
+      padding: 1rem 1.4rem;
+      margin: .8rem 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      font-family: 'Share Tech Mono', monospace;
+    ">
+      <div style="flex-shrink:0;text-align:center;">
+        <div style="font-size:.65rem;letter-spacing:.1em;color:#c9a84c;text-transform:uppercase;margin-bottom:.35rem;">Intake Engine</div>
+        <div id="intakeScoreRing" style="
+          width:56px;height:56px;border-radius:50%;
+          background:conic-gradient(#2ecc71 0% 0%, #1a2a3c 0% 100%);
+          display:flex;align-items:center;justify-content:center;
+          font-size:.85rem;font-weight:700;color:#e2c275;
+          border:2px solid #c9a84c;
+          position:relative;
+        ">
+          <span id="intakeScoreVal">—</span>
+        </div>
+        <div style="font-size:.6rem;color:#888;margin-top:.3rem;">Score</div>
+      </div>
+
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem .8rem;">
+        <div>
+          <div style="font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:.06em;">Status</div>
+          <div id="intakeStatus" style="font-size:.82rem;color:#e2c275;">—</div>
+        </div>
+        <div>
+          <div style="font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:.06em;">Submissions</div>
+          <div id="intakeTotal" style="font-size:.82rem;color:#e2c275;">—</div>
+        </div>
+        <div>
+          <div style="font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:.06em;">Last Type</div>
+          <div id="intakeLastType" style="font-size:.82rem;color:#e2c275;">—</div>
+        </div>
+        <div>
+          <div style="font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:.06em;">Latest ID</div>
+          <div id="intakeLatestId" style="font-size:.72rem;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+        </div>
+        <div>
+          <div style="font-size:.6rem;color:#888;text-transform:uppercase;letter-spacing:.06em;">Missing Fields</div>
+          <div id="intakeMissing" style="font-size:.82rem;color:#e2c275;">—</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <a href="/intake" style="
+            background:#c9a84c;color:#0a1525;
+            font-size:.72rem;font-weight:700;letter-spacing:.05em;
+            padding:.28rem .7rem;border-radius:4px;
+            text-decoration:none;text-transform:uppercase;
+            white-space:nowrap;
+          ">Open Intake →</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function() {
+      function updateIntakePanel() {
+        fetch('/api/command-deck/status/intake')
+          .then(r => r.json())
+          .then(data => {
+            var ie = data.intake_engine || {};
+            var score = ie.latest_score;
+            document.getElementById('intakeScoreVal').textContent = score !== null && score !== undefined ? score : '—';
+            if (score !== null && score !== undefined) {
+              var pct = Math.max(0, Math.min(score, 100));
+              document.getElementById('intakeScoreRing').style.background =
+                'conic-gradient(#2ecc71 0% ' + pct + '%, #1a2a3c ' + pct + '% 100%)';
+            }
+            document.getElementById('intakeStatus').textContent = ie.status || '—';
+            document.getElementById('intakeTotal').textContent = ie.total_submissions !== undefined ? ie.total_submissions : '—';
+            document.getElementById('intakeLastType').textContent = ie.latest_type || '—';
+            document.getElementById('intakeLatestId').textContent = ie.latest_id || '—';
+            var missing = ie.latest_missing || [];
+            document.getElementById('intakeMissing').textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
+          })
+          .catch(function() {});
+      }
+      updateIntakePanel();
+      setInterval(updateIntakePanel, 30000);
+    })();
+    </script>
+
+
+ main
     <!-- ENVIRONMENT PANEL -->
     <div class="environment-strip">
       <div class="env-item">
