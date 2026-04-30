@@ -24,8 +24,51 @@ const systemState = {
   deployment: 77
 };
 
-/* ── API DATA FETCH ────────────────────────────────────────────── */
+/* ── API DATA FETCH + GEOLOCATION ────────────────────────────────── */
 let dataSource = "mock";
+let userLat = null;
+let userLon = null;
+let locationStatus = "pending"; // pending | granted | denied | unavailable
+
+function initGeolocation() {
+  if (!navigator.geolocation) {
+    locationStatus = "unavailable";
+    updateLocationStatusUI();
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      locationStatus = "granted";
+      updateLocationStatusUI();
+      fetchAllDeckData(); // re-fetch with coords immediately
+    },
+    function(err) {
+      locationStatus = "denied";
+      updateLocationStatusUI();
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
+}
+
+function updateLocationStatusUI() {
+  const el = document.getElementById("locationStatus");
+  if (!el) return;
+  if (locationStatus === "granted" && dataSource === "live") {
+    el.textContent = "Using local weather";
+    el.className = "location-status status-live";
+  } else if (locationStatus === "denied") {
+    el.textContent = "Location unavailable";
+    el.className = "location-status status-denied";
+  } else if (locationStatus === "unavailable") {
+    el.textContent = "Location unavailable";
+    el.className = "location-status status-denied";
+  } else {
+    el.textContent = "Using mock weather";
+    el.className = "location-status status-mock";
+  }
+}
 
 async function fetchDeckStatus() {
   try {
@@ -39,7 +82,11 @@ async function fetchDeckStatus() {
 
 async function fetchDeckWeather() {
   try {
-    const resp = await fetch("/api/command-deck/weather");
+    let url = "/api/command-deck/weather";
+    if (userLat !== null && userLon !== null) {
+      url += "?lat=" + userLat.toFixed(4) + "&lon=" + userLon.toFixed(4);
+    }
+    const resp = await fetch(url);
     if (!resp.ok) return;
     const data = await resp.json();
     weatherData.condition      = data.condition || weatherData.condition;
@@ -51,6 +98,7 @@ async function fetchDeckWeather() {
     weatherData.source         = data.source || "mock";
     dataSource = data.source || "mock";
     updateDataSourceIndicator();
+    updateLocationStatusUI();
   } catch (e) { /* keep existing mock data on failure */ }
 }
 
@@ -609,12 +657,14 @@ document.addEventListener("DOMContentLoaded", () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Fetch API data on load and every 30 seconds
+  // Geolocation + API data fetch
+  initGeolocation();
   fetchAllDeckData();
   setInterval(fetchAllDeckData, 30000);
 
-  // Data source indicator
+  // Data source and location indicators
   updateDataSourceIndicator();
+  updateLocationStatusUI();
 
   // Refresh cycle
   setInterval(tickCountdown, 1000);
