@@ -4,14 +4,15 @@
    ranges, star field, whitecaps, improved weather integration
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── PLACEHOLDER DATA (replace with real API later) ────────────── */
+/* ── PLACEHOLDER DATA (fallback if API unavailable) ────────────── */
 const weatherData = {
   condition:      "clear",   // clear | cloudy | rain | fog | storm | snow
   temperature:    72,        // °F
   wind_speed:     12,        // mph
   wind_direction: "NE",
   humidity:       45,        // %
-  visibility:     10         // miles
+  visibility:     10,        // miles
+  source:         "mock"     // mock | live
 };
 
 const systemState = {
@@ -22,6 +23,47 @@ const systemState = {
   compliance: 94,
   deployment: 77
 };
+
+/* ── API DATA FETCH ────────────────────────────────────────────── */
+let dataSource = "mock";
+
+async function fetchDeckStatus() {
+  try {
+    const resp = await fetch("/api/command-deck/status");
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const keys = ["standing", "capacity", "jurisdiction", "evidence", "compliance", "deployment"];
+    keys.forEach(k => { if (data[k] !== undefined) systemState[k] = data[k]; });
+  } catch (e) { /* keep existing mock data on failure */ }
+}
+
+async function fetchDeckWeather() {
+  try {
+    const resp = await fetch("/api/command-deck/weather");
+    if (!resp.ok) return;
+    const data = await resp.json();
+    weatherData.condition      = data.condition || weatherData.condition;
+    weatherData.temperature    = data.temperature ?? weatherData.temperature;
+    weatherData.wind_speed     = data.wind_speed ?? weatherData.wind_speed;
+    weatherData.wind_direction = data.wind_direction || weatherData.wind_direction;
+    weatherData.humidity       = data.humidity ?? weatherData.humidity;
+    weatherData.visibility     = data.visibility ?? weatherData.visibility;
+    weatherData.source         = data.source || "mock";
+    dataSource = data.source || "mock";
+    updateDataSourceIndicator();
+  } catch (e) { /* keep existing mock data on failure */ }
+}
+
+function updateDataSourceIndicator() {
+  const el = document.getElementById("dataSourceBadge");
+  if (!el) return;
+  el.textContent = dataSource === "live" ? "LIVE" : "MOCK";
+  el.className = "data-source-badge " + (dataSource === "live" ? "source-live" : "source-mock");
+}
+
+async function fetchAllDeckData() {
+  await Promise.all([fetchDeckStatus(), fetchDeckWeather()]);
+}
 
 /* ── WEATHER STATE MACHINE ─────────────────────────────────────── */
 const WEATHER_CYCLE = ["clear", "cloudy", "rain", "fog", "storm", "snow"];
@@ -566,6 +608,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Clock
   updateClock();
   setInterval(updateClock, 1000);
+
+  // Fetch API data on load and every 30 seconds
+  fetchAllDeckData();
+  setInterval(fetchAllDeckData, 30000);
+
+  // Data source indicator
+  updateDataSourceIndicator();
 
   // Refresh cycle
   setInterval(tickCountdown, 1000);
