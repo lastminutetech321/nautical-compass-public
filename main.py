@@ -124,7 +124,7 @@ def render(request: Request, template: str, data=None):
     ctx["v"] = int(time.time())
     ctx["labor_signal_flags"] = labor_signal_flags()
     ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
-    return templates.TemplateResponse(template, ctx)
+    return templates.TemplateResponse(request, template, context=ctx)
 
 
 
