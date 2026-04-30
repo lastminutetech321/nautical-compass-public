@@ -4,6 +4,8 @@ import json
 import shutil
 import sqlite3
 import time
+import subprocess
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
@@ -15,16 +17,21 @@ from modules.ledger.preview_helper import get_ledger_preview
 from routes.financial_engine_test import financial_engine_router
 from routes.financial_engine_panel import financial_engine_panel_router
 from routes.financial_engine_actions import financial_engine_actions_router
+from command_deck_route import router as command_deck_router
+from command_deck_api import router as command_deck_api_router
 from routes.core_routes import core_routes
-
-from routes.core_routes import core_routes
+from routes.intake_engine import router as intake_router, api_router as intake_api_router
 
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
+app.include_router(intake_router)
+app.include_router(intake_api_router)
 
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
 app.include_router(financial_engine_actions_router)
+app.include_router(command_deck_router)
+app.include_router(command_deck_api_router)
 
 
 UPLOAD_ROOT = Path("uploads")
@@ -122,7 +129,7 @@ def render(request: Request, template: str, data=None):
     ctx["v"] = int(time.time())
     ctx["labor_signal_flags"] = labor_signal_flags()
     ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
-    return templates.TemplateResponse(template, ctx)
+    return templates.TemplateResponse(request, template, context=ctx)
 
 
 
@@ -818,10 +825,20 @@ def health():
     except Exception as exc:
         module_error = str(exc)
 
+    try:
+        _commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            text=True, timeout=3
+        ).strip()
+    except Exception:
+        _commit = "unknown"
     return JSONResponse(
         {
             "ok": True,
             "app": "Nautical Compass",
+            "commit": _commit,
+            "build_time": datetime.now(timezone.utc).isoformat(),
+            "starlette_compat": "1.0+",
             "labor_signal_module_imported": module_imported,
             "labor_signal_module_error": module_error,
             "labor_signal_flags": labor_signal_flags(),
