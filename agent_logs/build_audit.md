@@ -132,3 +132,22 @@
 - **Git Diff Summary:** Added gauge visibility CSS (z-index elevation, darker backplate, stronger text glow, needle drop-shadow), tooltip CSS (fixed-position tooltip with arrow, responsive sizing), tooltip JS system (hover/tap show/hide, dynamic value + source display, mobile tap-away dismiss), value update detection (flash animation on data change)
 - **Commit Hash:** [pending]
 - **Next Planned Step:** Cycle 5 — Advanced weather-driven visual effects and ambient transitions
+
+## Build Cycle 4 — Merge to Main
+- **Timestamp:** 2026-04-30 02:05:00 UTC
+- **Goal:** Merge cycle-4-command-deck-gauges into main (gauge readability, tooltips, tap support, animations)
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** JS syntax check (node --check), smoke test all routes via uvicorn on port 8000
+- **Test Results:**
+  - command_deck.js syntax: OK
+  - command_deck_audio.js syntax: OK
+  - / => 200
+  - /command-deck => 200
+  - /api/command-deck/status => 200
+  - /api/command-deck/weather => 200
+  - /static/command_deck.css => 200
+  - /static/command_deck.js => 200
+  - /static/command_deck_audio.js => 200
+- **Commit Hash:** `765aa3a` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-5-command-deck-polish created from main
+- **Next Planned Step:** Cycle 5 — Final polish and refinements

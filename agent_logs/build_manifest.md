@@ -70,7 +70,7 @@
 - Command Deck status data is currently static mock values; integration with the helm_state_adapter for live metrics is a future enhancement.
 
 ## Next Build Queue
-- **Cycle 4 (COMPLETE — branch: `cycle-4-command-deck-gauges`):** Gauge readability, interactive tooltips, tap support, value update animations
-- **Cycle 5 (NEXT):** Advanced weather-driven visual effects and ambient transitions
+- **Cycle 4 (COMPLETE — merged to main `765aa3a`):** Gauge readability, interactive tooltips, tap support, value update animations
+- **Cycle 5 (ACTIVE — branch: `cycle-5-command-deck-polish`):** Final polish and refinements
 - **Cycle 6:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
 - **Cycle 7:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
