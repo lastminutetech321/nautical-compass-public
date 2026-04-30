@@ -57,3 +57,20 @@
 - **Git Diff Summary:** Added `command_deck_api.py` (new FastAPI APIRouter with 2 GET endpoints), modified `main.py` (+2 lines for import and registration), updated `command_deck.js` (added fetch logic, data source indicator), updated `command_deck.css` (badge styles), updated `command_deck.html` (badge element)
 - **Commit Hash:** `9188f2e`
 - **Next Planned Step:** Cycle 3 — Audio asset loading and ambient sound enhancement
+
+## Build Cycle 2 — Merge to Main
+- **Timestamp:** 2026-04-29 21:25:00 EDT
+- **Goal:** Merge cycle-2-command-deck-data into main
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** Smoke test all routes and API endpoints via uvicorn on port 8000
+- **Test Results:**
+  - `/` — 200 OK
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/status` — 200 OK
+  - `/api/command-deck/weather` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **Commit Hash:** `cd1c5e1` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-3-command-deck-interactions created from main
+- **Next Planned Step:** Cycle 3 — Enhanced dial interactions and tooltip overlays

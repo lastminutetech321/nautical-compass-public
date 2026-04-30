@@ -70,6 +70,7 @@
 - Command Deck status data is currently static mock values; integration with the helm_state_adapter for live metrics is a future enhancement.
 
 ## Next Build Queue
-- **Cycle 3:** Audio enhancement — external `.mp3` file loading for ambient audio engine
-- **Cycle 4:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
-- **Cycle 5:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
+- **Cycle 3 (ACTIVE — branch: `cycle-3-command-deck-interactions`):** Enhanced dial interactions and tooltip overlays
+- **Cycle 4:** Audio enhancement — external `.mp3` file loading for ambient audio engine
+- **Cycle 5:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
+- **Cycle 6:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
