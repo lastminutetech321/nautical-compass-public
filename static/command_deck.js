@@ -633,6 +633,200 @@ function drawCompassTicks() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   CYCLE 4 — TOOLTIP SYSTEM
+   ═══════════════════════════════════════════════════════════════════ */
+const GAUGE_TOOLTIPS = {
+  "standing":     { title: "Standing",     desc: "Legal standing readiness score",           unit: "%", source: "system" },
+  "capacity":     { title: "Capacity",     desc: "Operational capacity utilization",         unit: "%", source: "system" },
+  "jurisdiction": { title: "Jurisdiction", desc: "Jurisdictional coverage confidence",       unit: "%", source: "system" },
+  "evidence":     { title: "Evidence",     desc: "Evidence documentation completeness",     unit: "%", source: "system" },
+  "compliance":   { title: "Compliance",   desc: "Regulatory compliance score",             unit: "%", source: "system" },
+  "deployment":   { title: "Deployment",   desc: "Workforce deployment readiness",          unit: "%", source: "system" },
+  "wind":         { title: "Wind",         desc: "Current wind speed and direction",        unit: "mph", source: "weather" },
+  "temperature":  { title: "Temperature",  desc: "Ambient temperature",                     unit: "°F", source: "weather" },
+  "humidity":     { title: "Humidity",     desc: "Relative humidity level",                 unit: "%", source: "weather" },
+  "visibility":   { title: "Visibility",   desc: "Atmospheric visibility range",            unit: "mi", source: "weather" }
+};
+
+let tooltipEl = null;
+let tooltipTimeout = null;
+
+function createTooltipElement() {
+  tooltipEl = document.createElement("div");
+  tooltipEl.className = "deck-tooltip";
+  tooltipEl.innerHTML = '<div class="deck-tooltip-inner">' +
+    '<div class="tooltip-title"></div>' +
+    '<div class="tooltip-desc"></div>' +
+    '<div class="tooltip-value"></div>' +
+    '<div class="tooltip-source"></div>' +
+    '</div>' +
+    '<div class="deck-tooltip-arrow"></div>';
+  document.body.appendChild(tooltipEl);
+}
+
+function getGaugeValue(key) {
+  if (key in systemState) return systemState[key];
+  if (key === "wind") return weatherData.wind_speed + " " + weatherData.wind_direction;
+  if (key === "temperature") return weatherData.temperature;
+  if (key === "humidity") return weatherData.humidity;
+  if (key === "visibility") return weatherData.visibility;
+  return "--";
+}
+
+function getGaugeSource(key) {
+  if (key in systemState) return "system";
+  return dataSource === "live" ? "live" : "mock";
+}
+
+function showTooltip(el, key) {
+  if (!tooltipEl) createTooltipElement();
+  const info = GAUGE_TOOLTIPS[key];
+  if (!info) return;
+
+  const titleEl = tooltipEl.querySelector(".tooltip-title");
+  const descEl = tooltipEl.querySelector(".tooltip-desc");
+  const valueEl = tooltipEl.querySelector(".tooltip-value");
+  const sourceEl = tooltipEl.querySelector(".tooltip-source");
+
+  titleEl.textContent = info.title;
+  descEl.textContent = info.desc;
+  const val = getGaugeValue(key);
+  valueEl.textContent = val + (typeof val === "number" ? info.unit : "");
+  sourceEl.textContent = "Source: " + getGaugeSource(key);
+
+  // Position
+  const rect = el.getBoundingClientRect();
+  const tooltipH = 100; // approximate
+  const spaceAbove = rect.top;
+  const above = spaceAbove > tooltipH + 10;
+
+  tooltipEl.classList.remove("tooltip-above", "tooltip-below");
+  tooltipEl.classList.add(above ? "tooltip-above" : "tooltip-below");
+
+  let left = rect.left + rect.width / 2 - 110;
+  if (left < 8) left = 8;
+  if (left + 220 > window.innerWidth) left = window.innerWidth - 228;
+
+  let top;
+  if (above) {
+    top = rect.top - tooltipH - 8;
+  } else {
+    top = rect.bottom + 8;
+  }
+
+  tooltipEl.style.left = left + "px";
+  tooltipEl.style.top = top + "px";
+  tooltipEl.classList.add("visible");
+}
+
+function hideTooltip() {
+  if (tooltipEl) tooltipEl.classList.remove("visible");
+}
+
+function initTooltips() {
+  // Ops dials (6 system gauges)
+  document.querySelectorAll(".ops-dial[data-key]").forEach(dial => {
+    const key = dial.getAttribute("data-key");
+    dial.addEventListener("mouseenter", () => showTooltip(dial, key));
+    dial.addEventListener("mouseleave", () => hideTooltip());
+    dial.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      showTooltip(dial, key);
+      clearTimeout(tooltipTimeout);
+      tooltipTimeout = setTimeout(hideTooltip, 3000);
+    }, { passive: false });
+  });
+
+  // Instrument panels — wind (windPanel), compass is not a data gauge
+  const windPanel = document.getElementById("windPanel");
+  if (windPanel) {
+    windPanel.addEventListener("mouseenter", () => showTooltip(windPanel, "wind"));
+    windPanel.addEventListener("mouseleave", () => hideTooltip());
+    windPanel.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      showTooltip(windPanel, "wind");
+      clearTimeout(tooltipTimeout);
+      tooltipTimeout = setTimeout(hideTooltip, 3000);
+    }, { passive: false });
+  }
+
+  // Environment strip items
+  const envMap = [
+    { id: "tempValue", key: "temperature" },
+    { id: "humidityValue", key: "humidity" },
+    { id: "visibilityValue", key: "visibility" }
+  ];
+  envMap.forEach(({ id, key }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const parent = el.closest(".env-item");
+    if (!parent) return;
+    parent.addEventListener("mouseenter", () => showTooltip(parent, key));
+    parent.addEventListener("mouseleave", () => hideTooltip());
+    parent.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      showTooltip(parent, key);
+      clearTimeout(tooltipTimeout);
+      tooltipTimeout = setTimeout(hideTooltip, 3000);
+    }, { passive: false });
+  });
+
+  // Tap-away to dismiss on mobile
+  document.addEventListener("touchstart", (e) => {
+    if (tooltipEl && !e.target.closest(".ops-dial, .instrument-panel, .env-item")) {
+      hideTooltip();
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CYCLE 4 — VALUE UPDATE ANIMATION
+   ═══════════════════════════════════════════════════════════════════ */
+let prevSystemState = {};
+let prevWeatherData = {};
+
+function detectAndAnimateChanges() {
+  // Check system state changes
+  Object.keys(systemState).forEach(key => {
+    if (prevSystemState[key] !== undefined && prevSystemState[key] !== systemState[key]) {
+      const dial = document.querySelector('.ops-dial[data-key="' + key + '"]');
+      if (dial) {
+        dial.classList.remove("gauge-updated");
+        void dial.offsetWidth;
+        dial.classList.add("gauge-updated");
+        setTimeout(() => dial.classList.remove("gauge-updated"), 600);
+      }
+    }
+    prevSystemState[key] = systemState[key];
+  });
+
+  // Check weather changes
+  ["temperature", "humidity", "visibility", "wind_speed"].forEach(key => {
+    if (prevWeatherData[key] !== undefined && prevWeatherData[key] !== weatherData[key]) {
+      const idMap = { temperature: "tempValue", humidity: "humidityValue", visibility: "visibilityValue", wind_speed: "windReadout" };
+      const el = document.getElementById(idMap[key]);
+      if (el) {
+        const parent = el.closest(".env-item") || el.closest(".instrument-panel");
+        if (parent) {
+          parent.classList.remove("gauge-updated");
+          void parent.offsetWidth;
+          parent.classList.add("gauge-updated");
+          setTimeout(() => parent.classList.remove("gauge-updated"), 600);
+        }
+      }
+    }
+    prevWeatherData[key] = weatherData[key];
+  });
+}
+
+// Wrap fetchAllDeckData to detect changes after fetch
+const _originalFetchAllDeckData = fetchAllDeckData;
+async function fetchAllDeckDataWithAnimation() {
+  await _originalFetchAllDeckData();
+  detectAndAnimateChanges();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    INITIALIZATION
    ═══════════════════════════════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
@@ -657,10 +851,17 @@ document.addEventListener("DOMContentLoaded", () => {
   updateClock();
   setInterval(updateClock, 1000);
 
+  // Tooltips
+  initTooltips();
+
+  // Snapshot initial state for change detection
+  Object.keys(systemState).forEach(k => { prevSystemState[k] = systemState[k]; });
+  ["temperature", "humidity", "visibility", "wind_speed"].forEach(k => { prevWeatherData[k] = weatherData[k]; });
+
   // Geolocation + API data fetch
   initGeolocation();
-  fetchAllDeckData();
-  setInterval(fetchAllDeckData, 30000);
+  fetchAllDeckDataWithAnimation();
+  setInterval(fetchAllDeckDataWithAnimation, 30000);
 
   // Data source and location indicators
   updateDataSourceIndicator();
