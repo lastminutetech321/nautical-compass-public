@@ -1,0 +1,176 @@
+## Build Cycle 1
+- **Timestamp:** 2026-04-29 19:02:00 EDT
+- **Goal:** Command Deck navigation UX enhancement
+- **Files Touched:** `templates/command_deck.html`, `static/command_deck.css`, `static/command_deck.js`
+- **Files Created:** None (modified existing Command Deck files)
+- **Tests Run:** Python syntax check (`py_compile`), Node JS syntax check (`--check`), Integration test (`integration_test.py`)
+- **Test Results:** 
+  - `main.py` syntax: PASS
+  - `command_deck_route.py` syntax: PASS
+  - `command_deck.js` syntax: PASS
+  - `command_deck_audio.js` syntax: PASS
+  - Integration Test Suite: PASS
+- **Routes Tested:** 
+  - `/` (HTTP 200)
+  - `/status` (HTTP 200)
+  - `/compass` (HTTP 200)
+  - `/command-deck` (HTTP 200)
+- **Output Notes:** Added a responsive `.deck-nav` component to the center of the `.top-bar`. The nav bar includes links to Home, Compass, and Status, plus dynamic indicators for current weather and system health (calculated as an average of the `systemState` values). CSS media queries ensure the nav bar wraps and hides text labels on mobile screens. No existing routes or logic were broken.
+- **Git Diff Summary:** Modified 3 Command Deck UI files to insert the nav HTML, CSS styling, and JS update logic.
+- **Commit Hash:** `1755f377fc05f44f3d7a08e2f85a70a37432a4d1` (Local commit only; remote `origin` not configured for push)
+- **Next Planned Step:** Cycle 2 — Refactor and enhance real-time data fetching capabilities
+
+## Build Cycle 1 — Final Merge
+- **Timestamp:** 2026-04-29 21:10:00 EDT
+- **Goal:** Merge review/remote-main into main (Command Deck V2 + render() fix)
+- **Action:** Reset local main to origin/main, then merged review/remote-main with --no-ff. No conflicts. Pushed to origin/main.
+- **Tests Run:** Full smoke test via uvicorn on port 8000
+- **Test Results:**
+  - `/` — 200 OK
+  - `/status` — 404 (route does not exist in remote app; expected)
+  - `/compass` — 404 (route does not exist in remote app; expected)
+  - `/command-deck` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **Commit Hash:** `6943bcd` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; review/remote-main merged and preserved
+- **Next Planned Step:** Cycle 2 — Real-time data API integration on branch cycle-2-command-deck-data
+
+## Build Cycle 2
+- **Timestamp:** 2026-04-29 21:09:00 EDT
+- **Goal:** Add real-time data API endpoints (/api/command-deck/status, /api/command-deck/weather)
+- **Files Created:** `command_deck_api.py`
+- **Files Modified:** `main.py` (2 lines added), `static/command_deck.js` (API fetch logic + data source indicator), `static/command_deck.css` (data source badge styles), `templates/command_deck.html` (data source badge element)
+- **Tests Run:** py_compile main.py, py_compile command_deck_api.py, py_compile command_deck_route.py, node --check command_deck.js, uvicorn boot test, curl route tests
+- **Test Results:**
+  - `/` — 200 OK
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/status` — 200 OK (JSON)
+  - `/api/command-deck/weather` — 200 OK (JSON)
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **API Response Samples:**
+  - Status: `{"standing":85,"capacity":72,"jurisdiction":90,"evidence":68,"compliance":94,"deployment":77,"system_health":"operational","active_cases":15,"last_updated":"2026-04-30T01:09:35Z"}`
+  - Weather: `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+- **Git Diff Summary:** Added `command_deck_api.py` (new FastAPI APIRouter with 2 GET endpoints), modified `main.py` (+2 lines for import and registration), updated `command_deck.js` (added fetch logic, data source indicator), updated `command_deck.css` (badge styles), updated `command_deck.html` (badge element)
+- **Commit Hash:** `9188f2e`
+- **Next Planned Step:** Cycle 3 — Audio asset loading and ambient sound enhancement
+
+## Build Cycle 2 — Merge to Main
+- **Timestamp:** 2026-04-29 21:25:00 EDT
+- **Goal:** Merge cycle-2-command-deck-data into main
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** Smoke test all routes and API endpoints via uvicorn on port 8000
+- **Test Results:**
+  - `/` — 200 OK
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/status` — 200 OK
+  - `/api/command-deck/weather` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **Commit Hash:** `cd1c5e1` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-3-command-deck-interactions created from main
+- **Next Planned Step:** Cycle 3 — Enhanced dial interactions and tooltip overlays
+
+## Build Cycle 3
+- **Timestamp:** 2026-04-29 21:40:00 EDT
+- **Goal:** User-location-driven Command Deck atmosphere via browser geolocation
+- **Files Modified:** `command_deck_api.py` (accept optional lat/lon query params), `static/command_deck.js` (geolocation init, location-aware fetch, status UI), `templates/command_deck.html` (location status element), `static/command_deck.css` (location status styles)
+- **Tests Run:** py_compile main.py, py_compile command_deck_api.py, py_compile command_deck_route.py, node --check command_deck.js, node --check command_deck_audio.js, uvicorn boot test, curl route tests
+- **Test Results:**
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/weather` (no coords) — 200 OK
+  - `/api/command-deck/weather?lat=40.7128&lon=-74.0060` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **API Response Samples:**
+  - Weather (no coords): `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+  - Weather (with coords, no API key): `{"condition":"clear","temperature":72,"wind_speed":12,"wind_direction":"NE","humidity":45,"visibility":10,"source":"mock"}`
+  - Note: Both return mock because WEATHER_API_KEY is not set. When set, the coords version will return live data with `"source":"live"`.
+- **Git Diff Summary:** Modified 4 files — added geolocation support to JS, lat/lon query params to API, location status UI element and CSS styling
+- **Commit Hash:** [pending]
+- **Next Planned Step:** Cycle 4 — Audio enhancement with external .mp3 file loading
+
+## Build Cycle 3 — Merge to Main
+- **Timestamp:** 2026-04-29 22:05:00 EDT
+- **Goal:** Merge cycle-3-command-deck-interactions into main (geolocation + visual polish)
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** Smoke test all routes + API endpoints with and without coords via uvicorn on port 8000
+- **Test Results:**
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/weather` — 200 OK
+  - `/api/command-deck/weather?lat=40.7128&lon=-74.0060` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **Commit Hash:** `bb76cc4` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-4-command-deck-gauges created from main
+- **Next Planned Step:** Cycle 4 — Enhanced gauge interactions and tooltip overlays
+
+## Build Cycle 4
+- **Timestamp:** 2026-04-30 01:45:00 UTC
+- **Goal:** Gauge readability, interactive tooltips, tap support, value update animations
+- **Files Modified:** `static/command_deck.css`, `static/command_deck.js`
+- **Tests Run:** py_compile (main.py, command_deck_api.py, command_deck_route.py), node --check (command_deck.js, command_deck_audio.js), uvicorn boot + route tests
+- **Test Results:**
+  - main.py syntax: PASS
+  - command_deck_api.py syntax: PASS
+  - command_deck_route.py syntax: PASS
+  - command_deck.js syntax: PASS
+  - command_deck_audio.js syntax: PASS
+  - / => 200
+  - /command-deck => 200
+  - /api/command-deck/status => 200
+  - /api/command-deck/weather => 200
+  - /static/command_deck.css => 200
+  - /static/command_deck.js => 200
+  - /static/command_deck_audio.js => 200
+- **Git Diff Summary:** Added gauge visibility CSS (z-index elevation, darker backplate, stronger text glow, needle drop-shadow), tooltip CSS (fixed-position tooltip with arrow, responsive sizing), tooltip JS system (hover/tap show/hide, dynamic value + source display, mobile tap-away dismiss), value update detection (flash animation on data change)
+- **Commit Hash:** [pending]
+- **Next Planned Step:** Cycle 5 — Advanced weather-driven visual effects and ambient transitions
+
+## Build Cycle 4 — Merge to Main
+- **Timestamp:** 2026-04-30 02:05:00 UTC
+- **Goal:** Merge cycle-4-command-deck-gauges into main (gauge readability, tooltips, tap support, animations)
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** JS syntax check (node --check), smoke test all routes via uvicorn on port 8000
+- **Test Results:**
+  - command_deck.js syntax: OK
+  - command_deck_audio.js syntax: OK
+  - / => 200
+  - /command-deck => 200
+  - /api/command-deck/status => 200
+  - /api/command-deck/weather => 200
+  - /static/command_deck.css => 200
+  - /static/command_deck.js => 200
+  - /static/command_deck_audio.js => 200
+- **Commit Hash:** `765aa3a` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-5-command-deck-polish created from main
+- **Next Planned Step:** Cycle 5 — Final polish and refinements
+
+## Build Cycle 5
+- **Timestamp:** 2026-04-29 23:32:00 EDT
+- **Goal:** Real vessel motion, gauge readability, deployment safeguards (/health, build stamp, DEPLOY.md)
+- **Files Modified:** `main.py`, `command_deck_route.py`, `static/command_deck.css`, `static/command_deck.js`, `templates/command_deck.html`
+- **Files Created:** `DEPLOY.md`
+- **Tests Run:** py_compile (main.py, command_deck_route.py, command_deck_api.py), node --check (command_deck.js, command_deck_audio.js), uvicorn boot + route tests
+- **Test Results:**
+  - main.py syntax: PASS
+  - command_deck_route.py syntax: PASS
+  - command_deck_api.py syntax: PASS
+  - command_deck.js syntax: PASS
+  - command_deck_audio.js syntax: PASS
+  - /health: 200 (returns commit hash + build_time + starlette_compat)
+  - /command-deck: 200
+  - /api/command-deck/status: 200
+  - /api/command-deck/weather: 200
+  - /static/command_deck.css: 200
+  - /static/command_deck.js: 200
+  - /static/command_deck_audio.js: 200
+- **Git Diff Summary:** Added vessel motion keyframes + weather-based motion classes, gauge readability CSS, enhanced /health endpoint, build stamp in footer, DEPLOY.md
+- **Commit Hash:** `699da33`
+- **Next Planned Step:** Cycle 6 — Advanced weather visualization and ambient sound enhancements

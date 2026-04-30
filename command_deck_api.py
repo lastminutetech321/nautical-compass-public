@@ -1,6 +1,6 @@
 """
 Nautical Compass — Command Deck Data API (FastAPI)
-====================================================
+# Command Deck Data API (FastAPI)
 Provides JSON endpoints for the Command Deck frontend:
   - /api/command-deck/status  — system state metrics
   - /api/command-deck/weather — weather conditions (mock or live)
@@ -131,6 +131,7 @@ def command_deck_weather(
         if live:
             return JSONResponse(content=live)
     return JSONResponse(content=dict(MOCK_WEATHER))
+ spine-1-intake-engine
 
 
 # ---------------------------------------------------------------------------
@@ -161,3 +162,5 @@ def command_deck_status_with_intake():
         data["intake_engine"] = {"status": "error", "error": str(exc)}
 
     return JSONResponse(content=data)
+
+ main
