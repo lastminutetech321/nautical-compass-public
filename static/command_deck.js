@@ -303,6 +303,42 @@ function updateWeatherVisuals(condition) {
       if (Math.random() > 0.4) triggerLightning();
     }, 2500 + Math.random() * 3000);
   }
+
+  // Update vessel motion based on weather
+  updateVesselMotion();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VESSEL MOTION — Weather-driven sea-state animation
+   ═══════════════════════════════════════════════════════════════════ */
+
+function updateVesselMotion() {
+  const vessel = document.getElementById('vessel');
+  if (!vessel) return;
+
+  const condition = weatherData.condition || 'clear';
+  const wind = weatherData.wind_speed || 0;
+
+  // Determine motion class from weather condition
+  let motionClass = 'motion-calm';
+  if (condition === 'storm' || condition === 'thunderstorm') {
+    motionClass = 'motion-rough';
+  } else if (condition === 'rain' || condition === 'drizzle' || condition === 'snow') {
+    motionClass = 'motion-moderate';
+  } else if (condition === 'fog') {
+    motionClass = 'motion-calm';
+  }
+
+  // Wind speed override: stronger wind = rougher motion
+  if (wind > 25) {
+    motionClass = 'motion-rough';
+  } else if (wind > 10 && motionClass === 'motion-calm') {
+    motionClass = 'motion-moderate';
+  }
+
+  // Apply motion class (remove old ones first)
+  vessel.classList.remove('motion-calm', 'motion-moderate', 'motion-rough');
+  vessel.classList.add(motionClass);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -872,4 +908,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Needle vibration
   setTimeout(startNeedleVibration, 2000);
+
+  // Initialize vessel motion
+  updateVesselMotion();
 });

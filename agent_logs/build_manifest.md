@@ -16,7 +16,7 @@
 | Route | Method | Description |
 |-------|--------|-------------|
 | `/` | GET | Home index page |
-| `/health` | GET | App health check with module status |
+| `/health` | GET | App health check with commit hash, build time, starlette compat, module status |
 | `/hall` | GET | Hall page |
 | `/lead` | GET | Lead capture page |
 | `/lead/thanks` | GET | Lead thank-you page |
@@ -51,8 +51,8 @@
 
 ## Static/Template Files
 - `templates/command_deck.html` — Command Deck V2 template with navigation bar and data source badge
-- `static/command_deck.css` — Command Deck styling (includes `.deck-nav`, `.data-source-badge`, gauge visibility enhancements, tooltip styles)
-- `static/command_deck.js` — Command Deck UI logic with API fetch polling (30s interval), browser geolocation, graceful fallback, interactive tooltips, tap support, value update animations
+- `static/command_deck.css` — Command Deck styling (includes `.deck-nav`, `.data-source-badge`, gauge visibility, tooltip styles, vessel motion keyframes, gauge readability enhancements)
+- `static/command_deck.js` — Command Deck UI logic with API fetch polling (30s interval), browser geolocation, graceful fallback, interactive tooltips, tap support, value update animations, weather-driven vessel motion
 - `static/command_deck_audio.js` — Command Deck ambient audio engine
 
 ## Dependency List
@@ -70,7 +70,8 @@
 - Command Deck status data is currently static mock values; integration with the helm_state_adapter for live metrics is a future enhancement.
 
 ## Next Build Queue
-- **Cycle 4 (COMPLETE — branch: `cycle-4-command-deck-gauges`):** Gauge readability, interactive tooltips, tap support, value update animations
-- **Cycle 5 (NEXT):** Advanced weather-driven visual effects and ambient transitions
+- **Cycle 4 (COMPLETE — merged to main `765aa3a`):** Gauge readability, interactive tooltips, tap support, value update animations
+- **Cycle 5 (COMPLETE — branch: `cycle-5-command-deck-polish`):** Real vessel motion, gauge readability, deployment safeguards
 - **Cycle 6:** Deduplicate `main.py` (remove duplicate `/system-status` route and duplicate import)
 - **Cycle 7:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
+- **Cycle 8:** Advanced weather visualization and ambient sound enhancements

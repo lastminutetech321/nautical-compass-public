@@ -4,6 +4,8 @@ import json
 import shutil
 import sqlite3
 import time
+import subprocess
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, UploadFile, File
@@ -822,10 +824,20 @@ def health():
     except Exception as exc:
         module_error = str(exc)
 
+    try:
+        _commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            text=True, timeout=3
+        ).strip()
+    except Exception:
+        _commit = "unknown"
     return JSONResponse(
         {
             "ok": True,
             "app": "Nautical Compass",
+            "commit": _commit,
+            "build_time": datetime.now(timezone.utc).isoformat(),
+            "starlette_compat": "1.0+",
             "labor_signal_module_imported": module_imported,
             "labor_signal_module_error": module_error,
             "labor_signal_flags": labor_signal_flags(),
