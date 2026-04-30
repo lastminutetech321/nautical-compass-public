@@ -94,3 +94,41 @@
 - **Git Diff Summary:** Modified 4 files — added geolocation support to JS, lat/lon query params to API, location status UI element and CSS styling
 - **Commit Hash:** [pending]
 - **Next Planned Step:** Cycle 4 — Audio enhancement with external .mp3 file loading
+
+## Build Cycle 3 — Merge to Main
+- **Timestamp:** 2026-04-29 22:05:00 EDT
+- **Goal:** Merge cycle-3-command-deck-interactions into main (geolocation + visual polish)
+- **Action:** Normal merge with --no-ff. Clean merge, no conflicts.
+- **Tests Run:** Smoke test all routes + API endpoints with and without coords via uvicorn on port 8000
+- **Test Results:**
+  - `/command-deck` — 200 OK
+  - `/api/command-deck/weather` — 200 OK
+  - `/api/command-deck/weather?lat=40.7128&lon=-74.0060` — 200 OK
+  - `/static/command_deck.css` — 200 OK
+  - `/static/command_deck.js` — 200 OK
+  - `/static/command_deck_audio.js` — 200 OK
+- **Commit Hash:** `bb76cc4` (merge commit on main)
+- **Branch Status:** main updated and pushed to origin; cycle-4-command-deck-gauges created from main
+- **Next Planned Step:** Cycle 4 — Enhanced gauge interactions and tooltip overlays
+
+## Build Cycle 4
+- **Timestamp:** 2026-04-30 01:45:00 UTC
+- **Goal:** Gauge readability, interactive tooltips, tap support, value update animations
+- **Files Modified:** `static/command_deck.css`, `static/command_deck.js`
+- **Tests Run:** py_compile (main.py, command_deck_api.py, command_deck_route.py), node --check (command_deck.js, command_deck_audio.js), uvicorn boot + route tests
+- **Test Results:**
+  - main.py syntax: PASS
+  - command_deck_api.py syntax: PASS
+  - command_deck_route.py syntax: PASS
+  - command_deck.js syntax: PASS
+  - command_deck_audio.js syntax: PASS
+  - / => 200
+  - /command-deck => 200
+  - /api/command-deck/status => 200
+  - /api/command-deck/weather => 200
+  - /static/command_deck.css => 200
+  - /static/command_deck.js => 200
+  - /static/command_deck_audio.js => 200
+- **Git Diff Summary:** Added gauge visibility CSS (z-index elevation, darker backplate, stronger text glow, needle drop-shadow), tooltip CSS (fixed-position tooltip with arrow, responsive sizing), tooltip JS system (hover/tap show/hide, dynamic value + source display, mobile tap-away dismiss), value update detection (flash animation on data change)
+- **Commit Hash:** [pending]
+- **Next Planned Step:** Cycle 5 — Advanced weather-driven visual effects and ambient transitions

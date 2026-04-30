@@ -1126,3 +1126,145 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   border: 1px solid rgba(231, 76, 60, 0.3);
   background: rgba(231, 76, 60, 0.1);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CYCLE 4 — GAUGE VISIBILITY ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Elevate gauge containers above glare layers */
+.instrument-panel {
+  position: relative;
+  z-index: 12;
+}
+.ops-dial {
+  position: relative;
+  z-index: 12;
+}
+.environment-strip {
+  position: relative;
+  z-index: 12;
+}
+
+/* Slightly brighter background for gauge contrast */
+.instrument-panel,
+.ops-dial {
+  background: rgba(8, 14, 28, 0.88);
+}
+
+/* Stronger readout text */
+.dial-readout {
+  font-weight: 600;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(226, 194, 117, 0.6), 0 0 12px rgba(226, 194, 117, 0.3);
+}
+.ops-val,
+.ops-dial text.ops-val {
+  font-weight: 700;
+  filter: brightness(1.2);
+}
+.env-value {
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(226, 194, 117, 0.5), 0 0 10px rgba(226, 194, 117, 0.2);
+}
+
+/* Needle glow for depth */
+.dial-needle polygon,
+.dial-needle rect {
+  filter: drop-shadow(0 0 3px rgba(226, 194, 117, 0.7));
+}
+
+/* Value update pulse animation */
+@keyframes gaugeUpdatePulse {
+  0%   { box-shadow: var(--glow-teal); }
+  30%  { box-shadow: 0 0 18px rgba(226, 194, 117, 0.7), 0 0 36px rgba(226, 194, 117, 0.3); }
+  100% { box-shadow: var(--glow-teal); }
+}
+.gauge-updated {
+  animation: gaugeUpdatePulse 0.5s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CYCLE 4 — TOOLTIP STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+.deck-tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  max-width: 240px;
+  min-width: 160px;
+}
+.deck-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.deck-tooltip-inner {
+  background: rgba(6, 12, 24, 0.94);
+  border: 1px solid var(--brass);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(201, 168, 76, 0.15);
+}
+.deck-tooltip-arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+.deck-tooltip.tooltip-above .deck-tooltip-arrow {
+  bottom: -6px;
+  border-top: 6px solid var(--brass);
+}
+.deck-tooltip.tooltip-below .deck-tooltip-arrow {
+  top: -6px;
+  border-bottom: 6px solid var(--brass);
+}
+.tooltip-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.tooltip-desc {
+  font-size: 10px;
+  color: var(--brass);
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.tooltip-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 600;
+  text-shadow: 0 0 4px rgba(226, 194, 117, 0.4);
+}
+.tooltip-source {
+  font-size: 9px;
+  color: var(--brass-dim);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* ── RESPONSIVE TOOLTIP ───────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .deck-tooltip {
+    max-width: 200px;
+    min-width: 140px;
+  }
+  .deck-tooltip-inner {
+    padding: 8px 10px;
+  }
+  .tooltip-title { font-size: 10px; }
+  .tooltip-value { font-size: 12px; }
+}
