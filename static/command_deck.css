@@ -1436,7 +1436,220 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE — Vessel motion + gauge adjustments for mobile
+   WATER MOTION — Enhanced layered wave movement with shimmer
+   ═══════════════════════════════════════════════════════════════ */
+
+/* CSS custom properties for motion synchronization */
+:root {
+  --motion-base: 12s;
+  --motion-water: calc(var(--motion-base) * 1.2);
+  --motion-parallax: calc(var(--motion-base) * 2.5);
+  --motion-shimmer: calc(var(--motion-base) * 0.6);
+  --motion-heave: calc(var(--motion-base) * 0.8);
+}
+
+/* Enhanced wave horizontal drift */
+@keyframes waveDriftH {
+  0% { transform: translateX(-30px) translateY(0); border-radius: 40% 40% 0 0; }
+  25% { transform: translateX(-10px) translateY(calc(var(--wave-amp) * -0.5)); border-radius: 42% 38% 0 0; }
+  50% { transform: translateX(20px) translateY(calc(var(--wave-amp) * -1)); border-radius: 38% 42% 0 0; }
+  75% { transform: translateX(30px) translateY(calc(var(--wave-amp) * -0.5)); border-radius: 36% 44% 0 0; }
+  100% { transform: translateX(-30px) translateY(0); border-radius: 40% 40% 0 0; }
+}
+
+/* Water motion classes override wave animations */
+.water-calm .wave-deep  { --wave-amp: 4px; animation: waveDriftH var(--motion-water) ease-in-out infinite; animation-delay: 0s; }
+.water-calm .wave-back  { --wave-amp: 5px; animation: waveDriftH calc(var(--motion-water) * 0.85) ease-in-out infinite; animation-delay: -2s; }
+.water-calm .wave-mid   { --wave-amp: 6px; animation: waveDriftH calc(var(--motion-water) * 0.7) ease-in-out infinite; animation-delay: -4s; }
+.water-calm .wave-front { --wave-amp: 5px; animation: waveDriftH calc(var(--motion-water) * 0.6) ease-in-out infinite; animation-delay: -1s; }
+
+.water-moderate .wave-deep  { --wave-amp: 10px; animation: waveDriftH calc(var(--motion-water) * 0.7) ease-in-out infinite; animation-delay: 0s; }
+.water-moderate .wave-back  { --wave-amp: 12px; animation: waveDriftH calc(var(--motion-water) * 0.6) ease-in-out infinite; animation-delay: -1.5s; }
+.water-moderate .wave-mid   { --wave-amp: 14px; animation: waveDriftH calc(var(--motion-water) * 0.5) ease-in-out infinite; animation-delay: -3s; }
+.water-moderate .wave-front { --wave-amp: 10px; animation: waveDriftH calc(var(--motion-water) * 0.45) ease-in-out infinite; animation-delay: -0.5s; }
+
+.water-rough .wave-deep  { --wave-amp: 16px; animation: waveDriftH calc(var(--motion-water) * 0.45) ease-in-out infinite; animation-delay: 0s; }
+.water-rough .wave-back  { --wave-amp: 18px; animation: waveDriftH calc(var(--motion-water) * 0.38) ease-in-out infinite; animation-delay: -1s; }
+.water-rough .wave-mid   { --wave-amp: 20px; animation: waveDriftH calc(var(--motion-water) * 0.32) ease-in-out infinite; animation-delay: -2s; }
+.water-rough .wave-front { --wave-amp: 15px; animation: waveDriftH calc(var(--motion-water) * 0.28) ease-in-out infinite; animation-delay: -0.5s; }
+
+/* Shimmer / reflection overlay on water surface */
+.water-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(200, 220, 255, 0.04) 30%,
+    transparent 40%,
+    rgba(255, 240, 200, 0.03) 55%,
+    transparent 65%,
+    rgba(200, 220, 255, 0.04) 80%,
+    transparent 90%
+  );
+  background-size: 200% 100%;
+  animation: shimmerSlide var(--motion-shimmer) linear infinite;
+  will-change: background-position;
+}
+
+@keyframes shimmerSlide {
+  0% { background-position: 200% 0; opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { background-position: -200% 0; opacity: 0.6; }
+}
+
+.water-calm .water-shimmer { opacity: 0.5; }
+.water-moderate .water-shimmer { opacity: 0.7; }
+.water-rough .water-shimmer { opacity: 1; filter: brightness(1.3); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHTHOUSE — Horizon silhouette with parallax
+   ═══════════════════════════════════════════════════════════════ */
+
+.lighthouse {
+  position: absolute;
+  right: 12%;
+  bottom: 85%;
+  width: 20px;
+  height: 70px;
+  z-index: 0;
+  transform-origin: bottom center;
+  will-change: transform;
+  animation:
+    lighthouseBob var(--motion-parallax) ease-in-out infinite,
+    lighthouseDrift calc(var(--motion-parallax) * 1.2) ease-in-out infinite;
+}
+
+/* Lighthouse tower body */
+.lighthouse::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 50px;
+  background: linear-gradient(to top, #1a1a2e, #2a2a4e);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+/* Lighthouse lamp housing */
+.lighthouse::after {
+  content: '';
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 14px;
+  background: linear-gradient(to top, #2a2a4e, #3a3a5e);
+  border-radius: 3px 3px 1px 1px;
+  box-shadow: 0 0 8px rgba(226, 194, 117, 0.4);
+}
+
+/* Lighthouse beam sweep */
+.lighthouse-beam {
+  position: absolute;
+  bottom: 55px;
+  left: 50%;
+  width: 200px;
+  height: 3px;
+  transform-origin: left center;
+  background: linear-gradient(to right, rgba(255, 240, 180, 0.5), transparent);
+  animation: beamSweep calc(var(--motion-parallax) * 0.6) ease-in-out infinite alternate;
+  opacity: 0.4;
+  filter: blur(1px);
+}
+
+@keyframes beamSweep {
+  0% { transform: rotate(-15deg); opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { transform: rotate(25deg); opacity: 0.3; }
+}
+
+@keyframes lighthouseBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+@keyframes lighthouseDrift {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(1.5px); }
+  70% { transform: translateX(-1.5px); }
+}
+
+/* Horizon/sky parallax shift with vessel roll */
+.sky-layer {
+  will-change: transform;
+  transition: transform 2s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GAUGE READABILITY — Final pass: maximum contrast and clarity
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Override gauge values to ensure minimum readability */
+.ops-dial text.ops-val,
+.ops-dial .ops-value {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  fill: #ffffff !important;
+  color: #ffffff !important;
+  text-shadow:
+    0 0 6px rgba(255, 200, 100, 0.7),
+    0 0 12px rgba(201, 168, 76, 0.3) !important;
+}
+
+.ops-dial .ops-dial-label,
+.ops-dial-label {
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Needle final: 3px minimum, bright brass */
+.ops-dial line[stroke],
+.dial-needle {
+  stroke-width: 3px !important;
+  stroke: #e2c275 !important;
+  filter: drop-shadow(0 0 4px rgba(226, 194, 117, 0.8));
+}
+
+/* Gauge backplate absolute minimum */
+.ops-dial {
+  background: rgba(5, 10, 20, 0.92) !important;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PERFORMANCE + ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════════ */
+
+.wave,
+.water-shimmer,
+.lighthouse,
+.lighthouse-beam {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vessel,
+  .wave,
+  .water-shimmer,
+  .lighthouse,
+  .lighthouse-beam,
+  .sky-layer {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Vessel motion + gauge + water adjustments for mobile
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .vessel.motion-calm {

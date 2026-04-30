@@ -191,3 +191,26 @@
 - **Commit Hash:** `b3a7624`
 - **Branch Status:** main updated, cycle-6-water-lighthouse-motion created
 - **Next Planned Step:** Cycle 6 — Water movement + lighthouse parallax
+
+## Build Cycle 6
+- **Timestamp:** 2026-04-30 00:30:00 EDT
+- **Goal:** Water motion, lighthouse parallax, motion synchronization, final gauge readability
+- **Files Modified:** `static/command_deck.css`, `static/command_deck.js`, `templates/command_deck.html`
+- **Files Created:** None (lighthouse + shimmer added as HTML elements within existing template)
+- **Tests Run:** py_compile (main.py, command_deck_route.py, command_deck_api.py), node --check (command_deck.js, command_deck_audio.js), uvicorn smoke test
+- **Test Results:**
+  - main.py syntax: PASS
+  - command_deck_route.py syntax: PASS
+  - command_deck_api.py syntax: PASS
+  - command_deck.js syntax: PASS
+  - command_deck_audio.js syntax: PASS
+  - /health: 200 (commit: 4a22521, compat: 1.0+)
+  - /command-deck: 200
+  - /api/command-deck/status: 200
+  - /api/command-deck/weather: 200
+  - /static/command_deck.css: 200
+  - /static/command_deck.js: 200
+  - /static/command_deck_audio.js: 200
+- **Git Diff Summary:** +220 lines CSS (water motion keyframes, lighthouse styles, gauge final pass, performance/accessibility), +35 lines JS (motion sync with CSS custom properties, water class management, sky parallax), +5 lines HTML (lighthouse + shimmer elements)
+- **Commit Hash:** [pending]
+- **Next Planned Step:** Cycle 7 — Connect /api/command-deck/status to live helm_state_adapter metrics

@@ -314,6 +314,8 @@ function updateWeatherVisuals(condition) {
 
 function updateVesselMotion() {
   const vessel = document.getElementById('vessel');
+  const waterLayer = document.getElementById('waterLayer');
+  const skyLayer = document.getElementById('skyLayer');
   if (!vessel) return;
 
   const condition = weatherData.condition || 'clear';
@@ -321,24 +323,57 @@ function updateVesselMotion() {
 
   // Determine motion class from weather condition
   let motionClass = 'motion-calm';
+  let waterClass = 'water-calm';
+  let basePeriod = 12; // seconds
   if (condition === 'storm' || condition === 'thunderstorm') {
     motionClass = 'motion-rough';
+    waterClass = 'water-rough';
+    basePeriod = 5;
   } else if (condition === 'rain' || condition === 'drizzle' || condition === 'snow') {
     motionClass = 'motion-moderate';
+    waterClass = 'water-moderate';
+    basePeriod = 8;
   } else if (condition === 'fog') {
     motionClass = 'motion-calm';
+    waterClass = 'water-calm';
+    basePeriod = 14;
   }
 
   // Wind speed override: stronger wind = rougher motion
   if (wind > 25) {
     motionClass = 'motion-rough';
+    waterClass = 'water-rough';
+    basePeriod = 5;
   } else if (wind > 10 && motionClass === 'motion-calm') {
     motionClass = 'motion-moderate';
+    waterClass = 'water-moderate';
+    basePeriod = 8;
   }
 
-  // Apply motion class (remove old ones first)
+  // Set CSS custom properties for synchronized motion timing
+  const root = document.documentElement;
+  root.style.setProperty('--motion-base', basePeriod + 's');
+  root.style.setProperty('--motion-water', (basePeriod * 1.2) + 's');
+  root.style.setProperty('--motion-parallax', (basePeriod * 2.5) + 's');
+  root.style.setProperty('--motion-shimmer', (basePeriod * 0.6) + 's');
+  root.style.setProperty('--motion-heave', (basePeriod * 0.8) + 's');
+
+  // Apply vessel motion class (remove old ones first)
   vessel.classList.remove('motion-calm', 'motion-moderate', 'motion-rough');
   vessel.classList.add(motionClass);
+
+  // Apply water motion class to water layer
+  if (waterLayer) {
+    waterLayer.classList.remove('water-calm', 'water-moderate', 'water-rough');
+    waterLayer.classList.add(waterClass);
+  }
+
+  // Sky parallax — subtle shift opposite to vessel roll for depth
+  if (skyLayer) {
+    const parallaxShift = motionClass === 'motion-rough' ? 2 :
+                          motionClass === 'motion-moderate' ? 1 : 0.5;
+    skyLayer.style.transform = 'translateX(' + (Math.sin(Date.now() / (basePeriod * 500)) * parallaxShift) + 'px)';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -72,6 +72,6 @@
 ## Next Build Queue
 - **Cycle 4 (COMPLETE — merged to main `765aa3a`):** Gauge readability, interactive tooltips, tap support, value update animations
 - **Cycle 5 (COMPLETE — merged to main `b3a7624`):** Real vessel motion, gauge readability, deployment safeguards
-- **Cycle 6 (ACTIVE — branch: `cycle-6-water-lighthouse-motion`):** Water movement + lighthouse parallax
+- **Cycle 6 (COMPLETE — branch: `cycle-6-water-lighthouse-motion`):** Water motion, lighthouse parallax, motion sync, gauge readability final
 - **Cycle 7:** Connect `/api/command-deck/status` to live `helm_state_adapter` metrics
 - **Cycle 8:** Advanced weather visualization and ambient sound enhancements
