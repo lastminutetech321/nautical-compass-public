@@ -294,28 +294,40 @@ body:not(.weather-snow) .snow-container { opacity: 0; }
 .wave-deep {
   bottom: -15px;
   background: rgba(5,20,40,0.8);
-  animation: waveDeep 9s ease-in-out infinite alternate;
   z-index: 0;
+  animation:
+    waveDeep 9s ease-in-out infinite alternate,
+    waterCurrentDrift 18s linear infinite;
 }
 .wave-back {
   bottom: -10px;
   background: rgba(8,30,55,0.7);
-  animation: waveBack 7s ease-in-out infinite alternate;
   z-index: 1;
+  animation:
+    waveBack 7s ease-in-out infinite alternate,
+    waterCurrentDrift 14s linear infinite;
 }
 .wave-mid {
   bottom: -5px;
   background: rgba(12,40,70,0.6);
-  animation: waveMid 5s ease-in-out infinite alternate;
   z-index: 2;
+  animation:
+    waveMid 5s ease-in-out infinite alternate,
+    waterCurrentDrift 10s linear infinite;
 }
 .wave-front {
   bottom: 0;
   background: rgba(16,50,85,0.5);
-  animation: waveFront 4s ease-in-out infinite alternate;
   z-index: 4;
+  animation:
+    waveFront 4s ease-in-out infinite alternate,
+    waterCurrentDrift 7s linear infinite;
 }
-
+@keyframes waterCurrentDrift {
+  0%   { transform: translateX(0px); }
+  50%  { transform: translateX(-36px); }
+  100% { transform: translateX(0px); }
+}
 @keyframes waveDeep {
   0%   { transform: translateX(-20px) translateY(0); border-radius: 40% 40% 0 0; }
   100% { transform: translateX(20px) translateY(-4px); border-radius: 38% 42% 0 0; }
