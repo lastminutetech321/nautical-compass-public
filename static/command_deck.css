@@ -1531,3 +1531,35 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   50%  { transform: translateX(-36px); }
   100% { transform: translateX(0px); }
 }
+/* === CABIN LIGHT EFFECT === */
+
+body.cabin-light-on::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255,210,120,0.25), transparent 40%),
+    linear-gradient(120deg, rgba(255,255,255,0.15), transparent 50%);
+  z-index: 8;
+}
+
+body.cabin-light-dim::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255,210,120,0.12), transparent 35%),
+    linear-gradient(120deg, rgba(255,255,255,0.06), transparent 50%);
+  z-index: 8;
+}
+
+body.cabin-light-off::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(0,0,0,0.25);
+  z-index: 8;
+}
