@@ -1494,10 +1494,12 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-.water,
-.water-layer,
-.ocean-layer {
-  animation: waterCurrentDrift 12s linear infinite;
+.water-layer {
+  transform: none !important;
+}
+
+.wave {
+  animation-name: waterCurrentDrift !important;
   will-change: transform;
 }
 
