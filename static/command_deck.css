@@ -1498,9 +1498,20 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   transform: none !important;
 }
 
-.wave {
-  animation-name: waterCurrentDrift !important;
-  will-change: transform;
+.wave-deep {
+  animation: waterCurrentDrift 18s ease-in-out infinite alternate !important;
+}
+
+.wave-back {
+  animation: waterCurrentDrift 14s ease-in-out infinite alternate !important;
+}
+
+.wave-mid {
+  animation: waterCurrentDrift 10s ease-in-out infinite alternate !important;
+}
+
+.wave-front {
+  animation: waterCurrentDrift 7s ease-in-out infinite alternate !important;
 }
 
 @keyframes waterCurrentDrift {
