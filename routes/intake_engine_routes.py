@@ -50,6 +50,8 @@ def save_intake_section(payload: SectionPayload):
 @router.post("/complaint")
 def add_intake_complaint(payload: ComplaintPayload):
     result = add_complaint(INTAKE_STATE, payload.complaint)
+    if isinstance(result, dict):
+        INTAKE_STATE.update(result)
     return {"status": "complaint_added", "result": result, "intake_state": INTAKE_STATE}
 
 
