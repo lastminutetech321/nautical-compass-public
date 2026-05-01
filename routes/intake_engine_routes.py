@@ -53,7 +53,7 @@ def add_intake_complaint(payload: ComplaintPayload):
     return {"status": "complaint_added", "result": result, "intake_state": INTAKE_STATE}
 
 
-@router.post("/complete")
+@router.post("/demo-complete")
 def complete_intake_flow():
     completed = complete_intake(USER_ID, INTAKE_STATE)
     complaint_summary = get_complaint_summary(INTAKE_STATE)
