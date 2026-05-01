@@ -2560,6 +2560,7 @@ def legalese_post(request: Request, text: str = Form(...)):
 
 
 from fastapi import Form
+from routes.system_core_routes import router as system_core_router
 
 @app.post("/legalese")
 def legalese_post(request: Request, text: str = Form(...)):
@@ -2607,3 +2608,6 @@ def service_detail(request: Request, service_slug: str):
         },
         status_code=404
     )
+
+# System core route hub
+app.include_router(system_core_router)
