@@ -912,3 +912,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize vessel motion
   updateVesselMotion();
 });
+/* === CABIN LIGHT SWITCH === */
+(function () {
+  const btn = document.getElementById("cabinLightToggle");
+  const label = document.getElementById("cabinLightState");
+
+  if (!btn || !label) return;
+
+  const states = ["on", "dim", "off"];
+
+  function apply(state) {
+    document.body.classList.remove(
+      "cabin-light-on",
+      "cabin-light-dim",
+      "cabin-light-off"
+    );
+
+    document.body.classList.add("cabin-light-" + state);
+    label.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+    localStorage.setItem("cabinLight", state);
+  }
+
+  const saved = localStorage.getItem("cabinLight") || "on";
+  apply(saved);
+
+  btn.addEventListener("click", () => {
+    const current = localStorage.getItem("cabinLight") || "on";
+    const next = states[(states.indexOf(current) + 1) % states.length];
+    apply(next);
+  });
+})();
