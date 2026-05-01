@@ -2561,6 +2561,7 @@ def legalese_post(request: Request, text: str = Form(...)):
 
 from fastapi import Form
 from routes.system_core_routes import router as system_core_router
+from routes.recovery_link_routes import router as recovery_link_router
 
 @app.post("/legalese")
 def legalese_post(request: Request, text: str = Form(...)):
@@ -2611,3 +2612,6 @@ def service_detail(request: Request, service_slug: str):
 
 # System core route hub
 app.include_router(system_core_router)
+
+# Recovery link route aliases
+app.include_router(recovery_link_router)
