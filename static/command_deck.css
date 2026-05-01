@@ -1130,7 +1130,7 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
 /* ═══════════════════════════════════════════════════════════════════
    CYCLE 4 — GAUGE VISIBILITY ENHANCEMENTS
    ═══════════════════════════════════════════════════════════════════ */
-
+ 
 /* Elevate gauge containers above glare layers */
 .instrument-panel {
   position: relative;
@@ -1466,4 +1466,43 @@ body:not(.weather-storm):not(.weather-rain) .whitecap-container { opacity: 0; }
   .env-value {
     font-size: 1.1rem !important;
   }
+}
+/* === CYCLE 7 — MOTION LAYER CORRECTION === */
+
+.command-shell,
+.deck-overlay,
+.glass-panel,
+.ops-panel,
+.audio-panel {
+  animation: none !important;
+  transform: none !important;
+}
+
+.vessel,
+.bridge-scene,
+.captain-view {
+  animation: vesselNaturalHeave 7s ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+@keyframes vesselNaturalHeave {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  25%  { transform: translateY(-4px) rotate(-0.25deg); }
+  50%  { transform: translateY(0px) rotate(0deg); }
+  75%  { transform: translateY(4px) rotate(0.25deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.water,
+.water-layer,
+.ocean-layer {
+  animation: waterCurrentDrift 12s linear infinite;
+  will-change: transform;
+}
+
+@keyframes waterCurrentDrift {
+  0%   { transform: translateX(0px); }
+  50%  { transform: translateX(-36px); }
+  100% { transform: translateX(0px); }
 }
