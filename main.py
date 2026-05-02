@@ -26,6 +26,7 @@ from routes.legal_services_routes import legal_router
 from routes.legal_api_routes import legal_api_router
 from routes.avpt_routes import avpt_router
 from routes.labor_api_routes import labor_api_router
+from routes.law_library_routes import law_library_router
 
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
@@ -36,6 +37,7 @@ app.include_router(legal_router)
 app.include_router(legal_api_router)
 app.include_router(avpt_router)
 app.include_router(labor_api_router)
+app.include_router(law_library_router)
 
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)

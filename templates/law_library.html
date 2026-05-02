@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Law Library — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Law Library</h1>
+    <p class="page-subtitle">
+      {% if active_category %}
+        {{ category_label }} — {{ sources | length }} source{% if sources | length != 1 %}s{% endif %}
+      {% else %}
+        Legal sources available to your cases and filings.
+      {% endif %}
+    </p>
+  </div>
+
+  {% if not summary.connected %}
+  <div class="info-block info-block-muted">
+    <p><strong>Source library not connected yet.</strong> Drop <code>.md</code>, <code>.txt</code>, or <code>.pdf</code> files into the <code>law_library/</code> folder to make them available here.</p>
+    <a class="btn btn-ghost" href="/law-library/upload">Upload a File</a>
+  </div>
+  {% else %}
+
+  <div class="form-block">
+    <form method="get" action="/api/law-library/search" target="_blank" class="form-inline">
+      <input type="text" name="q" class="form-input" placeholder="Search sources…" />
+      <button type="submit" class="btn btn-secondary">Search</button>
+    </form>
+  </div>
+
+  <div class="tab-bar">
+    <a class="tab-link {% if not active_category %}tab-active{% endif %}" href="/law-library">All</a>
+    {% for cat_key, cat_label in categories.items() %}
+    <a class="tab-link {% if active_category == cat_key %}tab-active{% endif %}" href="/law-library/{{ cat_key }}">
+      {{ cat_label }}
+      <span class="badge badge-count">{{ summary.counts.get(cat_key, 0) }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if sources %}
+  <div class="source-list">
+    {% for source in sources %}
+    <div class="source-item">
+      <div class="source-meta">
+        <span class="badge badge-category">{{ source.category_label }}</span>
+        {% if source.year %}<span class="source-year">{{ source.year }}</span>{% endif %}
+        {% if source.jurisdiction %}<span class="source-jurisdiction">{{ source.jurisdiction }}</span>{% endif %}
+      </div>
+      <h3 class="source-title">
+        <a href="/law-library/source/{{ source.category }}/{{ source.slug }}">{{ source.title }}</a>
+      </h3>
+      {% if source.citation %}<p class="source-citation">{{ source.citation }}</p>{% endif %}
+      {% if source.tags %}
+      <div class="source-tags">
+        {% for tag in source.tags %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if source.content_type == "pdf" %}
+      <span class="badge badge-pdf">PDF</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="info-block info-block-muted">
+    <p>No sources in this category yet. <a href="/law-library/upload">Upload a file</a> to get started.</p>
+  </div>
+  {% endif %}
+
+  {% endif %}
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/law-library/upload">Upload Source</a>
+    <a class="btn btn-ghost" href="/standing-analysis">Standing Analysis</a>
+    <a class="btn btn-ghost" href="/operator-rail">Operator Rail</a>
+  </div>
+</section>
+{% endblock %}

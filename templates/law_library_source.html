@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ source.title }} — Law Library — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="/law-library">Law Library</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="/law-library/{{ source.category }}">{{ source.category_label }}</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>{{ source.title }}</span>
+    </div>
+    <h1>{{ source.title }}</h1>
+    {% if source.citation %}
+    <p class="page-subtitle">{{ source.citation }}</p>
+    {% endif %}
+  </div>
+
+  <div class="source-detail-meta">
+    <span class="badge badge-category">{{ source.category_label }}</span>
+    {% if source.jurisdiction %}<span class="source-meta-item">{{ source.jurisdiction }}</span>{% endif %}
+    {% if source.year %}<span class="source-meta-item">{{ source.year }}</span>{% endif %}
+    {% if source.content_type == "pdf" %}<span class="badge badge-pdf">PDF</span>{% endif %}
+    {% if source.tags %}
+    <div class="source-tags">
+      {% for tag in source.tags %}
+      <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if source.content_type == "pdf" %}
+  <div class="info-block">
+    <p>This source is a PDF file (<code>{{ source.filename }}</code>). Content is not extracted — download or open the file directly to read it.</p>
+  </div>
+  {% elif source.body %}
+  <div class="source-body prose">
+    {{ source.body | replace('\n\n', '</p><p>') | replace('\n', '<br>') | safe }}
+  </div>
+  {% else %}
+  <div class="info-block info-block-muted">
+    <p>No content body found in this source file.</p>
+  </div>
+  {% endif %}
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/standing-analysis">Use in Standing Analysis</a>
+    <a class="btn btn-ghost" href="/law-library/{{ source.category }}">Back to {{ source.category_label }}</a>
+    <a class="btn btn-ghost" href="/law-library">All Sources</a>
+  </div>
+</section>
+{% endblock %}
