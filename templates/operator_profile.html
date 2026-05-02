@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Operator Profile — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Operator Profile</h1>
+    <p class="page-subtitle">Tell us about your trade and business structure.</p>
+  </div>
+
+  <form class="form-block" method="get" action="/compliance-checklist">
+    <div class="form-group">
+      <label for="operator_type">Business / Operator Type</label>
+      <select id="operator_type" name="operator_type" class="form-select">
+        <option value="freelancer">Freelancer / Independent Contractor</option>
+        <option value="av_tech">AV Technician / Trades Worker</option>
+        <option value="sole_proprietor">Sole Proprietor</option>
+        <option value="llc">LLC (Single or Multi-Member)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="trade">Trade or Service Area</label>
+      <input id="trade" name="trade" type="text" class="form-input" placeholder="e.g. Audiovisual, Electrical, Consulting" />
+    </div>
+
+    <div class="form-group">
+      <label for="years">Years in Business</label>
+      <select id="years" name="years" class="form-select">
+        <option value="0">Just starting out</option>
+        <option value="1">Less than 1 year</option>
+        <option value="2">1–3 years</option>
+        <option value="4">4–10 years</option>
+        <option value="10">10+ years</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">View My Compliance Checklist</button>
+      <a href="/operator-rail" class="btn btn-ghost">Back</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
