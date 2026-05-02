@@ -4,51 +4,75 @@ import re
 ROUTES = []
 TEMPLATE_LINKS = []
 
+EXCLUDE_DIRS = {".git", ".venv", "venv", "__pycache__"}
+
+def skip_path(path):
+    parts = set(path.split(os.sep))
+    return bool(parts & EXCLUDE_DIRS)
+
 print("Scanning routes...\n")
 
-# Find all route definitions
-for root, _, files in os.walk("./routes"):
+for root, dirs, files in os.walk("."):
+    dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
     for file in files:
-        if file.endswith(".py"):
-            path = os.path.join(root, file)
-            with open(path, "r", encoding="utf-8") as f:
-                content = f.read()
+        if not file.endswith(".py"):
+            continue
 
-                matches = re.findall(r'@.*?\\("(.*?)"', content)
-                for m in matches:
-                    ROUTES.append(m)
+        path = os.path.join(root, file)
 
-# Scan templates for links/buttons
+        if skip_path(path):
+            continue
+
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+
+        matches = re.findall(r'@\w+\.\w+\(\s*["\']([^"\']+)["\']', content)
+        for route in matches:
+            ROUTES.append(route)
+
 print("Scanning templates...\n")
 
-for root, _, files in os.walk("./templates"):
+for root, dirs, files in os.walk("./templates"):
+    dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
     for file in files:
-        if file.endswith(".html"):
-            path = os.path.join(root, file)
-            with open(path, "r", encoding="utf-8") as f:
-                content = f.read()
+        if not file.endswith(".html"):
+            continue
 
-                links = re.findall(r'href="(.*?)"', content)
-                for l in links:
-                    TEMPLATE_LINKS.append(l)
+        path = os.path.join(root, file)
 
-# Compare
-print("\n--- ROUTE AUDIT ---\n")
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+
+        links = re.findall(r'href=["\']([^"\']+)["\']', content)
+        for link in links:
+            TEMPLATE_LINKS.append(link)
 
 missing = []
 
 for link in TEMPLATE_LINKS:
-    if link.startswith("/") and link not in ROUTES:
-        missing.append(link)
+    if not link.startswith("/"):
+        continue
+    if link.startswith("/static"):
+        continue
+    if link.startswith("/#"):
+        continue
 
-print(f"Total Routes Found: {len(ROUTES)}")
+    clean_link = link.split("?")[0].split("#")[0]
+
+    if clean_link not in ROUTES:
+        missing.append(clean_link)
+
+print("\n--- ROUTE AUDIT ---\n")
+print(f"Total Routes Found: {len(set(ROUTES))}")
 print(f"Total Template Links: {len(TEMPLATE_LINKS)}\n")
 
 if missing:
-    print("⚠️ BROKEN / UNMATCHED LINKS:\n")
-    for m in set(missing):
-        print(m)
+    print("BROKEN / UNMATCHED LINKS:\n")
+    for item in sorted(set(missing)):
+        print(item)
 else:
-    print("✅ All template links match routes")
+    print("All template links match discovered routes")
 
 print("\n--- END ---")

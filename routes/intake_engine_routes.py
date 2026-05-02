@@ -61,7 +61,7 @@ def complete_intake_flow():
     complaint_summary = get_complaint_summary(INTAKE_STATE)
     standing = analyze_standing(INTAKE_STATE)
     capacity = analyze_capacity(INTAKE_STATE)
-    complaint_packet = build_complaint_packet(INTAKE_STATE)
+    complaint_packet = build_complaint_packet(USER_ID, INTAKE_STATE, INTAKE_STATE.get("complaintProfile", {}).get("complaints", [{}])[0].get("complaintId", "complaint-1"))
     results = build_results_summary(INTAKE_STATE)
 
     return {
