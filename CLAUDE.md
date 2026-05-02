@@ -4,12 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Identity
 
-Three platforms, one codebase:
+Founder-controlled project.
+
+Platform family: Nautical Compass, JurisEngine, AV Plus Trades, and LMT321.
+
 - **Nautical Compass** — public-facing portal, legal navigation, operator onboarding
 - **JurisEngine** — legal routing, standing/capacity analysis, complaint packet generation
 - **AV Plus Trades** — labor dispatch, crew matching, AV technician operations
+- **LMT321** — labor marketplace and technician dispatch
 
-Owned by Apex Vision Holdings LLC. Operating company: CVCS Consulting LLC. Nonprofit arm: AVSTTRA.
+Operating/steward layer: CVCS Consulting LLC.
+Holding/IP layer: Apex Vision Holdings LLC.
 
 ## Running the App
 
