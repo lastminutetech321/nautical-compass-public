@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
 
@@ -11,6 +13,41 @@ from services.legal_results_service import build_legal_results, LegalResultsServ
 from services.case_builder_service import build_case_packet, CaseBuilderServiceError
 
 legal_rail_router = APIRouter()
+templates = Jinja2Templates(directory="templates")
+
+
+# ---------------------------------------------------------------------------
+# GET — UI pages
+# ---------------------------------------------------------------------------
+
+@legal_rail_router.get("/legal-services", response_class=HTMLResponse)
+def legal_services_hub(request: Request):
+    return templates.TemplateResponse(request, "legal_services.html", {})
+
+
+@legal_rail_router.get("/standing-analysis", response_class=HTMLResponse)
+def standing_analysis_page(request: Request):
+    return templates.TemplateResponse(request, "standing_analysis.html", {"result": None})
+
+
+@legal_rail_router.get("/capacity-analysis", response_class=HTMLResponse)
+def capacity_analysis_page(request: Request):
+    return templates.TemplateResponse(request, "capacity_analysis.html", {"result": None})
+
+
+@legal_rail_router.get("/section-1983", response_class=HTMLResponse)
+def section_1983_page(request: Request):
+    return templates.TemplateResponse(request, "legal_services.html", {})
+
+
+@legal_rail_router.get("/consumer-rights", response_class=HTMLResponse)
+def consumer_rights_page(request: Request):
+    return templates.TemplateResponse(request, "legal_services.html", {})
+
+
+@legal_rail_router.get("/status-correction", response_class=HTMLResponse)
+def status_correction_page(request: Request):
+    return templates.TemplateResponse(request, "operator_rail.html", {})
 
 
 class LegalAnalysisRequest(BaseModel):

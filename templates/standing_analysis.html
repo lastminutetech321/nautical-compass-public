@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Standing Analysis — Legal Engine{% endblock %}
+{% block content %}
+<div class="card" style="max-width:860px;margin:2rem auto;">
+  <div style="margin-bottom:1.5rem;">
+    <a href="/legal-services" style="color:#d9aa3f;font-size:.85rem;">← Legal Engine</a>
+  </div>
+
+  <h2 style="margin-bottom:.25rem;">Standing Analysis</h2>
+  <p class="muted" style="margin-bottom:1.5rem;">
+    Article III constitutional standing screen —
+    <em>Lujan v. Defenders of Wildlife</em>, 504 U.S. 555 (1992)
+  </p>
+
+  {% if result %}
+  <!-- OVERALL VERDICT -->
+  <div style="padding:1rem 1.25rem;border-radius:10px;margin-bottom:1.5rem;
+    background:{% if result.standing %}#0d2b1a{% else %}#2b0d0d{% endif %};
+    border:1px solid {% if result.standing %}#1e7a3e{% else %}#7a1e1e{% endif %};">
+    <div style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:.4rem;">
+      Overall Standing
+    </div>
+    <div style="font-size:1.4rem;font-weight:700;
+      color:{% if result.standing %}#4cda7d{% else %}#da4c4c{% endif %};">
+      {% if result.standing %}PASS — Standing Established{% else %}FAIL — Standing Not Established{% endif %}
+    </div>
+    <div style="font-size:.85rem;color:#ccc;margin-top:.4rem;">
+      Label: {{ result.standing_label | replace('_', ' ') }}
+    </div>
+  </div>
+
+  <!-- THREE ELEMENTS -->
+  {% for key, label in [('injury_in_fact', 'Element 1 — Injury in Fact'), ('causation', 'Element 2 — Causation'), ('redressability', 'Element 3 — Redressability')] %}
+  {% set el = result[key] %}
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
+      <div style="font-weight:600;font-size:.95rem;">{{ label }}</div>
+      <div style="font-size:.8rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;
+        background:{% if el.met %}#1e7a3e{% else %}#7a1e1e{% endif %};
+        color:{% if el.met %}#4cda7d{% else %}#da4c4c{% endif %};">
+        {% if el.met %}PASS{% else %}FAIL{% endif %}
+      </div>
+    </div>
+    <p style="font-size:.88rem;color:#bcc8dc;line-height:1.6;margin:0;">{{ el.analysis }}</p>
+
+    {% if key == 'injury_in_fact' and el.concrete_harms %}
+    <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+      {% for harm in el.concrete_harms %}
+      <span style="font-size:.75rem;padding:.2rem .6rem;border-radius:12px;background:#1a2540;border:1px solid #2d3a50;color:#aec4e8;">
+        {{ harm[:60] }}{% if harm|length > 60 %}…{% endif %}
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if key == 'redressability' and el.available_remedies %}
+    <div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+      {% for remedy in el.available_remedies %}
+      <span style="font-size:.75rem;padding:.2rem .6rem;border-radius:12px;background:#1a2540;border:1px solid #2d3a50;color:#aec4e8;">
+        {{ remedy[:70] }}{% if remedy|length > 70 %}…{% endif %}
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- CASE LAW -->
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;margin-top:.5rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Controlling Authority
+    </div>
+    <ul style="margin:0;padding-left:1.2rem;font-size:.85rem;color:#bcc8dc;line-height:1.8;">
+      {% for cite in result.case_law %}
+      <li>{{ cite }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <p style="font-size:.78rem;color:#667;margin-top:1rem;">{{ result.note }}</p>
+
+  {% else %}
+  <!-- INFORMATIONAL (no result yet) -->
+  <p style="color:#bcc8dc;line-height:1.7;margin-bottom:1.25rem;">
+    The Standing Analysis engine applies the three-element Article III test from
+    <strong>Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992)</strong> and the
+    concreteness requirement from <strong>TransUnion LLC v. Ramirez, 594 U.S. 413 (2021)</strong>.
+  </p>
+
+  <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:1.5rem;">
+    {% for label, desc in [
+      ('Injury in Fact', 'Concrete, particularized harm — actual or imminent. Bare statutory violation is insufficient (TransUnion).'),
+      ('Causation', 'Injury must be fairly traceable to the defendant\'s challenged conduct, not independent third-party action.'),
+      ('Redressability', 'It must be likely — not merely speculative — that a favorable court decision would redress the injury.')
+    ] %}
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem;">
+      <div style="font-size:.8rem;font-weight:700;color:#d9aa3f;margin-bottom:.5rem;">{{ label }}</div>
+      <p style="font-size:.85rem;color:#aec4e8;margin:0;line-height:1.5;">{{ desc }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Controlling Authority
+    </div>
+    <ul style="margin:0;padding-left:1.2rem;font-size:.85rem;color:#bcc8dc;line-height:1.8;">
+      <li>Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992)</li>
+      <li>TransUnion LLC v. Ramirez, 594 U.S. 413 (2021)</li>
+      <li>Spokeo, Inc. v. Robins, 578 U.S. 330 (2016)</li>
+    </ul>
+  </div>
+
+  <div style="margin-top:1.5rem;">
+    <a class="btn btn-primary" href="/modules/case-dock">Begin Case Intake →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
