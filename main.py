@@ -21,11 +21,13 @@ from command_deck_route import router as command_deck_router
 from command_deck_api import router as command_deck_api_router
 from routes.core_routes import core_routes
 from routes.intake_engine import router as intake_router, api_router as intake_api_router
+from routes.operator_rail_routes import operator_rail_router
 
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
 app.include_router(intake_router)
 app.include_router(intake_api_router)
+app.include_router(operator_rail_router)
 
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
