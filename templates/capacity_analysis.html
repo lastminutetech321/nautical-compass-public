@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Capacity Analysis — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Capacity Analysis</h1>
+    <p class="page-subtitle">Real party in interest and capacity to sue under Federal Rule of Civil Procedure 17.</p>
+  </div>
+
+  <div class="disclaimer-block">
+    <strong>Legal Disclaimer:</strong> This tool provides educational information about legal capacity doctrine. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h2>Rule 17 — Real Party in Interest</h2>
+      <p>An action must be prosecuted in the name of the real party in interest. The court must identify who has the legal right being enforced.</p>
+      <ul class="doctrine-list">
+        <li>Individual bringing their own claim: usually the real party</li>
+        <li>Assignee, subrogee, trustee: substitute as real party</li>
+        <li>Business entities must sue in their proper legal name</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Personal Capacity</h2>
+      <p>A personal-capacity suit seeks to impose personal liability on an individual government official for actions taken under color of law.</p>
+      <ul class="doctrine-list">
+        <li>Plaintiff seeks damages from the official personally</li>
+        <li>Qualified immunity may apply</li>
+        <li>Judgment is against the person, not the office</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Official Capacity</h2>
+      <p>An official-capacity suit is effectively a suit against the government entity itself.</p>
+      <ul class="doctrine-list">
+        <li>Used when seeking injunctive or declaratory relief</li>
+        <li>Named defendant is the title-holder of the office</li>
+        <li>Damages from the government entity, not the individual</li>
+        <li>Eleventh Amendment immunity may apply for state defendants</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Organizational Capacity</h2>
+      <p>A corporation, LLC, or other entity has capacity to sue and be sued in its own name in federal court.</p>
+      <ul class="doctrine-list">
+        <li>Corporate plaintiff: verify standing in home state</li>
+        <li>Unincorporated association: capacity under state law</li>
+        <li>Dissolved entities may lack capacity</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/intake">Run Full Capacity Analysis</a>
+    <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
+  </div>
+</section>
+{% endblock %}
