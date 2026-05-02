@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Consumer Rights — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Consumer Rights</h1>
+    <p class="page-subtitle">Federal consumer protection statutes: FCRA, FDCPA, EFTA, and TILA.</p>
+  </div>
+
+  <div class="disclaimer-block">
+    <strong>Legal Disclaimer:</strong> This tool provides educational information about consumer protection law. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h2>FCRA — Fair Credit Reporting Act</h2>
+      <p><strong>15 U.S.C. § 1681 et seq.</strong> Governs collection, dissemination, and use of consumer credit information.</p>
+      <ul class="doctrine-list">
+        <li>Right to access your credit report (free annually)</li>
+        <li>Right to dispute inaccurate or incomplete information</li>
+        <li>Consumer reporting agencies must investigate disputes within 30 days</li>
+        <li>Furnishers must correct or delete inaccurate data</li>
+        <li>Willful violations: actual damages, statutory damages ($100–$1,000 per violation), punitive damages, attorney fees</li>
+        <li>Negligent violations: actual damages and attorney fees</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>FDCPA — Fair Debt Collection Practices Act</h2>
+      <p><strong>15 U.S.C. § 1692 et seq.</strong> Prohibits abusive, unfair, or deceptive practices by debt collectors.</p>
+      <ul class="doctrine-list">
+        <li>Debt collectors may not contact you at inconvenient times or places</li>
+        <li>Right to demand verification of debt (30-day dispute window)</li>
+        <li>Prohibition on harassment, false statements, and unfair practices</li>
+        <li>Right to demand cessation of contact in writing</li>
+        <li>Statutory damages up to $1,000 per action, plus actual damages and attorney fees</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>EFTA — Electronic Fund Transfer Act</h2>
+      <p><strong>15 U.S.C. § 1693 et seq.</strong> Establishes rights and responsibilities for electronic fund transfers.</p>
+      <ul class="doctrine-list">
+        <li>Right to error resolution within 60 days of statement</li>
+        <li>Provisional credit during investigation of disputes</li>
+        <li>Limitation of liability for unauthorized transfers (timely reporting required)</li>
+        <li>Financial institution must complete investigation within 10 business days</li>
+        <li>Violations: actual damages, statutory damages ($100–$1,000 per action), attorney fees</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>TILA — Truth in Lending Act</h2>
+      <p><strong>15 U.S.C. § 1601 et seq.</strong> Requires clear disclosure of loan terms and costs to consumers.</p>
+      <ul class="doctrine-list">
+        <li>Lenders must disclose APR, finance charges, and total repayment amount</li>
+        <li>Right of rescission: 3-day window on certain home-secured loans</li>
+        <li>Billing dispute procedures for open-end credit</li>
+        <li>Statutory damages: $100–$1,000 per closed-end transaction; up to $500,000 class action</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Federal Question Jurisdiction</h2>
+    <p>All four statutes create private rights of action enforceable in federal court under <strong>28 U.S.C. § 1331</strong>. Attorney fees are available in most consumer statute actions, making representation accessible even for lower-dollar claims.</p>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/intake">Start Consumer Rights Intake</a>
+    <a class="btn btn-secondary" href="/status-correction">Status Correction</a>
+    <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
+  </div>
+</section>
+{% endblock %}

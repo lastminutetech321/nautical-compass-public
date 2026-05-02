@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Status Correction — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Status Correction</h1>
+    <p class="page-subtitle">Challenge misclassification and correct inaccurate records across credit, employment, and public systems.</p>
+  </div>
+
+  <div class="disclaimer-block">
+    <strong>Legal Disclaimer:</strong> This tool provides educational information and navigation resources. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h2>Credit Record Correction</h2>
+      <p>Dispute inaccurate, incomplete, or outdated information on your credit report under the <strong>FCRA (15 U.S.C. § 1681i)</strong>.</p>
+      <ul class="doctrine-list">
+        <li>File dispute with the credit bureau directly (TransUnion, Equifax, Experian)</li>
+        <li>File dispute with the data furnisher (lender, creditor)</li>
+        <li>Bureau must investigate within 30 days (45 days if you provide documentation)</li>
+        <li>Unverifiable information must be deleted</li>
+      </ul>
+      <a class="btn btn-secondary" href="/consumer-rights">FCRA Rights</a>
+    </div>
+
+    <div class="card">
+      <h2>Worker Misclassification</h2>
+      <p>If you were classified as an independent contractor but should have been an employee, you may have claims for unpaid benefits, taxes, and wages.</p>
+      <ul class="doctrine-list">
+        <li>IRS behavioral/financial/relationship test</li>
+        <li>ABC test (state-dependent) for wage law purposes</li>
+        <li>DOL economic reality test for FLSA coverage</li>
+        <li>Retroactive reclassification may entitle you to overtime, benefits, and employer tax contributions</li>
+      </ul>
+      <a class="btn btn-secondary" href="/operator-profile">Operator Profile</a>
+    </div>
+
+    <div class="card">
+      <h2>Public Record Errors</h2>
+      <p>Inaccurate court records, criminal history, or government-held data can be challenged through formal correction procedures.</p>
+      <ul class="doctrine-list">
+        <li>Court orders for record correction or sealing</li>
+        <li>Criminal record expungement (state procedures vary)</li>
+        <li>Background check inaccuracies — FCRA § 1681k procedures</li>
+        <li>FOIA requests to inspect and challenge agency records</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Employment Status Correction</h2>
+      <p>Challenge incorrect employment classifications, termination records, and reference information.</p>
+      <ul class="doctrine-list">
+        <li>Defamation claims for false employment references</li>
+        <li>EEOC charge for discriminatory misclassification</li>
+        <li>Unemployment insurance reclassification appeals</li>
+        <li>Demand letters for record correction under applicable state law</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/intake">Start Status Correction Intake</a>
+    <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
+  </div>
+</section>
+{% endblock %}

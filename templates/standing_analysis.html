@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Standing Analysis — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Standing Analysis</h1>
+    <p class="page-subtitle">Three-part constitutional standing under <em>Lujan v. Defenders of Wildlife</em>, 504 U.S. 555 (1992).</p>
+  </div>
+
+  <div class="disclaimer-block">
+    <strong>Legal Disclaimer:</strong> This tool provides educational information about standing doctrine. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h2>1. Injury in Fact</h2>
+      <p>The plaintiff must allege a concrete, particularized, and actual or imminent injury — not speculative or hypothetical.</p>
+      <ul class="doctrine-list">
+        <li><strong>Concrete:</strong> real, not abstract</li>
+        <li><strong>Particularized:</strong> affects the plaintiff personally</li>
+        <li><strong>Actual or imminent:</strong> not conjectural</li>
+      </ul>
+      <p class="muted">Financial loss, unpaid wages, property damage, and credit injury are common qualifying injuries.</p>
+    </div>
+
+    <div class="card">
+      <h2>2. Causation (Traceability)</h2>
+      <p>The injury must be fairly traceable to the challenged conduct of the defendant — not the result of an independent third party.</p>
+      <ul class="doctrine-list">
+        <li>Direct causal connection required</li>
+        <li>Intervening independent causes can defeat standing</li>
+        <li>Identify the specific actor and specific conduct</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>3. Redressability</h2>
+      <p>It must be likely — not merely speculative — that a favorable court decision will redress the injury.</p>
+      <ul class="doctrine-list">
+        <li>Damages: monetary award must address the loss</li>
+        <li>Injunction: court order must be able to stop the harm</li>
+        <li>Declaratory relief: must resolve a live controversy</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Federal Jurisdiction Hook</h2>
+    <p>Where a federal statute creates the right or the defendant is a government actor, standing may anchor federal question jurisdiction under <strong>28 U.S.C. § 1331</strong>.</p>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/intake">Run Full Standing Analysis</a>
+    <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
+  </div>
+</section>
+{% endblock %}
