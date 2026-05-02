@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Captain Preview — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Captain Preview</h1>
+    <p class="page-subtitle">A look at what you unlock as a structured operator on Nautical Compass.</p>
+  </div>
+
+  <div class="preview-banner">
+    <span class="badge badge-preview">Preview Mode</span>
+    <p>Complete your compliance checklist to activate full access.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card card-preview">
+      <h2>Command Deck</h2>
+      <p>Unified dashboard: cases, clients, revenue, and filings in one view.</p>
+      <span class="lock-label">Unlocked at Operator Status</span>
+    </div>
+
+    <div class="card card-preview">
+      <h2>Financial Engine</h2>
+      <p>Invoice generation, tax readiness scores, and payment tracking.</p>
+      <span class="lock-label">Unlocked at Operator Status</span>
+    </div>
+
+    <div class="card card-preview">
+      <h2>Legal Standing</h2>
+      <p>Rights analysis, jurisdiction routing, and standing reports.</p>
+      <span class="lock-label">Unlocked at Operator Status</span>
+    </div>
+
+    <div class="card card-preview">
+      <h2>AV Plus Trades</h2>
+      <p>Trade-specific client intake, job matching, and work order management.</p>
+      <span class="lock-label">Unlocked at Operator Status</span>
+    </div>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/compliance-checklist">Check My Readiness</a>
+    <a class="btn btn-ghost" href="/operator-rail">Back to Rail</a>
+  </div>
+</section>
+{% endblock %}

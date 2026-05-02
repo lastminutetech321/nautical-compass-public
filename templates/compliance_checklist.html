@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Compliance Checklist — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Compliance Checklist</h1>
+    <p class="page-subtitle">
+      Operator type: <strong>{{ operator_type | replace("_", " ") | title }}</strong>
+    </p>
+  </div>
+
+  <form class="form-block" method="get" action="/compliance-checklist">
+    <div class="form-group form-inline">
+      <label for="operator_type">Switch operator type:</label>
+      <select id="operator_type" name="operator_type" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="freelancer" {% if operator_type == "freelancer" %}selected{% endif %}>Freelancer</option>
+        <option value="av_tech" {% if operator_type == "av_tech" %}selected{% endif %}>AV Tech</option>
+        <option value="sole_proprietor" {% if operator_type == "sole_proprietor" %}selected{% endif %}>Sole Proprietor</option>
+        <option value="llc" {% if operator_type == "llc" %}selected{% endif %}>LLC</option>
+      </select>
+    </div>
+  </form>
+
+  <div class="checklist-block">
+    {% set domains = items | map(attribute='domain') | unique | list %}
+    {% for domain in domains %}
+    <div class="checklist-group">
+      <h3 class="checklist-domain">{{ domain | replace("_", " ") | title }}</h3>
+      <ul class="checklist-items">
+        {% for item in items if item.domain == domain %}
+        <li class="checklist-item {% if item.required %}required{% endif %}">
+          <label>
+            <input type="checkbox" name="{{ item.id }}" />
+            {{ item.label }}
+            {% if item.required %}<span class="badge badge-required">Required</span>{% endif %}
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="cta-block">
+    <a class="btn btn-primary" href="/captain-preview">Preview Captain Access</a>
+    <a class="btn btn-ghost" href="/operator-rail">Back to Rail</a>
+  </div>
+</section>
+{% endblock %}
