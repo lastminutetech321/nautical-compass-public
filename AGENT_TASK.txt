@@ -1,0 +1,104 @@
+OVERNIGHT BUILD DIRECTIVE — 6 HOUR MULTI-TASK RUN
+
+Project: Nautical Compass / JurisEngine / AV Plus Trades
+Branch: create new branch only
+Branch name: overnight-operator-rail-batch
+
+STRICT RULES:
+1. Do NOT rebuild the app from scratch.
+2. Do NOT overwrite main.py wholesale.
+3. Do NOT touch payments, Stripe, secrets, .env, or database schema unless only reading.
+4. Do NOT spend 6 hours on one feature.
+5. Work in small commits by module.
+6. If blocked, skip and continue to the next task.
+7. Preserve all existing working routes.
+8. Run compile checks before final summary.
+9. Do not merge to main. Push branch only.
+
+PRIMARY GOAL:
+Move Nautical Compass 10–20x forward by building practical Operator Rail infrastructure that is useful immediately for public users, AV techs, freelancers, contractors, and early operators.
+
+TASK BATCH:
+
+1. Operator Rail v1 Public Flow
+Build a clean public-facing operator path:
+- /operator-rail
+- explains worker → structured operator journey
+- includes business readiness checklist
+- filing readiness checklist
+- bank readiness checklist
+- document readiness checklist
+- renewal/compliance reminder concept
+- clear CTA buttons: Start Intake, Explore Services, Get Access
+
+2. Captain Preview Public Page
+Create /captain-preview if not already working:
+- no login
+- no private dashboard data
+- cinematic public view only
+- public CTA buttons
+- safe fallback weather/time display
+- do not break /command-deck
+
+3. Service Port Recovery
+Audit visible service ports:
+- /services
+- /checkout
+- /intake
+- /command-deck
+- /operator-rail
+- /captain-preview
+Fix missing links, broken buttons, obvious route errors.
+
+4. Compliance Checklist Engine
+Create lightweight reusable checklist module:
+- business formation readiness
+- tax/payment readiness
+- document vault readiness
+- UCC/annual filing reminder placeholders
+- status: not started / ready / needs review
+Keep it file-based or static for now. No DB migration.
+
+5. AV Tech Operator Profile Draft
+Create first version of AV tech operator profile page:
+- /operator-profile
+- roles
+- skills
+- certifications
+- business status
+- payment readiness
+- document readiness
+- next recommended step
+
+6. Frontend Polish Pass
+Improve existing pages only where safe:
+- consistent navy/gold styling
+- clear navigation buttons
+- mobile-safe layout
+- no giant redesigns
+- keep cinematic Command Deck intact
+
+7. Build Audit
+Create or update:
+- agent_logs/overnight_build_summary.md
+Include:
+- files changed
+- routes added
+- routes tested
+- blockers
+- next recommended 3 moves
+- what should NOT be touched yet
+
+TESTS:
+Run:
+python3 -m py_compile main.py command_deck_api.py command_deck_route.py routes/intake_engine.py
+
+Also test route import safety if possible.
+
+FINAL OUTPUT:
+Push branch:
+overnight-operator-rail-batch
+
+Do not merge to main.
+Do not deploy.
+Leave final summary with exact commands for human review tomorrow.
