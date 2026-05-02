@@ -189,8 +189,9 @@ a{
     linear-gradient(180deg,rgba(0,0,0,.24),rgba(0,0,0,.62)),
     url("/static/mountains.jpg");
   background-size:cover;
-  background-position:center;
+  background-position:50% center;
   z-index:1;
+  animation:landDrift 160s ease-in-out infinite;
 }
 
 .scene-water{
@@ -200,19 +201,35 @@ a{
   width:120%;
   height:42%;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.16), transparent 60%);
-  opacity:.35;
+    radial-gradient(ellipse at 50% 80%, rgba(100,155,220,.20), transparent 68%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.13), transparent 62%);
+  opacity:.52;
   z-index:2;
-  animation:waterMotion 9s ease-in-out infinite;
+  animation:waterForward 8s ease-in-out infinite;
 }
 
+/* diagonal surface lines scrolling upward — water flowing toward vessel */
+.scene-water::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(
+    10deg,
+    transparent 0px,
+    transparent 20px,
+    rgba(255,255,255,.032) 20px,
+    rgba(255,255,255,.032) 22px
+  );
+  animation:waterStripe 5s linear infinite;
+}
+
+/* cross-highlight shimmer */
 .scene-water::after{
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,.16),transparent);
-  opacity:.36;
-  animation:waterShimmer 7.5s linear infinite;
+  background:linear-gradient(105deg,transparent 15%,rgba(255,255,255,.14) 50%,transparent 85%);
+  animation:waterShimmer 11s linear infinite;
 }
 
 .scene-boat{
@@ -222,7 +239,7 @@ a{
   background-size:cover;
   background-position:78% 56%;
   z-index:3;
-  animation:boatSway 11s ease-in-out infinite;
+  animation:boatBob 9s ease-in-out infinite;
 }
 
 .scene-overlay{
@@ -233,6 +250,20 @@ a{
     linear-gradient(180deg, rgba(5,9,18,.10), rgba(5,9,18,.28));
   z-index:4;
   pointer-events:none;
+}
+
+/* light reflection shaft sweeping across the scene */
+.scene-overlay::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    118deg,
+    transparent 30%,
+    rgba(255,240,180,.04) 50%,
+    transparent 70%
+  );
+  animation:lightShaft 22s ease-in-out infinite;
 }
 
 .bridge-layout{
@@ -626,23 +657,58 @@ body main > .page-shell{
   line-height:1.6;
 }
 
-/* ANIMATION */
+/* ANIMATION — separated layers */
 
-@keyframes waterMotion{
-  0%{transform:translateX(-3%)}
-  50%{transform:translateX(3%) translateY(-6px)}
-  100%{transform:translateX(-3%)}
+/* land/background: ultra-slow lateral drift, horizon anchored */
+@keyframes landDrift{
+  0%  { background-position: 49% center; }
+  50% { background-position: 51% center; }
+  100%{ background-position: 49% center; }
 }
 
+/* water surface: gentle forward-pulse suggesting boat moving through water */
+@keyframes waterForward{
+  0%  { transform:translateX(-2%) scaleY(.97); opacity:.44; }
+  50% { transform:translateX(2%)  scaleY(1.02); opacity:.58; }
+  100%{ transform:translateX(-2%) scaleY(.97); opacity:.44; }
+}
+
+/* water texture stripes scrolling upward — water flowing toward vessel */
+@keyframes waterStripe{
+  0%  { background-position: 0 100%; }
+  100%{ background-position: 0 0%; }
+}
+
+/* cross-highlight shimmer on water surface */
 @keyframes waterShimmer{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(100%)}
+  0%  { transform:translateX(-110%); }
+  100%{ transform:translateX(110%); }
 }
 
-@keyframes boatSway{
-  0%{transform:rotate(-.18deg)}
-  50%{transform:rotate(.18deg) translateY(-5px)}
-  100%{transform:rotate(-.18deg)}
+/* vessel bob: background-position shift only — sky/horizon do NOT move */
+@keyframes boatBob{
+  0%  { background-position: 78% 57%; }
+  25% { background-position: 78% 54%; }
+  55% { background-position: 78% 55.5%; }
+  80% { background-position: 78% 53.5%; }
+  100%{ background-position: 78% 57%; }
+}
+
+/* vessel bob — mobile (66% X position) */
+@keyframes boatBobMobile{
+  0%  { background-position: 66% 57%; }
+  25% { background-position: 66% 54%; }
+  55% { background-position: 66% 55.5%; }
+  80% { background-position: 66% 53.5%; }
+  100%{ background-position: 66% 57%; }
+}
+
+/* cinematic light shaft sweeping slowly */
+@keyframes lightShaft{
+  0%  { opacity:0; transform:translateX(-30%); }
+  30% { opacity:1; }
+  70% { opacity:1; }
+  100%{ opacity:0; transform:translateX(30%); }
 }
 
 /* RESPONSIVE */
@@ -676,7 +742,7 @@ body main > .page-shell{
   }
 
   .scene-boat{
-    background-position:66% 58%;
+    animation:boatBobMobile 9s ease-in-out infinite;
   }
 
   .hall-door-grid{
