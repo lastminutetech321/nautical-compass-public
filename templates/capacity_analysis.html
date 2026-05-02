@@ -9,54 +9,89 @@
   </div>
 
   <div class="disclaimer-block">
-    <strong>Legal Disclaimer:</strong> This tool provides educational information about legal capacity doctrine. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+    <strong>Legal Disclaimer:</strong> This tool provides educational navigation support only. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  {% if analyzed %}
+    {% if analysis.error is defined %}
+    <div class="alert bad">Analysis error: {{ analysis.error }}</div>
+    {% else %}
+    <div class="card">
+      <h2>Capacity Result: {{ analysis.capacityLabel }}</h2>
+      {% if analysis.reliefTrack %}
+      <p><strong>Relief Track:</strong> {{ analysis.reliefTrack }}</p>
+      {% endif %}
+      {% if analysis.capacityOptions %}
+      <div class="analysis-row">
+        <strong>Capacity Options:</strong>
+        <ul>{% for o in analysis.capacityOptions %}<li>{{ o }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if analysis.reasons %}
+      <div class="analysis-row">
+        <strong>Reasoning:</strong>
+        <ul>{% for r in analysis.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if analysis.recommendedNextActions %}
+      <div class="analysis-row">
+        <strong>Recommended Actions:</strong>
+        <ul>{% for a in analysis.recommendedNextActions %}<li>{{ a }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="card">
+    <h2>Run a Capacity Check</h2>
+    <p class="muted">Identify the correct party posture for your matter.</p>
+    <form class="form-block" method="post" action="/capacity-analysis">
+      <div class="form-group">
+        <label>Target name</label>
+        <input type="text" name="target_name" class="form-input" placeholder="Company, agency, or individual" />
+      </div>
+      <div class="form-group">
+        <label>Target type</label>
+        <select name="target_type" class="form-select">
+          <option value="">Unknown</option>
+          <option value="government">Government / Public actor</option>
+          <option value="company">Private company</option>
+          <option value="individual">Individual</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Named individual (if applicable)</label>
+        <input type="text" name="target_person" class="form-input" placeholder="Officer, employee, or agent name" />
+      </div>
+      <div class="form-group">
+        <label>Desired outcome</label>
+        <input type="text" name="desired_outcome" class="form-input" placeholder="e.g. damages, injunction, declaratory relief" />
+      </div>
+      <input type="hidden" name="complaint_id" value="complaint-1" />
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Analyze Capacity</button>
+      </div>
+    </form>
   </div>
 
   <div class="card-grid">
     <div class="card">
-      <h2>Rule 17 — Real Party in Interest</h2>
-      <p>An action must be prosecuted in the name of the real party in interest. The court must identify who has the legal right being enforced.</p>
-      <ul class="doctrine-list">
-        <li>Individual bringing their own claim: usually the real party</li>
-        <li>Assignee, subrogee, trustee: substitute as real party</li>
-        <li>Business entities must sue in their proper legal name</li>
-      </ul>
-    </div>
-
-    <div class="card">
       <h2>Personal Capacity</h2>
-      <p>A personal-capacity suit seeks to impose personal liability on an individual government official for actions taken under color of law.</p>
-      <ul class="doctrine-list">
-        <li>Plaintiff seeks damages from the official personally</li>
-        <li>Qualified immunity may apply</li>
-        <li>Judgment is against the person, not the office</li>
-      </ul>
+      <p>Seeks personal liability on an individual official. Qualified immunity may apply. Judgment is against the person.</p>
     </div>
-
     <div class="card">
       <h2>Official Capacity</h2>
-      <p>An official-capacity suit is effectively a suit against the government entity itself.</p>
-      <ul class="doctrine-list">
-        <li>Used when seeking injunctive or declaratory relief</li>
-        <li>Named defendant is the title-holder of the office</li>
-        <li>Damages from the government entity, not the individual</li>
-        <li>Eleventh Amendment immunity may apply for state defendants</li>
-      </ul>
+      <p>Effectively a suit against the entity. Used for prospective injunctive/declaratory relief. <em>Ex parte Young</em>.</p>
     </div>
-
     <div class="card">
-      <h2>Organizational Capacity</h2>
-      <p>A corporation, LLC, or other entity has capacity to sue and be sued in its own name in federal court.</p>
-      <ul class="doctrine-list">
-        <li>Corporate plaintiff: verify standing in home state</li>
-        <li>Unincorporated association: capacity under state law</li>
-        <li>Dissolved entities may lack capacity</li>
-      </ul>
+      <h2>Rule 17</h2>
+      <p>Action must be prosecuted in the name of the real party in interest. Identify who holds the legal right being enforced.</p>
     </div>
   </div>
 
   <div class="cta-block">
-    <a class="btn btn-primary" href="/intake">Run Full Capacity Analysis</a>
+    <a class="btn btn-primary" href="/intake">Full Legal Intake</a>
     <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
   </div>
 </section>

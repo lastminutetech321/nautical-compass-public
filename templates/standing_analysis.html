@@ -9,49 +9,91 @@
   </div>
 
   <div class="disclaimer-block">
-    <strong>Legal Disclaimer:</strong> This tool provides educational information about standing doctrine. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+    <strong>Legal Disclaimer:</strong> This tool provides educational navigation support only. It does not constitute legal advice. Consult a licensed attorney for case-specific guidance.
+  </div>
+
+  {% if analyzed %}
+    {% if analysis.error is defined %}
+    <div class="alert bad">Analysis error: {{ analysis.error }}</div>
+    {% else %}
+    <div class="card">
+      <h2>Standing Score: {{ analysis.overallStandingScore }}/100 — {{ analysis.overallStandingLabel }}</h2>
+      {% if analysis.injuryInFact %}
+      <div class="analysis-row">
+        <strong>Injury in Fact:</strong> {{ analysis.injuryInFact.label }} ({{ analysis.injuryInFact.score }})
+        <ul>{% for r in analysis.injuryInFact.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if analysis.causation %}
+      <div class="analysis-row">
+        <strong>Causation:</strong> {{ analysis.causation.label }} ({{ analysis.causation.score }})
+        <ul>{% for r in analysis.causation.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if analysis.redressability %}
+      <div class="analysis-row">
+        <strong>Redressability:</strong> {{ analysis.redressability.label }} ({{ analysis.redressability.score }})
+        <ul>{% for r in analysis.redressability.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if analysis.recommendedNextActions %}
+      <div class="analysis-row">
+        <strong>Recommended Actions:</strong>
+        <ul>{% for a in analysis.recommendedNextActions %}<li>{{ a }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="card">
+    <h2>Run a Standing Check</h2>
+    <p class="muted">Enter basic complaint facts to score your standing under the <em>Lujan</em> three-part test.</p>
+    <form class="form-block" method="post" action="/standing-analysis">
+      <div class="form-group">
+        <label>Who are you filing against?</label>
+        <input type="text" name="target_name" class="form-input" placeholder="Company, agency, or individual" />
+      </div>
+      <div class="form-group">
+        <label>What happened?</label>
+        <textarea name="what_happened" class="form-input" rows="3" placeholder="Brief description of the harm or violation"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Estimated financial loss ($)</label>
+        <input type="number" name="financial_loss" class="form-input" value="0" min="0" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" name="injury_claimed" value="true" /> Physical injury claimed</label>
+      </div>
+      <input type="hidden" name="complaint_id" value="complaint-1" />
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Analyze Standing</button>
+      </div>
+    </form>
   </div>
 
   <div class="card-grid">
     <div class="card">
       <h2>1. Injury in Fact</h2>
-      <p>The plaintiff must allege a concrete, particularized, and actual or imminent injury — not speculative or hypothetical.</p>
+      <p>Concrete, particularized, actual or imminent harm — not speculative.</p>
       <ul class="doctrine-list">
         <li><strong>Concrete:</strong> real, not abstract</li>
         <li><strong>Particularized:</strong> affects the plaintiff personally</li>
         <li><strong>Actual or imminent:</strong> not conjectural</li>
       </ul>
-      <p class="muted">Financial loss, unpaid wages, property damage, and credit injury are common qualifying injuries.</p>
     </div>
-
     <div class="card">
-      <h2>2. Causation (Traceability)</h2>
-      <p>The injury must be fairly traceable to the challenged conduct of the defendant — not the result of an independent third party.</p>
-      <ul class="doctrine-list">
-        <li>Direct causal connection required</li>
-        <li>Intervening independent causes can defeat standing</li>
-        <li>Identify the specific actor and specific conduct</li>
-      </ul>
+      <h2>2. Causation</h2>
+      <p>Injury fairly traceable to the challenged conduct, not an independent third party.</p>
     </div>
-
     <div class="card">
       <h2>3. Redressability</h2>
-      <p>It must be likely — not merely speculative — that a favorable court decision will redress the injury.</p>
-      <ul class="doctrine-list">
-        <li>Damages: monetary award must address the loss</li>
-        <li>Injunction: court order must be able to stop the harm</li>
-        <li>Declaratory relief: must resolve a live controversy</li>
-      </ul>
+      <p>Likely — not merely speculative — that a favorable decision will redress the injury.</p>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>Federal Jurisdiction Hook</h2>
-    <p>Where a federal statute creates the right or the defendant is a government actor, standing may anchor federal question jurisdiction under <strong>28 U.S.C. § 1331</strong>.</p>
   </div>
 
   <div class="cta-block">
-    <a class="btn btn-primary" href="/intake">Run Full Standing Analysis</a>
+    <a class="btn btn-primary" href="/intake">Full Legal Intake</a>
     <a class="btn btn-ghost" href="/legal-services">Back to Legal Services</a>
   </div>
 </section>
