@@ -42,6 +42,20 @@ Last updated: 2026-05-02
 | GET | /captain-preview | captain_preview.html | Capability preview |
 | GET | /compliance-checklist | compliance_checklist.html | Readiness checklist |
 
+## Legal Rail (routes/legal_rail_routes.py) — v1
+
+| Method | Path | Service | Notes |
+|--------|------|---------|-------|
+| POST | /api/legal/standing | standing_analysis_service | Article III injury, causation, redressability |
+| POST | /api/legal/capacity | capacity_analysis_service | Official/individual/private capacity routing |
+| POST | /api/legal/rights | rights_violation_service | Rights flag detection, §1983, consumer, contract |
+| POST | /api/legal/regulatory-routes | regulatory_routing_service | Regulatory forum routing |
+| POST | /api/legal/jurisdiction | jurisdiction_service | Jurisdiction track + venue notes |
+| POST | /api/legal/results | legal_results_service | Aggregated legal posture (all 5 services) |
+| POST | /api/legal/case-packet | case_builder_service | Full assembled case packet |
+
+All endpoints accept `{ intakeState: {...}, complaintId?: "..." }` except `/case-packet` which also requires `userId`.
+
 ## Admin (main.py)
 
 | Method | Path | Notes |

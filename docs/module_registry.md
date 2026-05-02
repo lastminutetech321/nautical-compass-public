@@ -2,6 +2,7 @@
 
 Last updated: 2026-05-02
 Branch: overnight-operator-rail-batch
+Router: routes/legal_rail_routes.py
 
 ## A. Operator Rail Core
 
@@ -14,11 +15,15 @@ Branch: overnight-operator-rail-batch
 
 ## B. Legal / Standing / Capacity
 
-| Module | Route | Status |
-|--------|-------|--------|
-| Standing Analysis | /api/standing | active |
-| Capacity Analysis | /api/capacity | active |
-| Rights Violation | /api/rights | active |
+| Module | Route | Service | Status |
+|--------|-------|---------|--------|
+| Standing Analysis | POST /api/legal/standing | standing_analysis_service.py | v1 |
+| Capacity Analysis | POST /api/legal/capacity | capacity_analysis_service.py | v1 |
+| Rights Violation | POST /api/legal/rights | rights_violation_service.py | v1 |
+| Regulatory Routing | POST /api/legal/regulatory-routes | regulatory_routing_service.py | v1 |
+| Jurisdiction Analysis | POST /api/legal/jurisdiction | jurisdiction_service.py | v1 |
+| Legal Results (all) | POST /api/legal/results | legal_results_service.py | v1 |
+| Case Packet Builder | POST /api/legal/case-packet | case_builder_service.py | v1 |
 
 ## C. AV Plus Trades
 
