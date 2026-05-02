@@ -129,7 +129,7 @@ def render(request: Request, template: str, data=None):
     ctx["v"] = int(time.time())
     ctx["labor_signal_flags"] = labor_signal_flags()
     ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
-    return templates.TemplateResponse(template, context=ctx)
+    return templates.TemplateResponse(request, template, context=ctx)
 
 
 
@@ -2543,8 +2543,9 @@ def system_status():
 @app.get("/legalese")
 def legalese(request: Request):
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request}
+        {"request": request},
     )
 
 
@@ -2554,8 +2555,9 @@ from fastapi import Form
 def legalese_post(request: Request, text: str = Form(...)):
     result = f"LEGAL FORM:\n{text.upper()}"
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request, "result": result}
+        {"request": request, "result": result},
     )
 
 
@@ -2568,8 +2570,9 @@ from routes.intake_engine_routes import router as intake_engine_api_router
 def legalese_post(request: Request, text: str = Form(...)):
     result = f"LEGAL FORM:\n{text.upper()}"
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request, "result": result}
+        {"request": request, "result": result},
     )
 
 
@@ -2582,8 +2585,9 @@ except Exception:
 @app.get("/services", response_class=HTMLResponse)
 def services_page(request: Request):
     return templates.TemplateResponse(
+        request,
         "services.html",
-        {"request": request, "service_groups": SERVICE_GROUPS}
+        {"request": request, "service_groups": SERVICE_GROUPS},
     )
 
 @app.get("/services/{service_slug}", response_class=HTMLResponse)
@@ -2592,15 +2596,17 @@ def service_detail(request: Request, service_slug: str):
         for slug, name, description in services:
             if slug == service_slug:
                 return templates.TemplateResponse(
+                    request,
                     "services/detail.html",
                     {
                         "request": request,
                         "service_name": name,
                         "service_description": description,
                         "service_group": group,
-                    }
+                    },
                 )
     return templates.TemplateResponse(
+        request,
         "services/detail.html",
         {
             "request": request,
@@ -2608,7 +2614,7 @@ def service_detail(request: Request, service_slug: str):
             "service_description": "This service route is not registered yet.",
             "service_group": "Unknown",
         },
-        status_code=404
+        status_code=404,
     )
 
 # System core route hub
