@@ -1843,3 +1843,68 @@ body.cabin-light-off::after {
   .feed-rail-label { display: none; }
   .feed-subject    { grid-column: 2 / -1; }
 }
+
+/* ── RAIL AUDIT BADGE STRIP ────────────────────────────────────── */
+.rail-audit-strip {
+  display: flex;
+  gap: .55rem;
+  margin: .6rem 1rem 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.audit-badge {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 6px;
+  padding: .38rem .7rem;
+  font-family: 'Share Tech Mono', monospace;
+  transition: border-color .35s ease;
+}
+
+/* Border color keyed to status */
+.audit-badge-ready        { border-color: rgba(46,204,113,.45);  }
+.audit-badge-partial      { border-color: rgba(241,196,15,.45);  }
+.audit-badge-low          { border-color: rgba(231,76,60,.45);   }
+.audit-badge-needs-review { border-color: rgba(201,168,76,.3);   }
+
+.audit-badge-type {
+  font-size: .6rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: #6a7a8a;
+  white-space: nowrap;
+}
+
+.audit-badge-status {
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: .1rem .4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Status pill colors */
+.audit-ready        { color: #2ecc71; background: rgba(46,204,113,.12);  }
+.audit-partial      { color: #f1c40f; background: rgba(241,196,15,.12);  }
+.audit-low          { color: #e74c3c; background: rgba(231,76,60,.12);   }
+.audit-needs-review { color: #c9a84c; background: rgba(201,168,76,.12);  }
+
+.audit-badge-meta {
+  font-size: .59rem;
+  color: #4a5a6a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+@media (max-width: 680px) {
+  .rail-audit-strip { gap: .4rem; }
+  .audit-badge-meta { max-width: 110px; }
+}

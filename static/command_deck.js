@@ -103,11 +103,90 @@ async function fetchDeckStatus() {
       applyDerivedWeather();
       updateOperatorRailPanel(ie.operator_rail || null, ie);
       updateLaborRailPanel(ie.labor_rail || null, ie);
+      updateRailAuditBadges(ie, data.recent_intakes || []);
     }
     if (data.recent_intakes) {
       updateRecentFeed(data.recent_intakes);
     }
   } catch (e) { /* keep existing mock data on failure */ }
+}
+
+/* ── RAIL AUDIT BADGES ─────────────────────────────────────────── */
+function auditStatusFromScore(score) {
+  if (score == null) return { label: 'NEEDS REVIEW', cls: 'audit-needs-review' };
+  if (score >= 80)   return { label: 'READY',        cls: 'audit-ready'        };
+  if (score >= 40)   return { label: 'PARTIAL',      cls: 'audit-partial'      };
+  return                    { label: 'LOW',           cls: 'audit-low'          };
+}
+
+function applyAuditBadge(type, score, id, meta) {
+  var badgeEl  = document.getElementById('auditBadge'  + type);
+  var statusEl = document.getElementById('auditStatus' + type);
+  var metaEl   = document.getElementById('auditMeta'   + type);
+  if (!badgeEl || !statusEl || !metaEl) return;
+
+  var s = auditStatusFromScore(score);
+
+  badgeEl.classList.remove(
+    'audit-badge-ready', 'audit-badge-partial',
+    'audit-badge-low',   'audit-badge-needs-review'
+  );
+  badgeEl.classList.add('audit-badge-' + s.cls.replace('audit-', ''));
+
+  statusEl.textContent = s.label;
+  statusEl.className   = 'audit-badge-status ' + s.cls;
+
+  metaEl.textContent = meta || 'no data';
+}
+
+function updateRailAuditBadges(ie, recentIntakes) {
+  // ── Operator Rail ────────────────────────────────────────────────
+  var orScore = null, orId = null, orType = null;
+  if (ie.operator_rail) {
+    orScore = ie.operator_rail.readiness_score != null ? ie.operator_rail.readiness_score : null;
+    orId    = ie.latest_id;
+    orType  = ie.latest_type;
+  } else {
+    for (var i = 0; i < recentIntakes.length; i++) {
+      if (recentIntakes[i].rail_type === 'operator') {
+        orScore = recentIntakes[i].readiness;
+        orId    = recentIntakes[i].intake_id;
+        orType  = recentIntakes[i].intake_type;
+        break;
+      }
+    }
+  }
+  var orMeta = orId ? orId + (orType ? ' · ' + orType : '') : 'no data';
+  applyAuditBadge('Operator', orScore, orId, orMeta);
+
+  // ── Labor Rail ───────────────────────────────────────────────────
+  var lrScore = null, lrId = null, lrType = null;
+  if (ie.labor_rail) {
+    lrScore = ie.labor_rail.readiness_score != null ? ie.labor_rail.readiness_score : null;
+    lrId    = ie.latest_id;
+    lrType  = ie.latest_type;
+  } else {
+    for (var j = 0; j < recentIntakes.length; j++) {
+      if (recentIntakes[j].rail_type === 'labor') {
+        lrScore = recentIntakes[j].readiness;
+        lrId    = recentIntakes[j].intake_id;
+        lrType  = recentIntakes[j].intake_type;
+        break;
+      }
+    }
+  }
+  var lrMeta = lrId ? lrId + (lrType ? ' · ' + lrType : '') : 'no data';
+  applyAuditBadge('Labor', lrScore, lrId, lrMeta);
+
+  // ── Recent Feed ──────────────────────────────────────────────────
+  var feedScore = null, feedMeta = '—';
+  if (recentIntakes && recentIntakes.length > 0) {
+    var complete = recentIntakes.filter(function(r) { return r.status === 'complete'; }).length;
+    feedScore = Math.round((complete / recentIntakes.length) * 100);
+    feedMeta  = recentIntakes.length + ' record' + (recentIntakes.length !== 1 ? 's' : '') +
+                ' · ' + complete + ' complete';
+  }
+  applyAuditBadge('Feed', feedScore, null, feedMeta);
 }
 
 /* ── RECENT RAIL ACTIVITY FEED ─────────────────────────────────── */

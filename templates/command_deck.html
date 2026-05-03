@@ -323,6 +323,31 @@
     <!-- Intake panel updates handled by command_deck.js fetchDeckStatus() -->
 
     <!-- ═══════════════════════════════════════════════════════════════
+         RAIL AUDIT BADGE STRIP
+         ═══════════════════════════════════════════════════════════════ -->
+    <div id="railAuditStrip" class="rail-audit-strip">
+
+      <div id="auditBadgeOperator" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Operator Rail</span>
+        <span id="auditStatusOperator" class="audit-badge-status audit-needs-review">NEEDS REVIEW</span>
+        <span id="auditMetaOperator" class="audit-badge-meta">no data</span>
+      </div>
+
+      <div id="auditBadgeLabor" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Labor Rail</span>
+        <span id="auditStatusLabor" class="audit-badge-status audit-needs-review">NEEDS REVIEW</span>
+        <span id="auditMetaLabor" class="audit-badge-meta">no data</span>
+      </div>
+
+      <div id="auditBadgeFeed" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Recent Feed</span>
+        <span id="auditStatusFeed" class="audit-badge-status audit-needs-review">—</span>
+        <span id="auditMetaFeed" class="audit-badge-meta">—</span>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
          RAIL VISIBILITY PANELS — operator rail / labor rail
          ═══════════════════════════════════════════════════════════════ -->
     <div id="railDeckRow" class="rail-deck-row">
