@@ -351,24 +351,7 @@ def _build_capacity_defendants(results: Dict[str, Any], complaint: Dict[str, Any
             "while a suit in individual capacity seeks to impose personal liability on the officer."
         )
         para += 1
-    else:
-        # Private actor — direct corporate/individual liability, no government capacity doctrine
-        target_name_priv = complaint.get("targetName", "") or _need("defendant entity name")
-        if individual:
-            lines.append(
-                f"{para}. The following individual Defendant(s) are sued for direct personal liability: "
-                + ", ".join(individual) + ". "
-                "Standard individual tort and contract liability rules apply."
-            )
-            para += 1
-        lines.append(
-            f"{para}. Defendant {target_name_priv} is a private entity subject to direct corporate "
-            "liability under applicable state tort and contract law. No sovereign immunity defense "
-            "is available. Government-capacity doctrine does not apply to private actors."
-        )
-        para += 1
 
-    if target_type == "government":
         if individual:
             lines.append(
                 f"{para}. The following Defendant(s) are sued in their individual (personal) capacity: "
@@ -402,6 +385,24 @@ def _build_capacity_defendants(results: Dict[str, Any], complaint: Dict[str, Any
                 "official capacity pursuant to Ex parte Young, 209 U.S. 123 (1908), which held that "
                 "the Eleventh Amendment does not bar suits against state officers seeking prospective "
                 "relief to end ongoing constitutional violations."
+            )
+            para += 1
+
+    else:
+        # Private actor — no Kentucky v. Graham, no sovereign immunity, no Ex parte Young
+        target_name_priv = complaint.get("targetName", "") or _need("defendant entity name")
+        lines.append(
+            f"{para}. Defendant {target_name_priv} is a private entity subject to direct corporate "
+            "liability under applicable state tort and contract law. No sovereign immunity defense "
+            "is available. Government-capacity doctrine does not apply to private actors."
+        )
+        para += 1
+
+        if individual:
+            lines.append(
+                f"{para}. The following individual Defendant(s) are sued for direct personal liability: "
+                + ", ".join(individual) + ". "
+                "Standard individual tort and contract liability rules apply."
             )
             para += 1
 

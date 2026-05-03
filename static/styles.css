@@ -998,54 +998,19 @@ body main > .page-shell{
   }
 }
 
-/* === OCEAN SOUND TOGGLE === */
-
-.ocean-sound-btn{
-  position:fixed;
-  bottom:24px;
-  right:24px;
-  z-index:200;
-  padding:9px 16px;
-  border-radius:999px;
-  border:1px solid rgba(200,148,51,.50);
-  background:rgba(5,14,26,.88);
-  color:var(--bronze-soft);
-  font-family:inherit;
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:.05em;
-  cursor:pointer;
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow:0 4px 20px rgba(0,0,0,.45);
-  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
-  white-space:nowrap;
-}
-
-.ocean-sound-btn:hover{
-  background:rgba(8,20,36,.94);
-  border-color:rgba(200,148,51,.80);
-  box-shadow:0 6px 26px rgba(0,0,0,.50);
-}
-
-.ocean-sound-btn.is-on{
-  border-color:rgba(200,148,51,.75);
-  background:rgba(10,22,38,.92);
-  box-shadow:0 4px 20px rgba(0,0,0,.45),0 0 14px rgba(200,148,51,.18);
-}
-
 /* === VIDEO BG UTILITIES === */
 
 .video-bg-container{
-  position:relative;
+  position:fixed;
+  inset:0;
+  z-index:-2;
   overflow:hidden;
 }
 
 .video-bg-overlay{
   position:absolute;
   inset:0;
-  pointer-events:none;
-  z-index:1;
+  background:rgba(0,0,10,0.55);
 }
 
 /* === STACKING CONTEXT — ensure cards/modals sit above water layers === */
