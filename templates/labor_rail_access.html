@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Labor Rail Access — Nautical Compass{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-card">
+    <div class="module-kicker">LABOR RAIL — ACCESS PORT</div>
+    <h1>Unlock Labor Rail</h1>
+    <p>
+      Choose the Labor Rail access tier that fits your current need.
+      Both tiers include structured intake review, readiness scoring, and crew dispatch access.
+    </p>
+
+    <div class="module-grid">
+
+      <div class="module-box">
+        <h3>Labor Rail Basic</h3>
+        <p>
+          Crew intake and readiness profile. Role, trade, availability, rate expectation,
+          union status, and evidence readiness. Includes instant readiness score and
+          next-step guidance for dispatch eligibility.
+        </p>
+        <div class="module-actions">
+          {% if labor_rail_basic %}
+            <a class="action-btn action-btn-primary" href="{{ labor_rail_basic }}">Continue with Basic</a>
+          {% else %}
+            <span class="access-link-pending">
+              Access link not configured yet.
+              <br><small>Set env var: <code>STRIPE_LINK_LABOR_RAIL_BASIC</code></small>
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="module-box">
+        <h3>Labor Rail Pro</h3>
+        <p>
+          Everything in Basic, plus unpaid wage and work dispute capture,
+          evidence vault, timeline documentation, priority intake review,
+          and structured complaint packet preparation.
+        </p>
+        <div class="module-actions">
+          {% if labor_rail_pro %}
+            <a class="action-btn action-btn-primary" href="{{ labor_rail_pro }}">Continue with Pro</a>
+          {% else %}
+            <span class="access-link-pending">
+              Access link not configured yet.
+              <br><small>Set env var: <code>STRIPE_LINK_LABOR_RAIL_PRO</code></small>
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="module-box module-box-full">
+        <h3>What happens after access</h3>
+        <p>
+          After selecting a tier you will be routed through intake, readiness scoring,
+          and crew profile setup. Your profile will be visible in the Command Deck labor panel
+          once intake is complete and marked Crew Ready.
+        </p>
+      </div>
+
+      <div class="module-box module-box-full">
+        <h3>Stripe Setup</h3>
+        <p>
+          To activate Labor Rail access links, add these environment variables:
+          <br><strong>STRIPE_LINK_LABOR_RAIL_BASIC</strong>
+          <br><strong>STRIPE_LINK_LABOR_RAIL_PRO</strong>
+        </p>
+      </div>
+
+    </div>
+
+    <div class="module-actions" style="margin-top:1.5rem">
+      <a class="action-btn" href="/labor-rail">Back to Labor Rail</a>
+      <a class="action-btn" href="/intake">Submit Intake</a>
+      <a class="action-btn" href="/command-deck">Command Deck</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

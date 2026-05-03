@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Labor Rail — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="page-header">
+    <h1>Labor Rail</h1>
+    <p class="page-subtitle">AV crew, trades workers, and production labor — intake, readiness, and dispatch access.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h2>Start Labor Intake</h2>
+      <p>
+        Submit your crew profile: role, trade, availability, rate expectation, union status,
+        and evidence on file. Receive an instant readiness score and next-step guidance.
+      </p>
+      <a class="btn btn-primary" href="/intake?prefill_type=labor">Start Intake</a>
+    </div>
+
+    <div class="card">
+      <h2>Get Rail Access</h2>
+      <p>
+        Unlock structured crew dispatch, unpaid wage and work dispute capture,
+        readiness tracking, and priority intake review.
+      </p>
+      <a class="btn btn-secondary" href="/labor-rail/access">Get Access</a>
+    </div>
+
+    <div class="card">
+      <h2>Command Deck</h2>
+      <p>
+        View live labor rail readiness gauges, recent intake activity,
+        and system status across all active rails.
+      </p>
+      <a class="btn btn-secondary" href="/command-deck">Open Command Deck</a>
+    </div>
+  </div>
+
+  <div class="info-block">
+    <h3>What Labor Rail covers</h3>
+    <ul>
+      <li>AV technicians, lighting, audio, and video engineers</li>
+      <li>Riggers, stage managers, crew leads, and general labor</li>
+      <li>Union members (IATSE, IBEW) and non-union crew</li>
+      <li>Unpaid wage disputes, wrongful termination, unsafe conditions</li>
+      <li>Crew profile readiness — rate, skills, evidence, availability</li>
+      <li>Structured intake for dispatch matching and operator review</li>
+    </ul>
+  </div>
+
+  <div class="info-block" style="margin-top:1.5rem">
+    <h3>How readiness is scored</h3>
+    <p>
+      When you submit a labor intake, the system scores your profile 0–100 across
+      five readiness dimensions: role type, availability, location, documentation on file,
+      and union status. A score of 80 or above marks your profile as <strong>Crew Ready</strong>
+      — eligible for dispatch review. Missing items are listed with specific next steps.
+    </p>
+    <div style="margin-top:1rem">
+      <a class="btn btn-primary" href="/intake">Submit Intake Now</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

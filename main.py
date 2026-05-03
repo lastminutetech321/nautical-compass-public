@@ -22,6 +22,7 @@ from command_deck_api import router as command_deck_api_router
 from routes.core_routes import core_routes
 from routes.intake_engine import router as intake_router, api_router as intake_api_router
 from routes.operator_rail_routes import operator_rail_router
+from routes.labor_rail_routes import labor_rail_router
 from routes.legal_rail_routes import legal_rail_router
 
 app = FastAPI(title="Nautical Compass")
@@ -29,6 +30,7 @@ app.include_router(core_routes)
 app.include_router(intake_router)
 app.include_router(intake_api_router)
 app.include_router(operator_rail_router)
+app.include_router(labor_rail_router)
 app.include_router(legal_rail_router)
 
 app.include_router(financial_engine_router)
@@ -158,12 +160,17 @@ def get_checkout_links():
     labor_signal_basic = os.getenv("STRIPE_LINK_LABOR_SIGNAL_BASIC", "").strip()
     labor_signal_pro = os.getenv("STRIPE_LINK_LABOR_SIGNAL_PRO", "").strip()
 
+    labor_rail_basic = os.getenv("STRIPE_LINK_LABOR_RAIL_BASIC", "").strip()
+    labor_rail_pro = os.getenv("STRIPE_LINK_LABOR_RAIL_PRO", "").strip()
+
     return {
         "nc_access_link": nc_access_link,
         "nc_protection_link": nc_protection_link,
         "nc_command_link": nc_command_link,
         "labor_signal_basic": labor_signal_basic,
         "labor_signal_pro": labor_signal_pro,
+        "labor_rail_basic": labor_rail_basic,
+        "labor_rail_pro": labor_rail_pro,
     }
 def save_uploads(files: list[UploadFile], target_dir: Path) -> list[dict]:
     saved_files = []
