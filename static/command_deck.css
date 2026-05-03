@@ -1733,3 +1733,113 @@ body.cabin-light-off::after {
   .rail-deck-row { flex-direction: column; }
   .rail-deck-panel { min-width: 0; }
 }
+
+/* ── RECENT RAIL ACTIVITY FEED ─────────────────────────────────── */
+.recent-feed-panel {
+  margin: .6rem 1rem 0;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 10px;
+  padding: .85rem 1.1rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.recent-feed-header {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: .55rem;
+}
+
+.recent-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: 64px 140px 1fr auto;
+  align-items: center;
+  gap: .35rem .65rem;
+  padding: .32rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.feed-item:last-child { border-bottom: none; }
+
+.feed-type-badge {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .14rem .38rem;
+  border-radius: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.feed-type-partner    { background: rgba(52,152,219,.2);  color: #5dade2; }
+.feed-type-labor      { background: rgba(46,204,113,.15); color: #2ecc71; }
+.feed-type-production { background: rgba(243,156,18,.15); color: #f39c12; }
+.feed-type-legal      { background: rgba(231,76,60,.15);  color: #e74c3c; }
+.feed-type-payment    { background: rgba(155,89,182,.15); color: #9b59b6; }
+.feed-type-general    { background: rgba(149,165,166,.1); color: #7f8c8d; }
+
+.feed-rail-label {
+  font-size: .67rem;
+  color: #7a8899;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-subject {
+  font-size: .71rem;
+  color: #b0bac8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-meta {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.feed-status {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.feed-status-complete { color: #2ecc71; }
+.feed-status-partial  { color: #f1c40f; }
+
+.feed-date {
+  font-size: .6rem;
+  color: #444;
+  white-space: nowrap;
+}
+
+.feed-empty {
+  font-size: .71rem;
+  color: #444;
+  padding: .4rem 0;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .feed-item {
+    grid-template-columns: 60px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: .2rem .5rem;
+  }
+  .feed-rail-label { display: none; }
+  .feed-subject    { grid-column: 2 / -1; }
+}

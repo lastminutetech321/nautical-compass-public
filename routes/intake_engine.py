@@ -124,6 +124,23 @@ def count_submissions() -> int:
         return 0
 
 
+def load_recent_intakes(limit: int = 10) -> list:
+    """Return the most recent `limit` submissions from JSONL, newest first."""
+    if not INTAKE_LOG.exists():
+        return []
+    try:
+        lines = [l.strip() for l in INTAKE_LOG.open(encoding="utf-8") if l.strip()]
+        records = []
+        for line in reversed(lines[-limit:]):
+            try:
+                records.append(json.loads(line))
+            except Exception:
+                continue
+        return records
+    except Exception:
+        return []
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------

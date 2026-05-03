@@ -144,7 +144,7 @@ def command_deck_status_with_intake():
     data["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     try:
-        from routes.intake_engine import load_latest_intake, count_submissions
+        from routes.intake_engine import load_latest_intake, count_submissions, load_recent_intakes
         latest = load_latest_intake()
         total = count_submissions()
         ie: dict = {
@@ -177,8 +177,32 @@ def command_deck_status_with_intake():
                 "missing_readiness": lrail.get("missing_readiness", []),
             }
         data["intake_engine"] = ie
+
+        recent_raw = load_recent_intakes(limit=10)
+        recent = []
+        for r in recent_raw:
+            rail_type = "none"
+            readiness = None
+            if r.get("intake_type") == "partner" and r.get("operator_rail"):
+                rail_type = "operator"
+                readiness = r["operator_rail"].get("readiness_score")
+            elif r.get("intake_type") in ("labor", "production") and r.get("labor_rail"):
+                rail_type = "labor"
+                readiness = r["labor_rail"].get("readiness_score")
+            subj = (r.get("subject") or "")
+            recent.append({
+                "intake_id":   r.get("intake_id"),
+                "intake_type": r.get("intake_type"),
+                "subject":     subj[:60] + ("…" if len(subj) > 60 else ""),
+                "status":      r.get("status"),
+                "created_at":  r.get("created_at"),
+                "rail_type":   rail_type,
+                "readiness":   readiness,
+            })
+        data["recent_intakes"] = recent
     except Exception as exc:
         data["intake_engine"] = {"status": "error", "error": str(exc)}
+        data["recent_intakes"] = []
 
     return JSONResponse(content=data)
 

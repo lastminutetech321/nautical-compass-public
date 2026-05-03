@@ -104,7 +104,54 @@ async function fetchDeckStatus() {
       updateOperatorRailPanel(ie.operator_rail || null, ie);
       updateLaborRailPanel(ie.labor_rail || null, ie);
     }
+    if (data.recent_intakes) {
+      updateRecentFeed(data.recent_intakes);
+    }
   } catch (e) { /* keep existing mock data on failure */ }
+}
+
+/* ── RECENT RAIL ACTIVITY FEED ─────────────────────────────────── */
+function updateRecentFeed(items) {
+  var container = document.getElementById('recentFeedList');
+  if (!container) return;
+
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="feed-empty">No recent intake activity</div>';
+    return;
+  }
+
+  var TYPE_LABELS = {
+    partner:    'Partner',
+    labor:      'Labor',
+    production: 'Prod',
+    legal:      'Legal',
+    payment:    'Payment',
+    general:    'General'
+  };
+
+  var RAIL_LABELS = { operator: 'Operator Rail', labor: 'Labor Rail' };
+
+  container.innerHTML = items.map(function(item) {
+    var type       = item.intake_type || 'general';
+    var typeLabel  = TYPE_LABELS[type] || type;
+    var railLabel  = RAIL_LABELS[item.rail_type] || '';
+    var readiness  = item.readiness != null ? item.readiness + '%' : '';
+    var statusCls  = item.status === 'complete' ? 'feed-status-complete' : 'feed-status-partial';
+    var date       = item.created_at
+      ? new Date(item.created_at * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
+    var railStr    = railLabel ? (railLabel + (readiness ? ' · ' + readiness : '')) : '—';
+
+    return '<div class="feed-item">' +
+      '<span class="feed-type-badge feed-type-' + type + '">' + typeLabel + '</span>' +
+      '<span class="feed-rail-label">' + railStr + '</span>' +
+      '<span class="feed-subject">' + (item.subject || '—') + '</span>' +
+      '<span class="feed-meta">' +
+        '<span class="feed-status ' + statusCls + '">' + (item.status || '—') + '</span>' +
+        (date ? '<span class="feed-date">' + date + '</span>' : '') +
+      '</span>' +
+    '</div>';
+  }).join('');
 }
 
 async function fetchDeckWeather() {
