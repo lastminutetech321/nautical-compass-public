@@ -339,57 +339,67 @@ def _build_capacity_defendants(results: Dict[str, Any], complaint: Dict[str, Any
     lines: List[str] = []
     para = para_start
 
-    lines.append(
-        f"{para}. The capacity in which each Defendant is sued is governed by "
-        "Kentucky v. Graham, 473 U.S. 159 (1985), which held that a suit against a government "
-        "official in their official capacity is a suit against the governmental entity itself, "
-        "while a suit in individual capacity seeks to impose personal liability on the officer."
-    )
-    para += 1
-
-    if individual:
+    if target_type == "government":
         lines.append(
-            f"{para}. The following Defendant(s) are sued in their individual (personal) capacity: "
-            + ", ".join(individual) + ". "
-            "Personal liability under 42 U.S.C. §1983 for individual-capacity defendants was confirmed "
-            "in Hafer v. Melo, 502 U.S. 21 (1991)."
+            f"{para}. The capacity in which each Defendant is sued is governed by "
+            "Kentucky v. Graham, 473 U.S. 159 (1985), which held that a suit against a government "
+            "official in their official capacity is a suit against the governmental entity itself, "
+            "while a suit in individual capacity seeks to impose personal liability on the officer."
+        )
+        para += 1
+    else:
+        # Private actor — direct corporate/individual liability, no government capacity doctrine
+        target_name_priv = complaint.get("targetName", "") or _need("defendant entity name")
+        if individual:
+            lines.append(
+                f"{para}. The following individual Defendant(s) are sued for direct personal liability: "
+                + ", ".join(individual) + ". "
+                "Standard individual tort and contract liability rules apply."
+            )
+            para += 1
+        lines.append(
+            f"{para}. Defendant {target_name_priv} is a private entity subject to direct corporate "
+            "liability under applicable state tort and contract law. No sovereign immunity defense "
+            "is available. Government-capacity doctrine does not apply to private actors."
         )
         para += 1
 
-    if official:
-        lines.append(
-            f"{para}. The following Defendant(s) are sued in their official capacity: "
-            + ", ".join(official) + ". "
-            "An official-capacity §1983 claim functions as a claim against the governmental entity."
-        )
-        para += 1
+    if target_type == "government":
+        if individual:
+            lines.append(
+                f"{para}. The following Defendant(s) are sued in their individual (personal) capacity: "
+                + ", ".join(individual) + ". "
+                "Personal liability under 42 U.S.C. §1983 for individual-capacity defendants was confirmed "
+                "in Hafer v. Melo, 502 U.S. 21 (1991)."
+            )
+            para += 1
 
-    if sovereign_immunity:
-        lines.append(
-            f"{para}. Defendant's sovereign immunity defense: "
-            + (immunity_notes[0] if immunity_notes else
-               "The Eleventh Amendment bars retrospective damages against the State in federal court. "
-               "Will v. Michigan Dept. of State Police, 491 U.S. 58 (1989). "
-               "Plaintiff must seek damages from individually named officers.")
-        )
-        para += 1
+        if official:
+            lines.append(
+                f"{para}. The following Defendant(s) are sued in their official capacity: "
+                + ", ".join(official) + ". "
+                "An official-capacity §1983 claim functions as a claim against the governmental entity."
+            )
+            para += 1
 
-    if ex_parte:
-        lines.append(
-            f"{para}. Plaintiff seeks prospective injunctive relief against Defendant(s) in their "
-            "official capacity pursuant to Ex parte Young, 209 U.S. 123 (1908), which held that "
-            "the Eleventh Amendment does not bar suits against state officers seeking prospective "
-            "relief to end ongoing constitutional violations."
-        )
-        para += 1
+        if sovereign_immunity:
+            lines.append(
+                f"{para}. Defendant's sovereign immunity defense: "
+                + (immunity_notes[0] if immunity_notes else
+                   "The Eleventh Amendment bars retrospective damages against the State in federal court. "
+                   "Will v. Michigan Dept. of State Police, 491 U.S. 58 (1989). "
+                   "Plaintiff must seek damages from individually named officers.")
+            )
+            para += 1
 
-    if not individual and not official and target_type == "private":
-        target_name = complaint.get("targetName", "") or _need("defendant entity name")
-        lines.append(
-            f"{para}. Defendant {target_name} is a private actor. Standard entity and individual "
-            "liability rules apply. No Eleventh Amendment sovereign immunity issues arise."
-        )
-        para += 1
+        if ex_parte:
+            lines.append(
+                f"{para}. Plaintiff seeks prospective injunctive relief against Defendant(s) in their "
+                "official capacity pursuant to Ex parte Young, 209 U.S. 123 (1908), which held that "
+                "the Eleventh Amendment does not bar suits against state officers seeking prospective "
+                "relief to end ongoing constitutional violations."
+            )
+            para += 1
 
     return {
         "title": "Capacity and Defendant Identification",
