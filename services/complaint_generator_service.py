@@ -22,6 +22,7 @@ from services.legal_results_service import build_legal_results, LegalResultsServ
 from services.timeline_service import build_complaint_timeline, TimelineServiceError
 from services.damages_service import analyze_damages, DamagesServiceError
 from services.evidence_service import analyze_evidence_for_complaint, EvidenceServiceError
+from services.remedy_service import build_remedy_analysis, RemedyServiceError
 
 
 DISCLAIMER = (
@@ -556,62 +557,118 @@ def _build_causes_of_action(results: Dict[str, Any], complaint: Dict[str, Any], 
     }
 
 
-def _build_prayer_for_relief(results: Dict[str, Any], complaint: Dict[str, Any]) -> Dict[str, Any]:
-    rights = results.get("rights", {})
-    capacity = results.get("capacity", {})
-    standing = results.get("standing", {})
-    has_1983 = any(c.get("type", "").startswith("§1983") for c in rights.get("claims", []))
-    ex_parte = capacity.get("ex_parte_young_available", False)
-    seeks_injunction = bool(complaint.get("desiredOutcome", "") and any(
-        t in (complaint.get("desiredOutcome", "") or "").lower()
-        for t in ["stop", "injunction", "cease", "enjoin", "prevent", "policy"]
-    ))
-    financial_loss = float(complaint.get("financialLossAmount", 0) or 0)
+def _build_prayer_for_relief(remedy: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Render the prayer for relief from a build_remedy_analysis() result.
+    Relief items are lettered (a), (b), (c)... in order.
+    Punitive damages are only listed when legally available (individual defendants /
+    private actor). Newport bar and fees-only-where-authorized are enforced upstream
+    in remedy_service.py.
+    """
+    relief_items = remedy.get("relief_items", [])
+    fees_authorized = remedy.get("fees_authorized", False)
+    injunctive_available = remedy.get("injunctive_available", False)
+    unavailable = remedy.get("unavailable_relief", [])
 
-    items: List[str] = []
+    letter = ord("a")
+    rendered: List[str] = []
 
-    if financial_loss > 0:
-        items.append(
-            f"(a) Compensatory damages in an amount not less than ${financial_loss:,.2f}, "
-            "plus additional compensatory damages to be proven at trial;"
+    for item in relief_items:
+        item_type = item.get("type", "")
+        label = item.get("label", "")
+        amount = item.get("amount_display")
+        basis = item.get("legal_basis", "")
+        lc = chr(letter)
+
+        if item_type == "compensatory":
+            if amount and not str(amount).startswith("[FACT NEEDED"):
+                line = f"({lc}) Compensatory damages in an amount {amount};"
+            else:
+                line = f"({lc}) Compensatory damages in an amount to be determined at trial"
+                if amount and str(amount).startswith("[FACT NEEDED"):
+                    line += f" — {amount};"
+                else:
+                    line += ";"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "punitive":
+            line = f"({lc}) {label} pursuant to {basis}"
+            line += ", in an amount sufficient to punish and deter future misconduct;"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "injunctive":
+            line = f"({lc}) Preliminary and permanent injunctive relief"
+            if basis:
+                line += f" pursuant to {basis}"
+            line += (
+                ", enjoining Defendant(s) from continuing the unlawful "
+                "conduct, policy, or practice described herein;"
+            )
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "declaratory":
+            line = (
+                f"({lc}) Declaratory relief pursuant to {basis or '28 U.S.C. §2201'}, "
+                "declaring that Defendant(s)' conduct violates Plaintiff's rights;"
+            )
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "record_correction":
+            line = (
+                f"({lc}) An order directing Defendant(s) to correct all inaccurate records "
+                "and produce the complete account timeline, CP&I records, and all documentation "
+                "relating to Plaintiff's account and the conduct alleged herein"
+            )
+            if basis:
+                line += f" ({basis})"
+            line += ";"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "attorney_fees":
+            line = f"({lc}) Reasonable attorney's fees pursuant to {basis or '42 U.S.C. §1988'};"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "costs":
+            line = f"({lc}) Costs and disbursements of this action pursuant to {basis or 'Fed. R. Civ. P. 54(d)'};"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "further_relief":
+            rendered.append(f"({lc}) Such other and further relief as this Court deems just and proper.")
+            letter += 1
+
+    if not rendered:
+        rendered.append(
+            _need("prayer for relief — list all damages, injunctions, declaratory relief, fees, and costs")
         )
-    else:
-        items.append(f"(a) Compensatory damages in an amount to be determined at trial;")
 
-    items.append("(b) Punitive damages against the individual Defendant(s) to deter future misconduct;")
-
-    if ex_parte or seeks_injunction:
-        items.append(
-            "(c) Preliminary and permanent injunctive relief pursuant to Ex parte Young, "
-            "209 U.S. 123 (1908), enjoining Defendant(s) from continuing the unconstitutional "
-            "policy, practice, or conduct described herein;"
+    # Append Newport bar note when punitive is unavailable (entity-only government defendant)
+    newport_notes = [u for u in unavailable if u.get("type") == "punitive_unavailable"]
+    if newport_notes:
+        rendered.append(
+            "[NOTE: Punitive damages are not available against the municipal/government entity — "
+            "Newport v. Fact Concerts, Inc., 453 U.S. 247 (1981). "
+            "To seek punitive damages, name individual officers in their individual capacity.]"
         )
-
-    items.append(
-        "(d) Declaratory relief pursuant to 28 U.S.C. §2201, declaring that Defendant(s)' "
-        "conduct violates Plaintiff's constitutional rights;"
-    )
-
-    if has_1983:
-        items.append(
-            "(e) Reasonable attorney's fees and costs pursuant to 42 U.S.C. §1988;"
-        )
-    else:
-        items.append("(e) Costs and disbursements of this action;")
-
-    items.append("(f) Such other and further relief as this Court deems just and proper.")
 
     text = (
         "WHEREFORE, Plaintiff respectfully prays that this Court enter judgment in Plaintiff's "
         "favor and against Defendant(s) and award the following relief:\n\n"
-        + "\n\n".join(items)
+        + "\n\n".join(rendered)
     )
 
     return {
         "title": "Prayer for Relief",
         "text": text,
-        "includes_1988_fees": has_1983,
-        "includes_injunction": ex_parte or seeks_injunction,
+        "includes_1988_fees": fees_authorized,
+        "includes_injunction": injunctive_available,
+        "relief_count": len([r for r in rendered if not r.startswith("[NOTE")]),
     }
 
 
@@ -890,7 +947,12 @@ def generate_complaint_draft(
     causes_section = _build_causes_of_action(results, complaint, para)
     para += causes_section["paragraph_count"]
 
-    prayer_section = _build_prayer_for_relief(results, complaint)
+    try:
+        remedy = build_remedy_analysis(intake_state, results, complaint_id)
+    except RemedyServiceError:
+        remedy = {"relief_items": [], "unavailable_relief": [], "fees_authorized": False, "injunctive_available": False}
+
+    prayer_section = _build_prayer_for_relief(remedy)
 
     sections = {
         "caption": caption_section,
