@@ -2547,8 +2547,9 @@ def system_status():
 @app.get("/legalese")
 def legalese(request: Request):
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request}
+        {"request": request},
     )
 
 
@@ -2558,19 +2559,24 @@ from fastapi import Form
 def legalese_post(request: Request, text: str = Form(...)):
     result = f"LEGAL FORM:\n{text.upper()}"
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request, "result": result}
+        {"request": request, "result": result},
     )
 
 
 from fastapi import Form
+from routes.system_core_routes import router as system_core_router
+from routes.recovery_link_routes import router as recovery_link_router
+from routes.intake_engine_routes import router as intake_engine_api_router
 
 @app.post("/legalese")
 def legalese_post(request: Request, text: str = Form(...)):
     result = f"LEGAL FORM:\n{text.upper()}"
     return templates.TemplateResponse(
+        request,
         "legalese-practice-room/index.html",
-        {"request": request, "result": result}
+        {"request": request, "result": result},
     )
 
 
@@ -2583,8 +2589,9 @@ except Exception:
 @app.get("/services", response_class=HTMLResponse)
 def services_page(request: Request):
     return templates.TemplateResponse(
+        request,
         "services.html",
-        {"request": request, "service_groups": SERVICE_GROUPS}
+        {"request": request, "service_groups": SERVICE_GROUPS},
     )
 
 @app.get("/services/{service_slug}", response_class=HTMLResponse)
@@ -2593,15 +2600,17 @@ def service_detail(request: Request, service_slug: str):
         for slug, name, description in services:
             if slug == service_slug:
                 return templates.TemplateResponse(
+                    request,
                     "services/detail.html",
                     {
                         "request": request,
                         "service_name": name,
                         "service_description": description,
                         "service_group": group,
-                    }
+                    },
                 )
     return templates.TemplateResponse(
+        request,
         "services/detail.html",
         {
             "request": request,
@@ -2609,5 +2618,57 @@ def service_detail(request: Request, service_slug: str):
             "service_description": "This service route is not registered yet.",
             "service_group": "Unknown",
         },
-        status_code=404
+        status_code=404,
     )
+
+# System core route hub
+app.include_router(system_core_router)
+
+# Recovery link route aliases
+app.include_router(recovery_link_router)
+
+# Intake engine API wiring
+app.include_router(intake_engine_api_router)
+
+# --- NC diagnostic demo route: standing/capacity full-flow check ---
+@app.post("/demo-complete")
+def demo_complete_route():
+    from services.standing_analysis_service import analyze_standing
+    from services.capacity_analysis_service import analyze_capacity
+    from services.complaint_service import build_complaint_packet
+    from services.results_service import build_results_summary
+
+    demo_state = {
+        "complaintProfile": {
+            "complaints": [
+                {
+                    "complaintId": "complaint-1",
+                    "targetName": "Demo Company",
+                    "targetDepartment": "Accounts Payable",
+                    "shortTitle": "Unpaid work",
+                    "whatHappened": "Work was completed and payment was not issued.",
+                    "whatWasSaid": "Payment would be processed.",
+                    "userActionsTaken": ["sent invoice", "sent follow-up"],
+                    "financialLossAmount": 1200,
+                    "workLossAmount": 0,
+                    "timeLostHours": 4,
+                    "injuryClaimed": False,
+                    "propertyDamageClaimed": False,
+                    "creditImpactClaimed": False,
+                    "emotionalStressClaimed": False,
+                    "priorComplaintMade": True,
+                    "desiredOutcome": "Full payment of outstanding invoice",
+                }
+            ]
+        }
+    }
+
+    complaint_id = "complaint-1"
+
+    return {
+        "status": "complete",
+        "standing": analyze_standing(demo_state, complaint_id),
+        "capacity": analyze_capacity(demo_state, complaint_id),
+        "complaint_packet": build_complaint_packet("demo-user", demo_state, complaint_id),
+        "results": build_results_summary(demo_state),
+    }
