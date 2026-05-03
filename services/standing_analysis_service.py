@@ -1,4 +1,16 @@
-from typing import Any, Dict, List
+"""
+Standing analysis applying:
+  Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992) — three-element Article III test
+  TransUnion LLC v. Ramirez, 594 U.S. 413 (2021) — concrete harm required; bare statutory violation insufficient
+  Spokeo, Inc. v. Robins, 578 U.S. 330 (2016) — injury must be both concrete and particularized
+"""
+from typing import Any, Dict, List, Optional
+
+CASE_LAW = [
+    "Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992)",
+    "TransUnion LLC v. Ramirez, 594 U.S. 413 (2021)",
+    "Spokeo, Inc. v. Robins, 578 U.S. 330 (2016)",
+]
 
 
 class StandingAnalysisServiceError(Exception):
@@ -18,7 +30,13 @@ def _safe_bool(value: Any) -> bool:
     return bool(value)
 
 
-def _derive_injury_in_fact(complaint: Dict[str, Any]) -> Dict[str, Any]:
+def _analyze_injury_in_fact(complaint: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Lujan element 1: injury in fact — concrete, particularized, actual or imminent.
+    TransUnion: a bare procedural or statutory violation without real-world harm does not satisfy
+    Article III. Plaintiff must show harm with close relationship to harms recognized at common law.
+    Spokeo: injury must be both concrete (real, not abstract) and particularized (individual, not diffuse).
+    """
     financial_loss = _safe_number(complaint.get("financialLossAmount"))
     work_loss = _safe_number(complaint.get("workLossAmount"))
     time_lost = _safe_number(complaint.get("timeLostHours"))
@@ -26,154 +44,193 @@ def _derive_injury_in_fact(complaint: Dict[str, Any]) -> Dict[str, Any]:
     property_damage = _safe_bool(complaint.get("propertyDamageClaimed"))
     credit_impact = _safe_bool(complaint.get("creditImpactClaimed"))
     emotional_stress = _safe_bool(complaint.get("emotionalStressClaimed"))
-    short_title = complaint.get("shortTitle", "")
-    what_happened = complaint.get("whatHappened", "")
+    short_title = complaint.get("shortTitle", "") or ""
+    what_happened = complaint.get("whatHappened", "") or ""
+    summary = complaint.get("plainLanguageSummary", "") or ""
 
-    reasons: List[str] = []
-
+    concrete_harms: List[str] = []
     if financial_loss > 0:
-        reasons.append("Financial loss alleged.")
+        concrete_harms.append(f"monetary loss of ${financial_loss:,.0f} (tangible economic harm)")
     if work_loss > 0:
-        reasons.append("Work loss alleged.")
-    if time_lost > 0:
-        reasons.append("Lost time alleged.")
+        concrete_harms.append(f"work/income loss of ${work_loss:,.0f} (tangible economic harm)")
     if injury_claimed:
-        reasons.append("Personal injury alleged.")
+        concrete_harms.append("physical injury (traditional common-law harm)")
     if property_damage:
-        reasons.append("Property damage alleged.")
+        concrete_harms.append("property damage (traditional common-law harm)")
     if credit_impact:
-        reasons.append("Credit impact alleged.")
-    if emotional_stress:
-        reasons.append("Emotional stress alleged.")
-    if short_title or what_happened:
-        reasons.append("Concrete factual narrative provided.")
-
-    score = 0
-    if financial_loss > 0:
-        score += 30
-    if work_loss > 0:
-        score += 15
+        # TransUnion held that dissemination of false credit info to third parties is concrete harm;
+        # internal file inaccuracy alone (never disclosed) is not.
+        concrete_harms.append(
+            "credit harm — concrete if information was disclosed to third parties (TransUnion, 594 U.S. at 433); "
+            "weak if harm is solely internal file inaccuracy not yet disclosed"
+        )
     if time_lost > 0:
-        score += 10
-    if injury_claimed:
-        score += 20
-    if property_damage:
-        score += 15
-    if credit_impact:
-        score += 15
-    if emotional_stress:
-        score += 5
-    if short_title or what_happened:
-        score += 10
+        concrete_harms.append(f"time lost ({time_lost:.0f} hours — opportunity cost, supports concreteness)")
+    if emotional_stress and not concrete_harms:
+        concrete_harms.append(
+            "emotional distress alone — generally insufficient without accompanying tangible harm "
+            "unless tied to a recognized intentional tort (TransUnion)"
+        )
 
-    score = min(100, score)
+    strong_concrete = any(
+        "monetary" in h or "physical" in h or "property" in h or "income" in h
+        for h in concrete_harms
+    )
+    concrete = len(concrete_harms) > 0 and (strong_concrete or credit_impact)
 
-    if score >= 60:
-        label = "strong"
-    elif score >= 30:
-        label = "moderate"
-    elif score > 0:
-        label = "weak"
+    has_narrative = bool(short_title or what_happened or summary)
+    particularized = has_narrative and concrete
+
+    actual_or_imminent = (
+        financial_loss > 0 or work_loss > 0 or injury_claimed
+        or property_damage or credit_impact or time_lost > 0
+    )
+
+    met = concrete and particularized and actual_or_imminent
+
+    if met:
+        analysis = (
+            f"PASS — Injury in fact established under Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992). "
+            f"Concrete harm present: {'; '.join(concrete_harms[:2])}. "
+            "Harm is particularized to this plaintiff and has already occurred (actual, not merely imminent). "
+            "Under TransUnion LLC v. Ramirez, 594 U.S. 413 (2021), real-world harm beyond any statutory violation "
+            "is present."
+        )
+    elif concrete_harms and not particularized:
+        analysis = (
+            "PARTIAL — Concrete harm indicators present but factual narrative is thin. "
+            "Under Spokeo, Inc. v. Robins, 578 U.S. 330 (2016), injury must be both concrete and particularized. "
+            "Strengthen the complaint with specific facts connecting the harm to this plaintiff."
+        )
+    elif emotional_stress and not strong_concrete:
+        analysis = (
+            "FAIL — Emotional distress without accompanying tangible harm is insufficient under "
+            "TransUnion LLC v. Ramirez, 594 U.S. 413 (2021). Plaintiff must allege harm with a close "
+            "relationship to harms traditionally recognized at common law (physical injury, property damage, "
+            "financial loss, defamation)."
+        )
     else:
-        label = "missing"
+        analysis = (
+            "FAIL — No concrete harm established. TransUnion requires more than a bare procedural violation. "
+            "Add financial loss, physical injury, property damage, or credit impact to establish Article III standing."
+        )
 
     return {
-        "score": score,
-        "label": label,
-        "reasons": reasons,
-        "satisfied": score >= 30,
+        "met": met,
+        "concrete": concrete,
+        "particularized": particularized,
+        "actual_or_imminent": actual_or_imminent,
+        "concrete_harms": concrete_harms,
+        "analysis": analysis,
     }
 
 
-def _derive_causation(complaint: Dict[str, Any]) -> Dict[str, Any]:
-    target_name = complaint.get("targetName", "")
-    target_department = complaint.get("targetDepartment", "")
-    target_person = complaint.get("targetPerson", "")
-    what_happened = complaint.get("whatHappened", "")
-    what_was_said = complaint.get("whatWasSaid", "")
+def _analyze_causation(complaint: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Lujan element 2: causation — injury must be fairly traceable to the defendant's conduct,
+    not the result of the independent action of some third party not before the court.
+    """
+    target_name = complaint.get("targetName", "") or ""
+    target_person = complaint.get("targetPerson", "") or ""
+    target_department = complaint.get("targetDepartment", "") or ""
+    what_happened = complaint.get("whatHappened", "") or ""
+    what_was_said = complaint.get("whatWasSaid", "") or ""
     user_actions = complaint.get("userActionsTaken", []) or []
 
-    reasons: List[str] = []
-    score = 0
-
+    factors: List[str] = []
     if target_name:
-        reasons.append("Target entity identified.")
-        score += 30
-    if target_department or target_person:
-        reasons.append("Specific actor or department identified.")
-        score += 20
+        factors.append(f"named defendant: {target_name}")
+    if target_person:
+        factors.append(f"named individual actor: {target_person}")
+    if target_department:
+        factors.append(f"identified department or agency: {target_department}")
     if what_happened:
-        reasons.append("Narrative connects conduct to harm.")
-        score += 25
+        factors.append("conduct narrative directly connecting defendant's actions to plaintiff's harm")
     if what_was_said:
-        reasons.append("Statements or communications alleged.")
-        score += 10
+        factors.append("statements or communications attributed to defendant on the record")
     if user_actions:
-        reasons.append("Follow-up actions documented.")
-        score += 10
+        factors.append(
+            f"plaintiff documented {len(user_actions)} follow-up action(s), "
+            "supporting the traceability chain"
+        )
 
-    score = min(100, score)
+    met = bool(target_name) and bool(what_happened)
 
-    if score >= 60:
-        label = "strong"
-    elif score >= 30:
-        label = "moderate"
-    elif score > 0:
-        label = "weak"
+    if met:
+        analysis = (
+            f"PASS — Causation satisfied under Lujan. Injury is fairly traceable to {target_name}'s conduct. "
+            f"Traceability factors: {'; '.join(factors)}. "
+            "No independent third-party causal chain apparent from the intake record."
+        )
+    elif target_name and not what_happened:
+        analysis = (
+            f"PARTIAL — Defendant identified ({target_name}) but no conduct narrative provided. "
+            "Lujan requires the injury be 'fairly traceable to the challenged action of the defendant.' "
+            "Add 'whatHappened' to establish the factual causal chain."
+        )
     else:
-        label = "missing"
+        analysis = (
+            "FAIL — Causation cannot be assessed without a named defendant and a conduct narrative. "
+            "Lujan v. Defenders of Wildlife requires that the injury be fairly traceable to the defendant's "
+            "challenged conduct, not merely a background condition or third-party action."
+        )
 
     return {
-        "score": score,
-        "label": label,
-        "reasons": reasons,
-        "satisfied": score >= 30,
+        "met": met,
+        "factors": factors,
+        "analysis": analysis,
     }
 
 
-def _derive_redressability(complaint: Dict[str, Any]) -> Dict[str, Any]:
-    desired_outcome = complaint.get("desiredOutcome", "")
+def _analyze_redressability(complaint: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Lujan element 3: redressability — it must be likely, not merely speculative, that
+    a favorable court decision would redress the plaintiff's injury.
+    """
+    desired_outcome = complaint.get("desiredOutcome", "") or ""
     financial_loss = _safe_number(complaint.get("financialLossAmount"))
     work_loss = _safe_number(complaint.get("workLossAmount"))
-    prior_complaint_made = _safe_bool(complaint.get("priorComplaintMade"))
+    prior_complaint = _safe_bool(complaint.get("priorComplaintMade"))
+    desired_lower = desired_outcome.lower()
 
-    reasons: List[str] = []
-    score = 0
-
-    if desired_outcome:
-        reasons.append("Requested remedy identified.")
-        score += 35
+    remedies: List[str] = []
     if financial_loss > 0 or work_loss > 0:
-        reasons.append("Monetary harm appears measurable.")
-        score += 30
-    if prior_complaint_made:
-        reasons.append("Prior demand or complaint suggests relief sought is concrete.")
-        score += 10
+        total = financial_loss + work_loss
+        remedies.append(f"compensatory damages for alleged financial loss (${total:,.0f}) — court can award")
+    if any(t in desired_lower for t in ["payment", "refund", "compensation", "damages", "reimburse"]):
+        remedies.append("monetary relief specifically requested — court has authority to award")
+    if any(t in desired_lower for t in ["stop", "injunction", "cease", "enjoin", "prevent", "policy"]):
+        remedies.append("prospective injunctive relief sought — court can order cessation or policy change")
+    if any(t in desired_lower for t in ["record", "correct", "expunge", "remove", "retract"]):
+        remedies.append("declaratory or corrective relief — court can order correction")
+    if prior_complaint:
+        remedies.append("prior demand documented, showing plaintiff sought relief from defendant first")
+    if desired_outcome and not remedies:
+        short = desired_outcome[:100]
+        remedies.append(f"requested outcome stated ('{short}') — court may have equitable or legal authority to provide relief")
 
-    if desired_outcome and ("payment" in desired_outcome.lower() or "refund" in desired_outcome.lower()):
-        reasons.append("Requested relief appears directly tied to alleged loss.")
-        score += 20
+    met = bool(remedies)
 
-    score = min(100, score)
-
-    if score >= 60:
-        label = "strong"
-    elif score >= 30:
-        label = "moderate"
-    elif score > 0:
-        label = "weak"
+    if met:
+        analysis = (
+            "PASS — Redressability satisfied under Lujan. A favorable court decision would likely redress "
+            f"plaintiff's injury. Available relief paths: {'; '.join(remedies[:2])}."
+        )
     else:
-        label = "missing"
+        analysis = (
+            "FAIL — Redressability is uncertain. Under Lujan v. Defenders of Wildlife, it must be 'likely, "
+            "as opposed to merely speculative, that the injury will be redressed by a favorable decision.' "
+            "Plaintiff has not stated a desired outcome or a form of relief that a court could provide."
+        )
 
     return {
-        "score": score,
-        "label": label,
-        "reasons": reasons,
-        "satisfied": score >= 30,
+        "met": met,
+        "available_remedies": remedies,
+        "analysis": analysis,
     }
 
 
-def analyze_standing(intake_state: Dict[str, Any], complaint_id: str | None = None) -> Dict[str, Any]:
+def analyze_standing(intake_state: Dict[str, Any], complaint_id: Optional[str] = None) -> Dict[str, Any]:
     if not isinstance(intake_state, dict):
         raise StandingAnalysisServiceError("intake_state must be a dictionary.")
 
@@ -181,7 +238,6 @@ def analyze_standing(intake_state: Dict[str, Any], complaint_id: str | None = No
     if not complaints:
         raise StandingAnalysisServiceError("No complaints found in intake_state.")
 
-    complaint = None
     if complaint_id:
         complaint = next((c for c in complaints if c.get("complaintId") == complaint_id), None)
         if complaint is None:
@@ -189,71 +245,31 @@ def analyze_standing(intake_state: Dict[str, Any], complaint_id: str | None = No
     else:
         complaint = complaints[0]
 
-    injury = _derive_injury_in_fact(complaint)
-    causation = _derive_causation(complaint)
-    redressability = _derive_redressability(complaint)
+    injury = _analyze_injury_in_fact(complaint)
+    causation = _analyze_causation(complaint)
+    redressability = _analyze_redressability(complaint)
 
-    overall_score = round((injury["score"] + causation["score"] + redressability["score"]) / 3)
+    standing = injury["met"] and causation["met"] and redressability["met"]
 
-    if injury["satisfied"] and causation["satisfied"] and redressability["satisfied"]:
-        overall_label = "standing_plausibly_supported"
-    elif overall_score >= 30:
-        overall_label = "standing_needs_strengthening"
+    if standing:
+        standing_label = "standing_established"
+    elif injury["met"] and causation["met"]:
+        standing_label = "standing_likely_with_remedy_clarification"
+    elif injury["met"]:
+        standing_label = "standing_needs_causation_and_remedy"
     else:
-        overall_label = "standing_not_yet_supported"
-
-    next_actions: List[str] = []
-    if not injury["satisfied"]:
-        next_actions.append("strengthen_injury_allegations")
-    if not causation["satisfied"]:
-        next_actions.append("identify_actor_and_conduct")
-    if not redressability["satisfied"]:
-        next_actions.append("clarify_requested_relief")
-    if not next_actions:
-        next_actions.append("review_capacity_and_jurisdiction")
+        standing_label = "standing_not_established"
 
     return {
         "complaintId": complaint.get("complaintId", ""),
-        "articleIIIStanding": {
-            "injuryInFact": injury,
-            "causation": causation,
-            "redressability": redressability,
-        },
-        "overallStandingScore": overall_score,
-        "overallStandingLabel": overall_label,
-        "recommendedNextActions": next_actions,
-        "note": "This is an intake-level standing screen, not legal advice or a final court determination.",
+        "injury_in_fact": injury,
+        "causation": causation,
+        "redressability": redressability,
+        "standing": standing,
+        "standing_label": standing_label,
+        "case_law": CASE_LAW,
+        "note": (
+            "Intake-level standing screen applying Lujan v. Defenders of Wildlife (1992) and "
+            "TransUnion LLC v. Ramirez (2021). Not legal advice or a final court determination."
+        ),
     }
-
-
-if __name__ == "__main__":
-    demo_state = {
-        "complaintProfile": {
-            "complaints": [
-                {
-                    "complaintId": "complaint-1",
-                    "targetName": "Demo Company",
-                    "targetDepartment": "Accounts Payable",
-                    "shortTitle": "Unpaid work",
-                    "whatHappened": "Work was completed and payment was not issued.",
-                    "whatWasSaid": "Payment would be processed.",
-                    "userActionsTaken": ["sent invoice", "sent follow-up"],
-                    "financialLossAmount": 1200,
-                    "workLossAmount": 0,
-                    "timeLostHours": 4,
-                    "injuryClaimed": False,
-                    "propertyDamageClaimed": False,
-                    "creditImpactClaimed": False,
-                    "emotionalStressClaimed": False,
-                    "priorComplaintMade": True,
-                    "desiredOutcome": "Full payment of outstanding invoice",
-                }
-            ]
-        }
-    }
-
-    result = analyze_standing(demo_state, "complaint-1")
-    print("complaintId:", result["complaintId"])
-    print("overallStandingScore:", result["overallStandingScore"])
-    print("overallStandingLabel:", result["overallStandingLabel"])
-    print("recommendedNextActions:", result["recommendedNextActions"])

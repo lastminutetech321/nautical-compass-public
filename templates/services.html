@@ -25,9 +25,37 @@
         <div class="card">
           <h3>{{ name }}</h3>
           <p>{{ description }}</p>
-          <a href="/services/{{ slug }}">Open {{ name }} →</a>
+          {% if slug == "legal-flow" %}
+            <a href="/legal-services">Open Legal Flow →</a>
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+              <a href="/standing-analysis">Standing Analysis →</a>
+              <a href="/capacity-analysis">Capacity Analysis →</a>
+              <a href="/section-1983">Section 1983 →</a>
+              <a href="/consumer-rights">Consumer Rights →</a>
+              <a href="/status-correction">Status Correction →</a>
+            </div>
+          {% else %}
+            <a href="/services/{{ slug }}">Open {{ name }} →</a>
+          {% endif %}
         </div>
       {% endfor %}
+      {% if group == "Labor / AV Plus Trades" %}
+        <div class="card">
+          <h3>Operator Rail</h3>
+          <p>Move from worker to structured operator.</p>
+          <a href="/operator-rail">Operator Rail →</a>
+        </div>
+        <div class="card">
+          <h3>Compliance Checklist</h3>
+          <p>Operator readiness: filings, licenses, insurance, and structure.</p>
+          <a href="/compliance-checklist">Compliance Checklist →</a>
+        </div>
+        <div class="card">
+          <h3>AVPT Dashboard</h3>
+          <p>AV Plus Trades crew, dispatch, and assignment dashboard.</p>
+          <a href="/avpt/dashboard">AVPT Dashboard →</a>
+        </div>
+      {% endif %}
     </div>
   {% endfor %}
 </body>

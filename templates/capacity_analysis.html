@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Capacity Analysis — Legal Engine{% endblock %}
+{% block content %}
+<div class="card" style="max-width:860px;margin:2rem auto;">
+  <div style="margin-bottom:1.5rem;">
+    <a href="/legal-services" style="color:#d9aa3f;font-size:.85rem;">← Legal Engine</a>
+  </div>
+
+  <h2 style="margin-bottom:.25rem;">Capacity Analysis</h2>
+  <p class="muted" style="margin-bottom:1.5rem;">
+    Individual vs. official capacity — sovereign immunity and Ex parte Young
+  </p>
+
+  {% if result %}
+  <!-- TARGET TYPE BADGE -->
+  <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <span style="font-size:.8rem;padding:.3rem .9rem;border-radius:20px;font-weight:600;
+      background:{% if result.target_type == 'government' %}#1a2e0f{% else %}#1a1a2e{% endif %};
+      border:1px solid {% if result.target_type == 'government' %}#3a7d1e{% else %}#3a3a7d{% endif %};
+      color:{% if result.target_type == 'government' %}#7dda4c{% else %}#7d9dda{% endif %};">
+      {{ result.target_type | upper }} ACTOR
+    </span>
+    <span style="font-size:.85rem;color:#ccc;">{{ result.targetName }}</span>
+  </div>
+
+  <!-- IMMUNITY RISK -->
+  <div style="padding:1rem 1.25rem;border-radius:10px;margin-bottom:1.5rem;
+    background:#1c1a0d;border:1px solid #5a4a10;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.4rem;">
+      Immunity Risk
+    </div>
+    <div style="font-size:1rem;font-weight:600;color:#eec94f;">{{ result.immunity_risk }}</div>
+  </div>
+
+  <!-- CAPACITY SPLIT -->
+  <div style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;margin-bottom:1.25rem;">
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem;">
+      <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem;">
+        Individual Capacity
+      </div>
+      {% if result.capacity_split.individual %}
+        {% for d in result.capacity_split.individual %}
+        <div style="font-size:.88rem;color:#bcc8dc;margin-bottom:.3rem;">{{ d }}</div>
+        {% endfor %}
+        <div style="font-size:.78rem;color:#667;margin-top:.5rem;">Personal liability — damages available (Hafer v. Melo, 1991)</div>
+      {% else %}
+        <div style="font-size:.85rem;color:#667;">No individual actor named</div>
+      {% endif %}
+    </div>
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem;">
+      <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem;">
+        Official Capacity
+      </div>
+      {% if result.capacity_split.official %}
+        {% for d in result.capacity_split.official %}
+        <div style="font-size:.88rem;color:#bcc8dc;margin-bottom:.3rem;">{{ d }}</div>
+        {% endfor %}
+        <div style="font-size:.78rem;color:#667;margin-top:.5rem;">Entity liability — injunctive relief (Ex parte Young, 1908)</div>
+      {% else %}
+        <div style="font-size:.85rem;color:#667;">No official entity named</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RECOMMENDED DEFENDANTS -->
+  {% if result.recommended_defendants %}
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Recommended Defendants
+    </div>
+    {% for d in result.recommended_defendants %}
+    <div style="font-size:.88rem;color:#bcc8dc;padding:.3rem 0;border-bottom:1px solid #1e2a3a;">{{ d }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- EX PARTE YOUNG / SOVEREIGN IMMUNITY FLAGS -->
+  <div style="display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:1.25rem;">
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:.75rem 1rem;">
+      <div style="font-size:.75rem;color:#aaa;margin-bottom:.3rem;">Sovereign Immunity</div>
+      <div style="font-size:.9rem;font-weight:600;
+        color:{% if result.sovereign_immunity_applies %}#da4c4c{% else %}#4cda7d{% endif %};">
+        {% if result.sovereign_immunity_applies %}APPLIES{% else %}DOES NOT APPLY{% endif %}
+      </div>
+    </div>
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:.75rem 1rem;">
+      <div style="font-size:.75rem;color:#aaa;margin-bottom:.3rem;">Ex parte Young Available</div>
+      <div style="font-size:.9rem;font-weight:600;
+        color:{% if result.ex_parte_young_available %}#4cda7d{% else %}#667{% endif %};">
+        {% if result.ex_parte_young_available %}YES — Injunction Permitted{% else %}N/A{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- IMMUNITY NOTES -->
+  {% if result.immunity_notes %}
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Immunity Analysis
+    </div>
+    {% for note in result.immunity_notes %}
+    <p style="font-size:.88rem;color:#bcc8dc;line-height:1.6;margin-bottom:.5rem;">{{ note }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- CASE LAW -->
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Controlling Authority
+    </div>
+    <ul style="margin:0;padding-left:1.2rem;font-size:.85rem;color:#bcc8dc;line-height:1.8;">
+      {% for cite in result.case_law %}
+      <li>{{ cite }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <p style="font-size:.78rem;color:#667;margin-top:1rem;">{{ result.note }}</p>
+
+  {% else %}
+  <!-- INFORMATIONAL (no result yet) -->
+  <p style="color:#bcc8dc;line-height:1.7;margin-bottom:1.25rem;">
+    The Capacity Analysis engine applies
+    <strong>Kentucky v. Graham, 473 U.S. 159 (1985)</strong> to separate individual-capacity
+    claims (personal liability, damages) from official-capacity claims (entity liability,
+    injunctive relief), and applies <strong>Ex parte Young, 209 U.S. 123 (1908)</strong> to
+    determine whether injunctive relief is available against state actors despite sovereign immunity.
+  </p>
+
+  <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:1.5rem;">
+    {% for label, desc in [
+      ('Individual Capacity', 'Targets the officer personally. Damages available. Qualified immunity may apply. Hafer v. Melo (1991).'),
+      ('Official Capacity', 'Targets the entity. Injunctive relief only against states (11th Amendment). Monell for municipalities.'),
+      ('Ex parte Young', 'Injunction against a state officer in official capacity to stop ongoing constitutional violation is permitted.')
+    ] %}
+    <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem;">
+      <div style="font-size:.8rem;font-weight:700;color:#d9aa3f;margin-bottom:.5rem;">{{ label }}</div>
+      <p style="font-size:.85rem;color:#aec4e8;margin:0;line-height:1.5;">{{ desc }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="border:1px solid #2d3a50;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
+    <div style="font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.6rem;">
+      Controlling Authority
+    </div>
+    <ul style="margin:0;padding-left:1.2rem;font-size:.85rem;color:#bcc8dc;line-height:1.8;">
+      <li>Kentucky v. Graham, 473 U.S. 159 (1985)</li>
+      <li>Ex parte Young, 209 U.S. 123 (1908)</li>
+      <li>Will v. Michigan Dept. of State Police, 491 U.S. 58 (1989)</li>
+      <li>Hafer v. Melo, 502 U.S. 21 (1991)</li>
+      <li>U.S. Const. amend. XI</li>
+    </ul>
+  </div>
+
+  <div style="margin-top:1.5rem;">
+    <a class="btn btn-primary" href="/modules/case-dock">Begin Case Intake →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

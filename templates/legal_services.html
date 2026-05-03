@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Legal Engine — Nautical Compass{% endblock %}
+{% block content %}
+<div class="card" style="max-width:900px;margin:2rem auto;">
+  <div style="margin-bottom:1.5rem;">
+    <a href="/" style="color:#d9aa3f;font-size:.85rem;">← Bridge</a>
+  </div>
+
+  <h2 style="margin-bottom:.25rem;">Legal Engine</h2>
+  <p class="muted" style="margin-bottom:.5rem;">
+    JurisEngine — standing, capacity, rights, jurisdiction, and case assembly
+  </p>
+  <p style="font-size:.85rem;color:#bcc8dc;line-height:1.6;margin-bottom:2rem;">
+    Each module applies controlling federal case law to intake data. Use the intake engine to
+    capture your facts, then run the analysis tools to screen your legal position.
+  </p>
+
+  <!-- ANALYSIS TOOLS -->
+  <div style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.75rem;">
+    Analysis Modules
+  </div>
+  <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-bottom:2rem;">
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Standing Analysis
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Three-element Article III test: injury in fact, causation, redressability.
+        Applies <em>Lujan</em> (1992) and <em>TransUnion</em> (2021).
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        Lujan v. Defenders of Wildlife, 504 U.S. 555 (1992)
+      </div>
+      <a href="/standing-analysis" style="color:#d9aa3f;font-size:.85rem;">Open Standing Analysis →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Capacity Analysis
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Individual vs. official capacity split. Sovereign immunity and Ex parte Young
+        injunctive relief analysis.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        Kentucky v. Graham, 473 U.S. 159 (1985)
+      </div>
+      <a href="/capacity-analysis" style="color:#d9aa3f;font-size:.85rem;">Open Capacity Analysis →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Section 1983
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Civil rights claim detection: color of law, constitutional deprivation, and
+        Monell municipal liability via policy or custom.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        Monell v. Dept. of Social Services, 436 U.S. 658 (1978)
+      </div>
+      <a href="/section-1983" style="color:#d9aa3f;font-size:.85rem;">Open §1983 Analysis →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Consumer Rights
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        FCRA, FDCPA, breach of contract, and debt collection rights detection
+        for private-actor disputes.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        FCRA 15 U.S.C. §1681 · FDCPA 15 U.S.C. §1692
+      </div>
+      <a href="/consumer-rights" style="color:#d9aa3f;font-size:.85rem;">Open Consumer Rights →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Status Correction
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Worker classification, contractor status, and operator structure correction
+        pathway from the Operator Rail.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        Compliance checklist · EIN · LLC formation · W-9 readiness
+      </div>
+      <a href="/status-correction" style="color:#d9aa3f;font-size:.85rem;">Open Status Correction →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Case Packet
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Assemble standing, capacity, rights, and jurisdiction analysis into a
+        single exportable case packet.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        Requires completed intake + complaint profile
+      </div>
+      <a href="/modules/draft-packet" style="color:#d9aa3f;font-size:.85rem;">Open Draft Packet →</a>
+    </div>
+
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Complaint Draft
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Generate a structured federal complaint draft from your legal results —
+        jurisdiction, standing, capacity, causes of action, and prayer for relief.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        POST /api/legal/complaint-draft · §1983 · Lujan · Kentucky v. Graham
+      </div>
+      <a href="/modules/draft-packet" style="color:#d9aa3f;font-size:.85rem;">Open Draft Packet →</a>
+    </div>
+
+  </div>
+
+  <!-- API ENDPOINTS -->
+  <div style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#d9aa3f;margin-bottom:.75rem;">
+    API Endpoints
+  </div>
+  <div style="border:1px solid #2d3a50;border-radius:12px;padding:1rem 1.25rem;background:#0d1520;margin-bottom:2rem;">
+    <div style="font-size:.8rem;color:#bcc8dc;font-family:monospace;line-height:2;">
+      POST /api/legal/standing<br>
+      POST /api/legal/capacity<br>
+      POST /api/legal/rights<br>
+      POST /api/legal/regulatory-routes<br>
+      POST /api/legal/jurisdiction<br>
+      POST /api/legal/results<br>
+      POST /api/legal/case-packet<br>
+      POST /api/legal/complaint-draft
+    </div>
+    <div style="font-size:.75rem;color:#667;margin-top:.5rem;">
+      All endpoints accept <code style="color:#aec4e8;">{ "intakeState": {...}, "complaintId": "..." }</code>
+    </div>
+  </div>
+
+  <!-- INTAKE ENTRY POINT -->
+  <div style="border:1px solid #3a4a60;border-radius:12px;padding:1.25rem;background:#111b2b;text-align:center;">
+    <div style="font-size:.85rem;color:#bcc8dc;margin-bottom:.75rem;">
+      Start here: capture your facts before running analysis.
+    </div>
+    <a class="btn btn-primary" href="/modules/case-dock">Open Case Dock →</a>
+  </div>
+
+</div>
+{% endblock %}
