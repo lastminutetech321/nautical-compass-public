@@ -147,7 +147,7 @@ def command_deck_status_with_intake():
         from routes.intake_engine import load_latest_intake, count_submissions
         latest = load_latest_intake()
         total = count_submissions()
-        data["intake_engine"] = {
+        ie: dict = {
             "status":            "active" if latest else "idle",
             "total_submissions": total,
             "latest_id":         latest.get("intake_id") if latest else None,
@@ -156,6 +156,17 @@ def command_deck_status_with_intake():
             "latest_type":       latest.get("intake_type") if latest else None,
             "latest_status":     latest.get("status") if latest else None,
         }
+        if latest and latest.get("intake_type") == "partner" and latest.get("operator_rail"):
+            rail = latest["operator_rail"]
+            ie["operator_rail"] = {
+                "readiness_score":    rail.get("readiness_score"),
+                "compliance_complete": rail.get("compliance_complete"),
+                "entity_type_label":  rail.get("entity_type_label"),
+                "operator_type_label": rail.get("operator_type_label"),
+                "service_area":       rail.get("service_area"),
+                "missing_compliance": rail.get("missing_compliance", []),
+            }
+        data["intake_engine"] = ie
     except Exception as exc:
         data["intake_engine"] = {"status": "error", "error": str(exc)}
 

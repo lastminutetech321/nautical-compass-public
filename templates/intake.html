@@ -474,7 +474,7 @@
       <div class="field-row">
         <div class="field">
           <label for="business_type">Entity type</label>
-          <select id="business_type">
+          <select id="business_type" name="entity_type">
             <option value="">— Select —</option>
             <option value="llc">LLC</option>
             <option value="sole_prop">Sole Proprietorship</option>
@@ -486,7 +486,7 @@
         </div>
         <div class="field">
           <label for="operator_type">Operator / service type</label>
-          <select id="operator_type">
+          <select id="operator_type" name="operator_type_rail">
             <option value="">— Select —</option>
             <option value="av_production">AV Production / Crew Services</option>
             <option value="labor_provider">Labor Provider / Staffing</option>
@@ -496,10 +496,47 @@
           </select>
         </div>
       </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="service_area">Primary service area</label>
+          <input type="text" id="service_area" name="service_area"
+                 placeholder="e.g. Las Vegas, NV / Southwest US / Nationwide">
+        </div>
+        <div class="field">
+          <label for="formation_state">State of formation</label>
+          <input type="text" id="formation_state" name="formation_state"
+                 placeholder="e.g. Nevada / Delaware / California">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="ein_status">EIN status</label>
+          <select id="ein_status" name="ein_status">
+            <option value="">— Select —</option>
+            <option value="on_file">EIN on file</option>
+            <option value="applied">Applied — pending</option>
+            <option value="not_started">Not started</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="w9_status">W-9 status</label>
+          <select id="w9_status" name="w9_status">
+            <option value="">— Select —</option>
+            <option value="complete">W-9 complete</option>
+            <option value="in_progress">In progress</option>
+            <option value="not_ready">Not ready</option>
+          </select>
+        </div>
+      </div>
       <div class="field">
-        <label for="service_area">Primary service area</label>
-        <input type="text" id="service_area"
-               placeholder="e.g. Las Vegas, NV / Southwest US / Nationwide">
+        <label for="insurance_status">General liability insurance</label>
+        <select id="insurance_status" name="insurance_status">
+          <option value="">— Select —</option>
+          <option value="active">Active certificate on file</option>
+          <option value="pending">Pending / in process</option>
+          <option value="not_covered">Not covered</option>
+        </select>
+        <span class="field-hint">Required for operator status. If not yet covered, note this in your onboarding plan.</span>
       </div>
     </div>
 
@@ -643,9 +680,6 @@
       var roleType       = val('role_type');
       var availability   = val('availability');
       var skills         = val('skills');
-      var businessType   = val('business_type');
-      var operatorType   = val('operator_type');
-      var serviceArea    = val('service_area');
 
       if (respondent)                        parts.push('Respondent: ' + respondent + (respondentType ? ' (' + respondentType + ')' : ''));
       if (incidentDate)                      parts.push('Incident date: ' + incidentDate + (ongoing ? ' (ongoing)' : ''));
@@ -657,9 +691,6 @@
       if (roleType)                          parts.push('Role: ' + roleType);
       if (availability)                      parts.push('Availability: ' + availability);
       if (skills)                            parts.push('Skills: ' + skills);
-      if (businessType)                      parts.push('Entity type: ' + businessType);
-      if (operatorType)                      parts.push('Operator type: ' + operatorType);
-      if (serviceArea)                       parts.push('Service area: ' + serviceArea);
 
       notesField.value = parts.join('\n');
     });

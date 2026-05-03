@@ -148,6 +148,14 @@ async def intake_post(
     preferred_contact: str  = Form(""),
     urgency: str            = Form(""),
     notes: str              = Form(""),
+    # Operator Rail fields
+    entity_type: str        = Form(""),
+    operator_type_rail: str = Form(""),
+    service_area: str       = Form(""),
+    formation_state: str    = Form(""),
+    ein_status: str         = Form(""),
+    w9_status: str          = Form(""),
+    insurance_status: str   = Form(""),
 ):
     intake_id = f"int_{uuid4().hex[:10]}"
     created_at = int(time.time())
@@ -175,6 +183,19 @@ async def intake_post(
         "status":         "complete" if not missing_fields else "partial",
         **data,
     }
+
+    if intake_type.strip() == "partner":
+        from services.operator_rail_service import build_operator_profile
+        rail_data = {
+            "entity_type":        entity_type.strip(),
+            "operator_type_rail": operator_type_rail.strip(),
+            "service_area":       service_area.strip(),
+            "formation_state":    formation_state.strip(),
+            "ein_status":         ein_status.strip(),
+            "w9_status":          w9_status.strip(),
+            "insurance_status":   insurance_status.strip(),
+        }
+        record["operator_rail"] = build_operator_profile(rail_data)
 
     store_intake(record)
 

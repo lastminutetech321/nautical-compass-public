@@ -155,6 +155,62 @@
     font-style: italic;
   }
 
+  /* Operator Rail panel */
+  .rail-panel {
+    background: #f5f8ff;
+    border: 1px solid #c8d8f0;
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.4rem;
+  }
+  .rail-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .9rem;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .rail-panel-title {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #1e3a6e;
+  }
+  .readiness-badge {
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    letter-spacing: .04em;
+  }
+  .readiness-badge.ready   { background: #d1fae5; color: #065f46; }
+  .readiness-badge.partial { background: #fef3c7; color: #92400e; }
+  .readiness-badge.low     { background: #fee2e2; color: #991b1b; }
+  .next-steps-block {
+    background: #fff;
+    border: 1px solid #e0e7f0;
+    border-radius: 6px;
+    padding: .8rem 1rem;
+    margin-top: .8rem;
+  }
+  .next-steps-block h4 {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #1e3a6e;
+    margin: 0 0 .5rem;
+  }
+  .next-steps-list {
+    margin: 0;
+    padding-left: 1.3rem;
+    font-size: .85rem;
+    color: #374151;
+    line-height: 1.7;
+  }
+
   /* Action row */
   .action-row {
     display: flex;
@@ -265,6 +321,47 @@
         {% endif %}
         <tr><th>Status</th><td>{{ record.status | title }}</td></tr>
       </table>
+
+      {% if record.intake_type == "partner" and record.operator_rail %}
+      {% set rail = record.operator_rail %}
+      <div class="rail-panel">
+        <div class="rail-panel-header">
+          <span class="rail-panel-title">Operator Rail — Compliance Profile</span>
+          <span class="readiness-badge {% if rail.readiness_score >= 80 %}ready{% elif rail.readiness_score >= 50 %}partial{% else %}low{% endif %}">
+            Readiness: {{ rail.readiness_score }}%
+          </span>
+        </div>
+        <table class="summary-table" style="margin-bottom:.6rem">
+          <tr><th>Entity Type</th><td>{{ rail.entity_type_label or '—' }}</td></tr>
+          <tr><th>Service Type</th><td>{{ rail.operator_type_label or '—' }}</td></tr>
+          <tr><th>Service Area</th><td>{{ rail.service_area or '—' }}</td></tr>
+          <tr><th>Formation State</th><td>{{ rail.formation_state or '—' }}</td></tr>
+          <tr><th>EIN</th><td>{{ rail.ein_status_label or '—' }}</td></tr>
+          <tr><th>W-9</th><td>{{ rail.w9_status_label or '—' }}</td></tr>
+          <tr><th>Insurance</th><td>{{ rail.insurance_status_label or '—' }}</td></tr>
+        </table>
+        {% if rail.missing_compliance %}
+        <div class="missing-block" style="margin-bottom:.8rem">
+          <h4>Missing Compliance Items</h4>
+          <div class="missing-tags">
+            {% for item in rail.missing_compliance %}
+            <span class="missing-tag">{{ item }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if rail.next_steps %}
+        <div class="next-steps-block">
+          <h4>Next Steps</h4>
+          <ol class="next-steps-list">
+            {% for step in rail.next_steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+          </ol>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
 
       <div class="action-row">
         <a href="/intake" class="btn-primary">Submit Another Intake</a>
