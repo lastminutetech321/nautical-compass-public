@@ -1,193 +1,262 @@
 {% extends "base.html" %}
-{% block title %}Universal Intake — Nautical Compass{% endblock %}
+{% block title %}Submit Intake — Nautical Compass{% endblock %}
 
 {% block head %}
 <style>
+  /* ── Intake page ─────────────────────────────────────────────── */
   .intake-wrap {
-    max-width: 720px;
+    max-width: 760px;
     margin: 2.5rem auto;
-    padding: 0 1rem;
+    padding: 0 1rem 3rem;
   }
   .intake-header {
     margin-bottom: 2rem;
   }
-  .intake-header h1 {
-    font-size: 1.7rem;
-    font-weight: 700;
-    margin: 0 0 .4rem;
-  }
-  .intake-header p {
-    color: #666;
-    margin: 0;
-    font-size: .95rem;
-  }
   .intake-badge {
     display: inline-block;
-    background: #0a2540;
-    color: #fff;
+    background: rgba(200,168,75,.15);
+    color: #c8a84b;
     font-size: .72rem;
-    font-weight: 600;
-    letter-spacing: .06em;
-    padding: .25rem .6rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    padding: .25rem .65rem;
     border-radius: 4px;
-    margin-bottom: .75rem;
+    border: 1px solid rgba(200,168,75,.3);
+    margin-bottom: .9rem;
     text-transform: uppercase;
   }
+  .intake-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 .5rem;
+  }
+  .intake-header p {
+    color: #8ca8c8;
+    margin: 0;
+    font-size: .95rem;
+    line-height: 1.5;
+  }
   .intake-form {
-    background: #fff;
-    border: 1px solid #dde3ea;
-    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(200,168,75,.18);
+    border-radius: 12px;
     padding: 2rem;
   }
   .form-section {
-    margin-bottom: 1.6rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid rgba(255,255,255,.07);
   }
-  .form-section-label {
-    font-size: .78rem;
+  .form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  .section-label {
+    font-size: .73rem;
     font-weight: 700;
-    letter-spacing: .07em;
+    letter-spacing: .1em;
     text-transform: uppercase;
-    color: #0a2540;
-    margin-bottom: .85rem;
-    padding-bottom: .4rem;
-    border-bottom: 2px solid #e8edf2;
+    color: #c8a84b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,168,75,.2);
   }
   .field-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
-  @media (max-width: 540px) {
+  @media (max-width: 560px) {
     .field-row { grid-template-columns: 1fr; }
+    .intake-form { padding: 1.25rem; }
   }
   .field {
     display: flex;
     flex-direction: column;
-    gap: .35rem;
-    margin-bottom: 1rem;
+    gap: .3rem;
+    margin-bottom: .9rem;
   }
+  .field:last-child { margin-bottom: 0; }
   .field label {
-    font-size: .85rem;
+    font-size: .82rem;
     font-weight: 600;
-    color: #333;
+    color: #b8cde0;
   }
   .field label .req {
-    color: #c0392b;
+    color: #e87c6c;
     margin-left: 2px;
   }
   .field input,
   .field select,
   .field textarea {
-    border: 1px solid #cdd3da;
-    border-radius: 6px;
-    padding: .55rem .75rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 7px;
+    padding: .55rem .8rem;
     font-size: .9rem;
-    color: #1a1a1a;
-    background: #fafbfc;
-    transition: border-color .15s;
+    color: #e8edf2;
+    background: rgba(255,255,255,.06);
+    transition: border-color .15s, background .15s;
     width: 100%;
     box-sizing: border-box;
+    font-family: inherit;
+  }
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: rgba(180,200,220,.4);
+    font-style: italic;
+  }
+  .field select option {
+    background: #0a1f3a;
+    color: #e8edf2;
   }
   .field input:focus,
   .field select:focus,
   .field textarea:focus {
     outline: none;
-    border-color: #0a2540;
-    background: #fff;
+    border-color: rgba(200,168,75,.6);
+    background: rgba(255,255,255,.09);
   }
   .field textarea {
     resize: vertical;
-    min-height: 90px;
+    min-height: 100px;
+    line-height: 1.5;
   }
   .field-hint {
-    font-size: .78rem;
-    color: #888;
+    font-size: .77rem;
+    color: #5a7c9a;
+    line-height: 1.4;
   }
+  .check-group {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    margin-top: .35rem;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .87rem;
+    color: #b8cde0;
+    cursor: pointer;
+  }
+  .check-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #c8a84b;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .path-info-box {
+    background: rgba(200,168,75,.07);
+    border: 1px solid rgba(200,168,75,.2);
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-size: .84rem;
+    color: #a8c0d8;
+    line-height: 1.5;
+    margin-top: .75rem;
+    display: none;
+  }
+  .path-info-box.visible { display: block; }
+  .path-info-box strong {
+    color: #c8a84b;
+    display: block;
+    margin-bottom: .3rem;
+    font-size: .78rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+  .rail-section { display: none; }
+  .rail-section.visible { display: block; }
   .intake-submit-row {
     display: flex;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 1px solid #e8edf2;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
-  .btn-intake-submit {
-    background: #0a2540;
-    color: #fff;
+  .score-note {
+    font-size: .8rem;
+    color: #5a7c9a;
+  }
+  .btn-submit {
+    background: linear-gradient(135deg, #c8a84b 0%, #a07c28 100%);
+    color: #0a1628;
     border: none;
-    border-radius: 7px;
-    padding: .7rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s;
-  }
-  .btn-intake-submit:hover {
-    background: #154370;
-  }
-  .score-preview {
-    margin-bottom: 1.5rem;
-    background: #f0f4f9;
-    border: 1px solid #d0dbe9;
     border-radius: 8px;
-    padding: 1rem 1.2rem;
-    font-size: .85rem;
-    color: #444;
+    padding: .75rem 2.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .03em;
+    transition: opacity .15s, transform .1s;
   }
-  .score-preview strong { color: #0a2540; }
+  .btn-submit:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="intake-wrap">
+
   <div class="intake-header">
     <div class="intake-badge">Universal Intake Engine</div>
-    <h1>Submit an Intake</h1>
-    <p>Complete the fields below. Required fields are marked with <span style="color:#c0392b">*</span>. Your submission is scored on completeness and routed immediately.</p>
+    <h1>Submit Your Intake</h1>
+    <p>Select the path that fits your situation. The form will guide you through the right questions. Required fields are marked <span style="color:#e87c6c">*</span>.</p>
   </div>
 
-  <div class="score-preview">
-    <strong>Intake Score</strong> is calculated from the 6 required fields below. A complete submission scores 100 and routes faster. Partial submissions are accepted and can be updated.
-  </div>
+  <form class="intake-form" method="POST" action="/intake" id="intakeForm">
 
-  <form class="intake-form" method="POST" action="/intake">
+    <!-- notes is populated by JS before submit — not shown to user -->
+    <input type="hidden" id="notes" name="notes" value="">
 
-    <!-- Section 1: Identity -->
+    <!-- ── Section 1: Identity ─────────────────────────────────── -->
     <div class="form-section">
-      <div class="form-section-label">Identity</div>
+      <div class="section-label">Identity</div>
       <div class="field-row">
         <div class="field">
           <label for="full_name">Full Name <span class="req">*</span></label>
-          <input type="text" id="full_name" name="full_name" autocomplete="name" placeholder="First Last">
+          <input type="text" id="full_name" name="full_name" autocomplete="name"
+                 placeholder="e.g. Jordan Williams">
         </div>
         <div class="field">
           <label for="org_name">Organization / Company</label>
-          <input type="text" id="org_name" name="org_name" placeholder="Optional">
+          <input type="text" id="org_name" name="org_name"
+                 placeholder="e.g. Williams AV Services LLC">
         </div>
       </div>
       <div class="field-row">
         <div class="field">
           <label for="email">Email <span class="req">*</span></label>
-          <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com">
+          <input type="email" id="email" name="email" autocomplete="email"
+                 placeholder="you@example.com">
         </div>
         <div class="field">
           <label for="phone">Phone <span class="req">*</span></label>
-          <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="(555) 000-0000">
+          <input type="tel" id="phone" name="phone" autocomplete="tel"
+                 placeholder="(555) 000-0000">
         </div>
       </div>
-    </div>
-
-    <!-- Section 2: Intake Type -->
-    <div class="form-section">
-      <div class="form-section-label">Intake Type</div>
       <div class="field-row">
         <div class="field">
-          <label for="intake_type">Type <span class="req">*</span></label>
-          <select id="intake_type" name="intake_type">
-            <option value="">— Select type —</option>
-            <option value="labor">Labor / Workforce</option>
-            <option value="legal">Legal / Case</option>
-            <option value="production">Production / Event</option>
-            <option value="partner">Partner / Vendor</option>
-            <option value="general">General Inquiry</option>
+          <label for="preferred_contact">Preferred Contact Method</label>
+          <select id="preferred_contact" name="preferred_contact">
+            <option value="">— Select —</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone call</option>
+            <option value="sms">SMS / Text</option>
           </select>
         </div>
         <div class="field">
@@ -201,39 +270,401 @@
           </select>
         </div>
       </div>
+    </div>
+
+    <!-- ── Section 2: Intake Type ─────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Intake Type</div>
       <div class="field">
-        <label for="preferred_contact">Preferred Contact Method</label>
-        <select id="preferred_contact" name="preferred_contact">
-          <option value="">— Select —</option>
-          <option value="email">Email</option>
-          <option value="phone">Phone</option>
-          <option value="sms">SMS / Text</option>
+        <label for="intake_type">What kind of matter is this? <span class="req">*</span></label>
+        <select id="intake_type" name="intake_type">
+          <option value="">— Select your path —</option>
+          <option value="legal">Legal / Case — rights violation, permit denial, discrimination</option>
+          <option value="labor">Labor / Workforce — unpaid wages, crew dispute, wrongful termination</option>
+          <option value="payment">Payment / Billing Dispute — overcharge, collection, credit impact</option>
+          <option value="production">Production / Event — AV, staging, show production request</option>
+          <option value="partner">Partner / Operator Rail — business formation, operator onboarding</option>
+          <option value="general">General Inquiry</option>
         </select>
+      </div>
+
+      <div id="info-legal" class="path-info-box">
+        <strong>Legal / Case Path</strong>
+        Use this path if your rights were violated by a government agency, employer, landlord, or institution — including permit denials, due process violations, discrimination, or retaliation. You do not need to know the legal theory. Just describe what happened.
+      </div>
+      <div id="info-labor" class="path-info-box">
+        <strong>Labor / Workforce Path</strong>
+        Use this path for unpaid wages, crew pay disputes, unlawful termination, unsafe conditions, or workforce contract issues. Include your role, rate of pay, dates worked, and what was owed or withheld.
+      </div>
+      <div id="info-payment" class="path-info-box">
+        <strong>Payment / Billing Dispute Path</strong>
+        Use this path for overcharges, unauthorized fees, billing errors, debt collection issues, or errors on your credit report tied to an account. Include the company name and the exact dollar amount disputed.
+      </div>
+      <div id="info-production" class="path-info-box">
+        <strong>Production / Event Path</strong>
+        Use this path for AV, staging, or event production intake. Include the event type, date, venue, and the crew or services you need. Operator availability will be checked after intake.
+      </div>
+      <div id="info-partner" class="path-info-box">
+        <strong>Partner / Operator Rail Path</strong>
+        Use this path to register a business entity, begin operator onboarding, or apply for crew services operator status. Include your entity type, state of formation, and intended service area.
       </div>
     </div>
 
-    <!-- Section 3: Subject & Details -->
+    <!-- ── Section 3: One-Line Summary ─────────────────────────── -->
     <div class="form-section">
-      <div class="form-section-label">Subject & Details</div>
+      <div class="section-label">One-Line Summary</div>
       <div class="field">
         <label for="subject">Subject <span class="req">*</span></label>
-        <input type="text" id="subject" name="subject" placeholder="One-line summary of your intake">
+        <input type="text" id="subject" name="subject"
+               placeholder="Briefly state what happened and when — e.g. 'AT&amp;T charged $350 ETF after I cancelled in March 2026'">
+        <span class="field-hint">Keep it to one line. Name the party and include the approximate date.</span>
+      </div>
+    </div>
+
+    <!-- ── Section 4: What Happened ────────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">What Happened</div>
+      <div class="field">
+        <label for="description">Describe what happened <span class="req">*</span></label>
+        <textarea id="description" name="description" rows="7"
+                  placeholder="Start from the beginning. Who did what? When? What did you do or say? What response did you get? Include key dates and any dollar amounts involved."></textarea>
+        <span class="field-hint" id="description-hint">Include what you were promised or entitled to, what went wrong, and how it affected you.</span>
+      </div>
+    </div>
+
+    <!-- ── Section 5: Who Caused Harm ──────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Who Caused Harm</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="respondent_name">Name of person, company, or agency</label>
+          <input type="text" id="respondent_name"
+                 placeholder="e.g. City of Springfield / AT&amp;T / John Smith">
+          <span class="field-hint">Full legal name if you know it.</span>
+        </div>
+        <div class="field">
+          <label for="respondent_type">Type of respondent</label>
+          <select id="respondent_type">
+            <option value="">— Select —</option>
+            <option value="private_company">Private company / business</option>
+            <option value="government_agency">Government agency / municipality</option>
+            <option value="individual">Individual person</option>
+            <option value="employer">Employer / staffing agency</option>
+            <option value="landlord">Landlord / property manager</option>
+            <option value="debt_collector">Debt collector / collection agency</option>
+            <option value="financial_institution">Bank / financial institution</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 6: Dates & Timeline ─────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Dates &amp; Timeline</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="incident_date">Date the harm occurred (or started)</label>
+          <input type="date" id="incident_date">
+          <span class="field-hint">Approximate is fine if you are not certain of the exact date.</span>
+        </div>
+        <div class="field">
+          <label for="first_notice_date">Date you first became aware</label>
+          <input type="date" id="first_notice_date">
+          <span class="field-hint">Leave blank if same as above.</span>
+        </div>
       </div>
       <div class="field">
-        <label for="description">Description <span class="req">*</span></label>
-        <textarea id="description" name="description" rows="5" placeholder="Describe what you need, relevant background, key dates, and parties involved."></textarea>
-        <span class="field-hint">More detail = higher intake score = faster routing.</span>
+        <label class="check-item" style="color:#b8cde0">
+          <input type="checkbox" id="ongoing">
+          This is ongoing — the harm is still happening or has not been resolved
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Section 7: Evidence & Documents ─────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Evidence &amp; Documents</div>
+      <div class="field">
+        <label>Check everything you have or can obtain</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="written_denial_letter"> Written denial, termination letter, or decision notice</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="account_statements"> Account statements, invoices, or billing records</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="contract_or_agreement"> Contract, signed agreement, or work order</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="email_or_text"> Email or text message thread</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="screenshots"> Screenshots (app, online portal, or website)</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="credit_report"> Credit report showing the account entry</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="photos_or_video"> Photos or video recording</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="witness"> Witness who can provide a written statement</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="medical_records"> Medical records or treatment documentation</label>
+          <label class="check-item"><input type="checkbox" name="evidence_types" value="pay_records"> Pay stubs, call sheets, or payroll records</label>
+        </div>
+        <span class="field-hint" style="margin-top:.5rem">Do not attach files here. List what you have. Documents can be provided after your intake is reviewed.</span>
+      </div>
+    </div>
+
+    <!-- ── Section 8: Damages & Losses ─────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Damages &amp; Losses</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="financial_loss">Total financial loss (dollar amount)</label>
+          <input type="text" id="financial_loss"
+                 placeholder="e.g. $1,350 in unpaid wages">
+          <span class="field-hint">All money lost, overcharged, or owed to you. Write $0 if no direct dollar loss.</span>
+        </div>
+        <div class="field">
+          <label for="other_losses">Other harm or consequences</label>
+          <textarea id="other_losses" rows="3"
+                    placeholder="e.g. Credit score dropped 40 points; denied apartment rental; 3 days of lost income; emotional distress"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 9: Desired Outcome ──────────────────────────── -->
+    <div class="form-section">
+      <div class="section-label">Desired Outcome</div>
+      <div class="field">
+        <label for="desired_outcome">What outcome would resolve this for you?</label>
+        <textarea id="desired_outcome" rows="3"
+                  placeholder="e.g. Full payment of $1,350 owed; removal of credit report entry; reversal of permit denial with written explanation"></textarea>
+        <span class="field-hint">Be specific. This goes directly into your intake file and guides the response team.</span>
+      </div>
+    </div>
+
+    <!-- ── Labor Rail (shown for labor / production) ────────────── -->
+    <div class="form-section rail-section" id="rail-labor">
+      <div class="section-label">Labor Rail — Crew Details</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="role_type">Role / trade</label>
+          <select id="role_type">
+            <option value="">— Select role —</option>
+            <option value="av_technician">AV Technician</option>
+            <option value="lighting_technician">Lighting Technician</option>
+            <option value="audio_engineer">Audio Engineer</option>
+            <option value="video_engineer">Video Engineer</option>
+            <option value="rigger">Rigger</option>
+            <option value="stage_manager">Stage Manager / Coordinator</option>
+            <option value="crew_lead">Crew Lead / Foreman</option>
+            <option value="labor_general">General Labor</option>
+            <option value="other_crew">Other crew role</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="availability">Availability</label>
+          <select id="availability">
+            <option value="">— Select —</option>
+            <option value="immediately">Available immediately</option>
+            <option value="within_1_week">Available within 1 week</option>
+            <option value="within_2_weeks">Available within 2 weeks</option>
+            <option value="specific_dates">Specific dates only — describe in notes</option>
+          </select>
+        </div>
       </div>
       <div class="field">
-        <label for="notes">Additional Notes</label>
-        <textarea id="notes" name="notes" rows="3" placeholder="Anything else the team should know (optional)."></textarea>
+        <label for="skills">Key skills or certifications</label>
+        <input type="text" id="skills"
+               placeholder="e.g. Dante certified, Robe/MA2 experience, IATSE card, OSHA 10">
+      </div>
+    </div>
+
+    <!-- ── Operator Rail (shown for partner) ───────────────────── -->
+    <div class="form-section rail-section" id="rail-partner">
+      <div class="section-label">Operator Rail — Business Details</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="business_type">Entity type</label>
+          <select id="business_type">
+            <option value="">— Select —</option>
+            <option value="llc">LLC</option>
+            <option value="sole_prop">Sole Proprietorship</option>
+            <option value="s_corp">S Corporation</option>
+            <option value="c_corp">C Corporation</option>
+            <option value="partnership">Partnership</option>
+            <option value="dba">DBA / Trade Name</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="operator_type">Operator / service type</label>
+          <select id="operator_type">
+            <option value="">— Select —</option>
+            <option value="av_production">AV Production / Crew Services</option>
+            <option value="labor_provider">Labor Provider / Staffing</option>
+            <option value="event_production">Event Production Company</option>
+            <option value="venue_operator">Venue Operator</option>
+            <option value="other_operator">Other operator type</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="service_area">Primary service area</label>
+        <input type="text" id="service_area"
+               placeholder="e.g. Las Vegas, NV / Southwest US / Nationwide">
       </div>
     </div>
 
     <div class="intake-submit-row">
-      <button type="submit" class="btn-intake-submit">Submit Intake →</button>
+      <span class="score-note">Fields marked <span style="color:#e87c6c">*</span> are required for a 100-point intake score.</span>
+      <button type="submit" class="btn-submit">Submit Intake →</button>
     </div>
 
   </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+
+  /* Path-specific placeholder text — updates on intake_type change */
+  var PATH = {
+    legal: {
+      subject:      "City of Springfield denied permit application without explanation — April 2026",
+      description:  "On March 15, 2026, I submitted a complete permit application for my business location. On April 2, 2026, I received a denial letter with no reason given. I have operated at this address for 7 years in full compliance with all local ordinances and have received no prior notice of non-compliance.",
+      desc_hint:    "Include: what permit or right was denied, by whom, when, and how it affected you.",
+      respondent:   "e.g. City of Springfield Permits Division / Officer Jane Smith",
+      financial:    "e.g. $4,500 in filing and preparation costs",
+      losses:       "e.g. Unable to open new location; lost $2,000/month in projected revenue; business opportunity forfeited",
+      outcome:      "e.g. Reversal of denial and issuance of permit; or written explanation of grounds for denial within 30 days"
+    },
+    labor: {
+      subject:      "Crew coordinator failed to pay $1,350 for 3-day AV production — Las Vegas, March 2026",
+      description:  "I worked as an AV technician for a 3-day corporate event (March 10–12, 2026) at the Venetian, Las Vegas at a confirmed rate of $450/day. After the event the coordinator, Michael Torres of Phoenix Events LLC, stopped responding to my messages. I have not received the $1,350 owed. I have a signed work agreement and text messages confirming the rate.",
+      desc_hint:    "Include: your role, confirmed rate of pay, dates worked, and the steps you took to collect.",
+      respondent:   "e.g. Phoenix Events LLC / Michael Torres (coordinator)",
+      financial:    "e.g. $1,350 unpaid wages + $280 travel and accommodation costs",
+      losses:       "e.g. 3 days of wages withheld; travel unreimbursed; lost follow-on booking due to dispute",
+      outcome:      "e.g. Full payment of $1,350 wages plus $280 in unreimbursed expenses within 10 business days"
+    },
+    payment: {
+      subject:      "AT&T charged $350 early termination fee after I relocated — March 2026",
+      description:  "I was an AT&T residential customer for 4 years. In March 2026, I relocated due to job loss and requested account cancellation. AT&T applied a $350 early termination fee and reported the balance to all three credit bureaus. The ETF was not clearly disclosed at the time of service enrollment. I have no prior late payments on this account.",
+      desc_hint:    "Include: the company name, account type, amount disputed, what you were told at signup, and the credit impact if any.",
+      respondent:   "e.g. AT&T / AT&T Collections",
+      financial:    "e.g. $350 unauthorized ETF",
+      losses:       "e.g. Credit score dropped 40 points; denied apartment rental application; anxiety and time spent disputing",
+      outcome:      "e.g. Remove ETF charge from account; delete the credit bureau tradeline entry; confirm account closed in writing"
+    },
+    production: {
+      subject:      "Corporate awards gala — full AV crew needed — Las Vegas, June 14 2026",
+      description:  "We are producing a 400-person corporate awards ceremony at the Venetian, Las Vegas on June 14, 2026. We need a full AV crew: 2 audio engineers, 2 lighting techs, 1 video engineer, and 1 crew lead. Load-in begins at 8:00 AM; show is at 7:00 PM; load-out by midnight. Rigging pre-call may be required the previous day.",
+      desc_hint:    "Include: event type, venue, date, show duration, crew call time, and specific equipment or skill requirements.",
+      respondent:   "e.g. Venetian Resort Las Vegas / In-house AV department (if applicable)",
+      financial:    "e.g. Labor budget $12,000 for crew call",
+      losses:       "",
+      outcome:      "e.g. Full AV crew confirmed by May 30, 2026; union or non-union both acceptable"
+    },
+    partner: {
+      subject:      "Operator onboarding — Williams AV Services LLC — Las Vegas, NV",
+      description:  "I am establishing Williams AV Services LLC to provide AV production and crew services in the Las Vegas and Southwest US market. I seek to complete operator onboarding, register with the labor marketplace, and receive compliance checklist review. The LLC was formed in Nevada in January 2026 and my EIN is on file.",
+      desc_hint:    "Include: entity name, state of formation, EIN status, intended services, and primary service area.",
+      respondent:   "",
+      financial:    "",
+      losses:       "",
+      outcome:      "e.g. Complete operator onboarding checklist; activate crew services listing; confirm W-9 and insurance on file"
+    },
+    general: {
+      subject:      "",
+      description:  "",
+      desc_hint:    "Include what you need, relevant background, key dates, and parties involved.",
+      respondent:   "e.g. Company or person name",
+      financial:    "e.g. $500 or $0",
+      losses:       "e.g. Lost wages, credit impact, emotional distress",
+      outcome:      "e.g. Refund; correction of records; written response"
+    }
+  };
+
+  var typeSelect       = document.getElementById('intake_type');
+  var subjectEl        = document.getElementById('subject');
+  var descEl           = document.getElementById('description');
+  var descHintEl       = document.getElementById('description-hint');
+  var respondentEl     = document.getElementById('respondent_name');
+  var financialEl      = document.getElementById('financial_loss');
+  var lossesEl         = document.getElementById('other_losses');
+  var outcomeEl        = document.getElementById('desired_outcome');
+  var railLabor        = document.getElementById('rail-labor');
+  var railPartner      = document.getElementById('rail-partner');
+  var infoBoxes        = document.querySelectorAll('.path-info-box');
+
+  function applyPath(type) {
+    var d = PATH[type] || PATH['general'];
+
+    if (subjectEl)    subjectEl.placeholder    = d.subject      || "One-line summary — name the party and include a date";
+    if (descEl)       descEl.placeholder       = d.description  || "Describe what happened, key dates, and parties involved.";
+    if (descHintEl)   descHintEl.textContent   = d.desc_hint;
+    if (respondentEl) respondentEl.placeholder = d.respondent   || "e.g. Company or agency name";
+    if (financialEl)  financialEl.placeholder  = d.financial    || "e.g. $1,500 or $0";
+    if (lossesEl)     lossesEl.placeholder     = d.losses       || "e.g. Lost wages; credit impact; emotional distress";
+    if (outcomeEl)    outcomeEl.placeholder    = d.outcome      || "e.g. Payment owed; correction of records; written response";
+
+    if (railLabor)   railLabor.classList.toggle('visible', type === 'labor' || type === 'production');
+    if (railPartner) railPartner.classList.toggle('visible', type === 'partner');
+
+    infoBoxes.forEach(function (box) { box.classList.remove('visible'); });
+    var box = document.getElementById('info-' + type);
+    if (box) box.classList.add('visible');
+  }
+
+  if (typeSelect) {
+    typeSelect.addEventListener('change', function () { applyPath(this.value); });
+    if (typeSelect.value) applyPath(typeSelect.value);
+  }
+
+  /* Aggregate structured fields into hidden notes before submit */
+  var form       = document.getElementById('intakeForm');
+  var notesField = document.getElementById('notes');
+
+  if (form && notesField) {
+    form.addEventListener('submit', function () {
+      function val(id) {
+        var el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      }
+      function isChecked(id) {
+        var el = document.getElementById(id);
+        return el ? el.checked : false;
+      }
+      function checkedBoxes(name) {
+        return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked'))
+          .map(function (el) { return el.value; }).join(', ');
+      }
+
+      var parts = [];
+
+      var respondent     = val('respondent_name');
+      var respondentType = val('respondent_type');
+      var incidentDate   = val('incident_date');
+      var firstNotice    = val('first_notice_date');
+      var ongoing        = isChecked('ongoing');
+      var evidence       = checkedBoxes('evidence_types');
+      var financial      = val('financial_loss');
+      var losses         = val('other_losses');
+      var outcome        = val('desired_outcome');
+      var roleType       = val('role_type');
+      var availability   = val('availability');
+      var skills         = val('skills');
+      var businessType   = val('business_type');
+      var operatorType   = val('operator_type');
+      var serviceArea    = val('service_area');
+
+      if (respondent)                        parts.push('Respondent: ' + respondent + (respondentType ? ' (' + respondentType + ')' : ''));
+      if (incidentDate)                      parts.push('Incident date: ' + incidentDate + (ongoing ? ' (ongoing)' : ''));
+      if (firstNotice && firstNotice !== incidentDate) parts.push('First notice: ' + firstNotice);
+      if (evidence)                          parts.push('Evidence available: ' + evidence);
+      if (financial)                         parts.push('Financial loss: ' + financial);
+      if (losses)                            parts.push('Other losses: ' + losses);
+      if (outcome)                           parts.push('Desired outcome: ' + outcome);
+      if (roleType)                          parts.push('Role: ' + roleType);
+      if (availability)                      parts.push('Availability: ' + availability);
+      if (skills)                            parts.push('Skills: ' + skills);
+      if (businessType)                      parts.push('Entity type: ' + businessType);
+      if (operatorType)                      parts.push('Operator type: ' + operatorType);
+      if (serviceArea)                       parts.push('Service area: ' + serviceArea);
+
+      notesField.value = parts.join('\n');
+    });
+  }
+
+})();
+</script>
 {% endblock %}
