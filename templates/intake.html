@@ -338,13 +338,13 @@
       <div class="field-row">
         <div class="field">
           <label for="respondent_name">Name of person, company, or agency</label>
-          <input type="text" id="respondent_name"
+          <input type="text" id="respondent_name" name="target_name"
                  placeholder="e.g. City of Springfield / AT&amp;T / John Smith">
           <span class="field-hint">Full legal name if you know it.</span>
         </div>
         <div class="field">
           <label for="respondent_type">Type of respondent</label>
-          <select id="respondent_type">
+          <select id="respondent_type" name="target_type_raw">
             <option value="">— Select —</option>
             <option value="private_company">Private company / business</option>
             <option value="government_agency">Government agency / municipality</option>
@@ -425,7 +425,7 @@
       <div class="section-label">Desired Outcome</div>
       <div class="field">
         <label for="desired_outcome">What outcome would resolve this for you?</label>
-        <textarea id="desired_outcome" rows="3"
+        <textarea id="desired_outcome" name="desired_outcome_text" rows="3"
                   placeholder="e.g. Full payment of $1,350 owed; removal of credit report entry; reversal of permit denial with written explanation"></textarea>
         <span class="field-hint">Be specific. This goes directly into your intake file and guides the response team.</span>
       </div>
@@ -577,6 +577,54 @@
       </div>
     </div>
 
+    <!-- ── Legal Rail (shown for legal) ───────────────────────── -->
+    <div class="form-section rail-section" id="rail-legal">
+      <div class="section-label">Legal Rail — Standing Detail</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="target_person">Individual person involved (if any)</label>
+          <input type="text" id="target_person" name="target_person"
+                 placeholder="e.g. Officer Martinez / Manager Jane Smith">
+          <span class="field-hint">Name the specific individual within the organization, if known.</span>
+        </div>
+        <div class="field">
+          <label for="target_department">Department or agency unit</label>
+          <input type="text" id="target_department" name="target_department"
+                 placeholder="e.g. Office of Building Permits / HR Department">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="legal_financial_loss">Financial loss (dollar amount)</label>
+          <input type="number" id="legal_financial_loss" name="financial_loss_amount"
+                 min="0" step="0.01" placeholder="e.g. 1350">
+          <span class="field-hint">Numbers only, no $ symbol. Enter 0 if no direct dollar loss.</span>
+        </div>
+        <div class="field">
+          <label for="legal_work_loss">Income or work loss (dollar amount)</label>
+          <input type="number" id="legal_work_loss" name="work_loss_amount"
+                 min="0" step="0.01" placeholder="e.g. 2000">
+          <span class="field-hint">Wages, contracts, or income opportunities lost. Enter 0 if none.</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Harms suffered — check all that apply</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="harm_flags" value="injury_claimed"> Physical injury or health impact</label>
+          <label class="check-item"><input type="checkbox" name="harm_flags" value="property_damage_claimed"> Property damage or destruction</label>
+          <label class="check-item"><input type="checkbox" name="harm_flags" value="credit_impact_claimed"> Credit report impact or financial account harm</label>
+          <label class="check-item"><input type="checkbox" name="harm_flags" value="emotional_stress_claimed"> Emotional distress or mental health impact</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check-item">
+          <input type="checkbox" name="prior_complaint_made" id="prior_complaint_made" value="true">
+          I have already filed a complaint, grievance, or formal demand about this matter
+        </label>
+        <span class="field-hint">Check if you previously contacted the other party, filed with an agency, or sent a demand letter.</span>
+      </div>
+    </div>
+
     <div class="intake-submit-row">
       <span class="score-note">Fields marked <span style="color:#e87c6c">*</span> are required for a 100-point intake score.</span>
       <button type="submit" class="btn-submit">Submit Intake →</button>
@@ -658,6 +706,7 @@
   var outcomeEl        = document.getElementById('desired_outcome');
   var railLabor        = document.getElementById('rail-labor');
   var railPartner      = document.getElementById('rail-partner');
+  var railLegal        = document.getElementById('rail-legal');
   var infoBoxes        = document.querySelectorAll('.path-info-box');
 
   function applyPath(type) {
@@ -673,6 +722,7 @@
 
     if (railLabor)   railLabor.classList.toggle('visible', type === 'labor' || type === 'production');
     if (railPartner) railPartner.classList.toggle('visible', type === 'partner');
+    if (railLegal)   railLegal.classList.toggle('visible', type === 'legal');
 
     infoBoxes.forEach(function (box) { box.classList.remove('visible'); });
     var box = document.getElementById('info-' + type);

@@ -38,6 +38,13 @@ MOCK_STATUS = {
     "active_cases": 15,
 }
 
+_STANDING_SCORES = {
+    "standing_established":                      92,
+    "standing_likely_with_remedy_clarification": 74,
+    "standing_needs_causation_and_remedy":        48,
+    "standing_not_established":                   22,
+}
+
 
 @router.get("/status")
 def command_deck_status():
@@ -169,13 +176,37 @@ def command_deck_status_with_intake():
         if latest and latest.get("intake_type") in ("labor", "production") and latest.get("labor_rail"):
             lrail = latest["labor_rail"]
             ie["labor_rail"] = {
-                "readiness_score":  lrail.get("readiness_score"),
-                "crew_ready":       lrail.get("crew_ready"),
-                "role_type_label":  lrail.get("role_type_label"),
+                "readiness_score":    lrail.get("readiness_score"),
+                "crew_ready":         lrail.get("crew_ready"),
+                "role_type_label":    lrail.get("role_type_label"),
                 "availability_label": lrail.get("availability_label"),
-                "labor_location":   lrail.get("labor_location"),
-                "missing_readiness": lrail.get("missing_readiness", []),
+                "labor_location":     lrail.get("labor_location"),
+                "missing_readiness":  lrail.get("missing_readiness", []),
             }
+        if latest and latest.get("intake_type") == "legal" and latest.get("legal_rail"):
+            lr = latest["legal_rail"]
+            ie["legal_rail"] = {
+                "standing":               lr.get("standing"),
+                "standing_label":         lr.get("standing_label"),
+                "injury_met":             lr.get("injury_met"),
+                "causation_met":          lr.get("causation_met"),
+                "redressability_met":     lr.get("redressability_met"),
+                "concrete_harms":         lr.get("concrete_harms", []),
+                "capacity_label":         lr.get("capacity_label"),
+                "immunity_risk":          lr.get("immunity_risk"),
+                "recommended_defendants": lr.get("recommended_defendants", []),
+                "target_name":            lr.get("target_name"),
+                "target_type":            lr.get("target_type"),
+            }
+            sl = lr.get("standing_label", "")
+            data["standing"] = _STANDING_SCORES.get(sl, data["standing"])
+            ir = (lr.get("immunity_risk") or "").upper()
+            if ir.startswith("LOW"):
+                data["capacity"] = 88
+            elif ir.startswith("MODERATE"):
+                data["capacity"] = 62
+            elif ir.startswith("HIGH"):
+                data["capacity"] = 30
         data["intake_engine"] = ie
 
         recent_raw = load_recent_intakes(limit=10)
@@ -189,6 +220,11 @@ def command_deck_status_with_intake():
             elif r.get("intake_type") in ("labor", "production") and r.get("labor_rail"):
                 rail_type = "labor"
                 readiness = r["labor_rail"].get("readiness_score")
+            elif r.get("intake_type") == "legal" and r.get("legal_rail"):
+                rail_type = "legal"
+                lr_r = r["legal_rail"]
+                standing = lr_r.get("standing")
+                readiness = 92 if standing is True else (22 if standing is False else None)
             subj = (r.get("subject") or "")
             recent.append({
                 "intake_id":   r.get("intake_id"),

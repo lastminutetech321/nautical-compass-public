@@ -95,6 +95,19 @@ def handle_intake_completion(
         "generateW9Enabled": validate_w9_requirements(completed_state).get("valid", False),
     }
 
+    has_complaint = completed_state.get("complaintProfile", {}).get("hasComplaintOrDispute")
+    if has_complaint:
+        from services.standing_analysis_service import analyze_standing, StandingAnalysisServiceError
+        from services.capacity_analysis_service import analyze_capacity, CapacityAnalysisServiceError
+        try:
+            results_screen["standingAnalysis"] = analyze_standing(completed_state)
+        except StandingAnalysisServiceError as exc:
+            results_screen["standingAnalysis"] = {"error": str(exc)}
+        try:
+            results_screen["capacityAnalysis"] = analyze_capacity(completed_state)
+        except CapacityAnalysisServiceError as exc:
+            results_screen["capacityAnalysis"] = {"error": str(exc)}
+
     return {
         "event": "intake_completed",
         "intakeState": completed_state,

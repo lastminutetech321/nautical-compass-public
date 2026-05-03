@@ -437,6 +437,73 @@
       </div>
       {% endif %}
 
+      {% if record.intake_type == "legal" and record.legal_rail %}
+      {% set llrail = record.legal_rail %}
+      <div class="rail-panel" style="border-color:#c9a84c">
+        <div class="rail-panel-header">
+          <span class="rail-panel-title">Legal Rail — Standing &amp; Capacity Screen</span>
+          <span class="readiness-badge {% if llrail.standing %}ready{% else %}low{% endif %}">
+            {% if llrail.standing %}Standing Established{% else %}{{ (llrail.standing_label or 'not_established') | replace('_', ' ') | title }}{% endif %}
+          </span>
+        </div>
+        <table class="summary-table" style="margin-bottom:.6rem">
+          <tr><th>Respondent</th><td>{{ llrail.target_name or '—' }}</td></tr>
+          <tr><th>Target Type</th><td>{{ llrail.target_type | title if llrail.target_type else '—' }}</td></tr>
+          <tr>
+            <th>Injury in Fact</th>
+            <td style="color:{% if llrail.injury_met %}#2ecc71{% else %}#e74c3c{% endif %}">
+              {% if llrail.injury_met %}PASS{% else %}FAIL{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>Causation</th>
+            <td style="color:{% if llrail.causation_met %}#2ecc71{% else %}#e74c3c{% endif %}">
+              {% if llrail.causation_met %}PASS{% else %}FAIL{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>Redressability</th>
+            <td style="color:{% if llrail.redressability_met %}#2ecc71{% else %}#e74c3c{% endif %}">
+              {% if llrail.redressability_met %}PASS{% else %}FAIL{% endif %}
+            </td>
+          </tr>
+          <tr><th>Immunity Risk</th><td>{{ llrail.immunity_risk or '—' }}</td></tr>
+        </table>
+        {% if llrail.standing_analysis %}
+        <div style="margin-bottom:.8rem">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a6000;margin-bottom:.4rem">Injury Analysis</div>
+          <p style="font-size:.85rem;color:#ccc;line-height:1.5;margin:0">{{ llrail.standing_analysis }}</p>
+        </div>
+        {% endif %}
+        {% if llrail.concrete_harms %}
+        <div style="margin-bottom:.8rem">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a6000;margin-bottom:.4rem">Concrete Harms Identified</div>
+          <div class="evidence-list">
+            {% for harm in llrail.concrete_harms %}
+            <span class="evidence-tag">{{ harm }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if llrail.recommended_defendants %}
+        <div style="margin-bottom:.8rem">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a6000;margin-bottom:.4rem">Recommended Defendants</div>
+          <div class="evidence-list">
+            {% for d in llrail.recommended_defendants %}
+            <span class="evidence-tag">{{ d }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if llrail.capacity_analysis %}
+        <div class="next-steps-block">
+          <h4>Capacity Screen</h4>
+          <p style="font-size:.85rem;color:#ccc;line-height:1.5;margin:0">{{ llrail.capacity_analysis }}</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
       <div class="action-row">
         <a href="/intake" class="btn-primary">Submit Another Intake</a>
         <a href="/command-deck" class="btn-secondary">Command Deck</a>

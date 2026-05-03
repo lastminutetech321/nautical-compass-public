@@ -103,6 +103,7 @@ async function fetchDeckStatus() {
       applyDerivedWeather();
       updateOperatorRailPanel(ie.operator_rail || null, ie);
       updateLaborRailPanel(ie.labor_rail || null, ie);
+      updateLegalRailPanel(ie.legal_rail || null, ie);
       updateRailAuditBadges(ie, data.recent_intakes || []);
     }
     if (data.recent_intakes) {
@@ -178,6 +179,26 @@ function updateRailAuditBadges(ie, recentIntakes) {
   var lrMeta = lrId ? lrId + (lrType ? ' · ' + lrType : '') : 'no data';
   applyAuditBadge('Labor', lrScore, lrId, lrMeta);
 
+  // ── Legal Rail ───────────────────────────────────────────────────
+  var lgScore = null, lgId = null, lgType = null;
+  if (ie.legal_rail) {
+    var lgStanding = ie.legal_rail.standing;
+    lgScore = lgStanding === true ? 92 : lgStanding === false ? 22 : null;
+    lgId    = ie.latest_id;
+    lgType  = ie.latest_type;
+  } else {
+    for (var k = 0; k < recentIntakes.length; k++) {
+      if (recentIntakes[k].rail_type === 'legal') {
+        lgScore = recentIntakes[k].readiness;
+        lgId    = recentIntakes[k].intake_id;
+        lgType  = recentIntakes[k].intake_type;
+        break;
+      }
+    }
+  }
+  var lgMeta = lgId ? lgId + (lgType ? ' · ' + lgType : '') : 'no data';
+  applyAuditBadge('Legal', lgScore, lgId, lgMeta);
+
   // ── Recent Feed ──────────────────────────────────────────────────
   var feedScore = null, feedMeta = '—';
   if (recentIntakes && recentIntakes.length > 0) {
@@ -208,7 +229,7 @@ function updateRecentFeed(items) {
     general:    'General'
   };
 
-  var RAIL_LABELS = { operator: 'Operator Rail', labor: 'Labor Rail' };
+  var RAIL_LABELS = { operator: 'Operator Rail', labor: 'Labor Rail', legal: 'Legal Rail' };
 
   container.innerHTML = items.map(function(item) {
     var type       = item.intake_type || 'general';
@@ -821,6 +842,38 @@ function updateLaborRailPanel(lrail, ie) {
     const m = lrail.missing_readiness || [];
     missingEl.textContent = m.length === 0 ? 'None' : m.join(', ');
     missingEl.style.color = m.length === 0 ? '#2ecc71' : '#f1c40f';
+  }
+}
+
+/* ── LEGAL RAIL PANEL ──────────────────────────────────────────── */
+function updateLegalRailPanel(lrail, ie) {
+  const panel = document.getElementById('legalRailPanel');
+  if (!panel) return;
+  if (!lrail) { panel.style.display = 'none'; return; }
+
+  panel.style.display = '';
+  const standing = lrail.standing;
+  const color = standing ? '#c9a84c' : '#e74c3c';
+  panel.style.borderColor = color;
+
+  const ringEl = document.getElementById('lgStanding');
+  if (ringEl) {
+    ringEl.textContent = standing ? 'PASS' : 'FAIL';
+    ringEl.style.borderColor = color;
+    ringEl.style.color = color;
+  }
+
+  const set = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('lgTarget',       lrail.target_name);
+  set('lgTargetType',   lrail.target_type ? lrail.target_type.charAt(0).toUpperCase() + lrail.target_type.slice(1) : null);
+  set('lgImmunityRisk', lrail.immunity_risk);
+  if (ie) set('lgLatestId', ie.latest_id);
+
+  const elLabel = document.getElementById('lgStandingLabel');
+  if (elLabel) {
+    const sl = (lrail.standing_label || '').replace(/_/g, ' ');
+    elLabel.textContent = sl || '—';
+    elLabel.style.color = standing ? '#2ecc71' : '#f1c40f';
   }
 }
 

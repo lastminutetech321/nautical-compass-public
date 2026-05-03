@@ -63,6 +63,13 @@ TOTAL_WEIGHT = sum(w for _, w in REQUIRED_FIELDS)   # 100
 # ---------------------------------------------------------------------------
 # Scoring helper
 # ---------------------------------------------------------------------------
+def _parse_amount(value: str) -> float:
+    try:
+        return max(0.0, float(value.strip())) if value.strip() else 0.0
+    except ValueError:
+        return 0.0
+
+
 def score_intake(data: dict) -> tuple[int, list[str]]:
     """Return (intake_score 0-100, missing_fields list)."""
     earned = 0
@@ -182,6 +189,16 @@ async def intake_post(
     labor_location: str     = Form(""),
     union_status: str       = Form(""),
     labor_evidence: List[str] = Form(default=[]),
+    # Legal Rail fields
+    target_name: str           = Form(""),
+    target_type_raw: str       = Form(""),
+    target_person: str         = Form(""),
+    target_department: str     = Form(""),
+    financial_loss_amount: str = Form(""),
+    work_loss_amount: str      = Form(""),
+    desired_outcome_text: str  = Form(""),
+    harm_flags: List[str]      = Form(default=[]),
+    prior_complaint_made: str  = Form(""),
 ):
     intake_id = f"int_{uuid4().hex[:10]}"
     created_at = int(time.time())
@@ -235,6 +252,71 @@ async def intake_post(
             "labor_evidence":  labor_evidence,
         }
         record["labor_rail"] = build_labor_profile(labor_data)
+
+    if intake_type.strip() == "legal":
+        from services.standing_analysis_service import analyze_standing
+        from services.capacity_analysis_service import analyze_capacity
+
+        raw_ttype = target_type_raw.strip().lower()
+        norm_target_type = "government" if ("government" in raw_ttype or "agency" in raw_ttype) else "private"
+
+        harm_set = set(harm_flags)
+        complaint = {
+            "complaintId":            intake_id,
+            "shortTitle":             subject.strip(),
+            "plainLanguageSummary":   description.strip(),
+            "whatHappened":           description.strip(),
+            "targetName":             target_name.strip(),
+            "targetType":             norm_target_type,
+            "targetPerson":           target_person.strip(),
+            "targetDepartment":       target_department.strip(),
+            "desiredOutcome":         desired_outcome_text.strip() or notes.strip(),
+            "financialLossAmount":    _parse_amount(financial_loss_amount),
+            "workLossAmount":         _parse_amount(work_loss_amount),
+            "injuryClaimed":          "injury_claimed" in harm_set,
+            "propertyDamageClaimed":  "property_damage_claimed" in harm_set,
+            "creditImpactClaimed":    "credit_impact_claimed" in harm_set,
+            "emotionalStressClaimed": "emotional_stress_claimed" in harm_set,
+            "priorComplaintMade":     prior_complaint_made.strip().lower() == "true",
+        }
+        fake_state: dict = {"complaintProfile": {"complaints": [complaint]}}
+        legal_rail: dict = {"target_name": target_name.strip(), "target_type": norm_target_type}
+
+        try:
+            sr = analyze_standing(fake_state)
+            legal_rail.update({
+                "standing":           sr["standing"],
+                "standing_label":     sr["standing_label"],
+                "injury_met":         sr["injury_in_fact"]["met"],
+                "causation_met":      sr["causation"]["met"],
+                "redressability_met": sr["redressability"]["met"],
+                "concrete_harms":     sr["injury_in_fact"]["concrete_harms"],
+                "standing_analysis":  sr["injury_in_fact"]["analysis"],
+            })
+        except Exception as exc:
+            legal_rail.update({
+                "standing": False,
+                "standing_label": "standing_not_established",
+                "standing_error": str(exc),
+            })
+
+        try:
+            cr = analyze_capacity(fake_state)
+            legal_rail.update({
+                "capacity_label":          cr["capacity_label"],
+                "immunity_risk":           cr["immunity_risk"],
+                "recommended_defendants":  cr["recommended_defendants"],
+                "immunity_notes":          cr["immunity_notes"],
+                "capacity_analysis":       cr["analysis"],
+            })
+        except Exception as exc:
+            legal_rail.update({
+                "capacity_label": "unknown",
+                "immunity_risk":  "UNKNOWN",
+                "capacity_error": str(exc),
+            })
+
+        record["legal_rail"] = legal_rail
 
     store_intake(record)
 
