@@ -1,8 +1,125 @@
-from typing import Any, Dict, List
+import re
+from typing import Any, Dict, List, Optional
 
 
 class TimelineServiceError(Exception):
     pass
+
+
+# ---------------------------------------------------------------------------
+# Complaint-draft timeline analysis
+# ---------------------------------------------------------------------------
+
+_TEMPORAL_PREFIXES = re.compile(
+    r"\b(on|in|around|approximately|before|after|by|during|when|following|"
+    r"january|february|march|april|may|june|july|august|september|october|"
+    r"november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
+    re.IGNORECASE,
+)
+
+_DATE_PATTERN = re.compile(
+    r"\b(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|"
+    r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+    r"\.?\s+\d{1,2},?\s+\d{4})\b",
+    re.IGNORECASE,
+)
+
+
+def _infer_events_from_text(text: str) -> List[Dict[str, str]]:
+    """Extract probable timeline events from a narrative block."""
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    events: List[Dict[str, str]] = []
+    for i, sent in enumerate(sentences):
+        sent = sent.strip()
+        if not sent:
+            continue
+        date_match = _DATE_PATTERN.search(sent)
+        has_temporal = bool(_TEMPORAL_PREFIXES.search(sent))
+        if date_match or has_temporal or len(sent) > 40:
+            date_val = date_match.group(0) if date_match else "[FACT NEEDED: event date]"
+            events.append({
+                "eventId": f"inferred-{i + 1}",
+                "date": date_val,
+                "event": sent[:120] + ("..." if len(sent) > 120 else ""),
+                "description": sent,
+                "actor": "",
+                "source": "inferred_from_narrative",
+                "inferred": True,
+            })
+    return events[:10]
+
+
+def build_complaint_timeline(
+    intake_state: Dict[str, Any],
+    complaint_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Build a structured timeline for complaint drafting.
+    Uses timelineEvents array when present; infers events from whatHappened when absent.
+    """
+    if not isinstance(intake_state, dict):
+        raise TimelineServiceError("intake_state must be a dictionary.")
+
+    complaints = intake_state.get("complaintProfile", {}).get("complaints", []) or []
+    if not complaints:
+        raise TimelineServiceError("No complaints found in intake_state.")
+
+    if complaint_id:
+        complaint = next((c for c in complaints if c.get("complaintId") == complaint_id), None)
+        if complaint is None:
+            raise TimelineServiceError(f"Complaint not found: {complaint_id}")
+    else:
+        complaint = complaints[0]
+
+    structured_events = complaint.get("timelineEvents", []) or []
+    source = "structured"
+    inferred = False
+
+    if not structured_events:
+        narrative = complaint.get("whatHappened", "") or complaint.get("plainLanguageSummary", "") or ""
+        structured_events = _infer_events_from_text(narrative)
+        source = "inferred"
+        inferred = True
+
+    sorted_events = sorted(structured_events, key=lambda x: x.get("date", ""))
+    strength = assess_chronology_strength({"events": sorted_events, "inferred": inferred})
+
+    return {
+        "complaintId": complaint.get("complaintId", ""),
+        "eventCount": len(sorted_events),
+        "events": sorted_events,
+        "source": source,
+        "inferred": inferred,
+        "strength": strength,
+        "note": (
+            "Timeline inferred from narrative — dates marked [FACT NEEDED] must be verified and corrected before filing."
+            if inferred
+            else "Timeline built from structured intake events."
+        ),
+    }
+
+
+def assess_chronology_strength(timeline_result: Dict[str, Any]) -> str:
+    """Return 'strong', 'moderate', or 'weak' based on timeline completeness."""
+    events = timeline_result.get("events", [])
+    inferred = timeline_result.get("inferred", False)
+
+    if not events:
+        return "weak"
+
+    has_real_dates = any(
+        not str(e.get("date", "")).startswith("[FACT NEEDED")
+        for e in events
+    )
+
+    if len(events) >= 3 and has_real_dates and not inferred:
+        return "strong"
+    if len(events) >= 2 and has_real_dates:
+        return "moderate"
+    if events:
+        return "weak"
+    return "weak"
 
 
 def get_timeline_summary(intake_state: Dict[str, Any], complaint_id: str | None = None) -> Dict[str, Any]:

@@ -19,6 +19,9 @@ Controlling authority referenced throughout:
 from typing import Any, Dict, List, Optional
 
 from services.legal_results_service import build_legal_results, LegalResultsServiceError
+from services.timeline_service import build_complaint_timeline, TimelineServiceError
+from services.damages_service import analyze_damages, DamagesServiceError
+from services.evidence_service import analyze_evidence_for_complaint, EvidenceServiceError
 
 
 DISCLAIMER = (
@@ -613,6 +616,186 @@ def _build_prayer_for_relief(results: Dict[str, Any], complaint: Dict[str, Any])
 
 
 # ---------------------------------------------------------------------------
+# Phase 3B section builders
+# ---------------------------------------------------------------------------
+
+def _build_timeline_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        tl = build_complaint_timeline(intake_state, complaint_id)
+    except TimelineServiceError:
+        tl = {"events": [], "inferred": True, "strength": "weak", "note": "Timeline unavailable."}
+
+    lines: List[str] = []
+    para = para_start
+    events = tl.get("events", [])
+
+    lines.append(
+        f"{para}. The following timeline sets forth key dates and events material to Plaintiff's claims, "
+        + ("reconstructed from the factual narrative where structured dates were not provided."
+           if tl.get("inferred") else "as documented in the intake record.")
+    )
+    para += 1
+
+    if events:
+        for ev in events[:8]:
+            date = ev.get("date", _need("event date"))
+            description = ev.get("description", "") or ev.get("event", _need("event description"))
+            lines.append(f"{para}. On or about {date}: {description}")
+            para += 1
+    else:
+        lines.append(
+            f"{para}. {_need('timeline of events — list key dates: initial incident, communications, escalations, and most recent relevant event')}"
+        )
+        para += 1
+
+    if tl.get("note"):
+        lines.append(f"[Timeline Note: {tl['note']}]")
+
+    return {
+        "title": "Timeline of Events",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "event_count": len(events),
+        "timeline_strength": tl.get("strength", "weak"),
+    }
+
+
+def _build_damages_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        dmg = analyze_damages(intake_state, complaint_id)
+    except DamagesServiceError:
+        dmg = {
+            "categories": {},
+            "active_categories": [],
+            "total_stated_dollars": 0,
+            "damages_weak": True,
+            "missing_amounts": [],
+            "overall_strength": "weak",
+        }
+
+    lines: List[str] = []
+    para = para_start
+    categories = dmg.get("categories", {})
+    active = dmg.get("active_categories", [])
+    total_stated = dmg.get("total_stated_dollars", 0)
+
+    lines.append(
+        f"{para}. As a direct and proximate result of Defendant's conduct, Plaintiff has suffered "
+        "the following damages, categorized below. Amounts marked [FACT NEEDED] require "
+        "quantification with supporting documentation before filing."
+    )
+    para += 1
+
+    for cat_key in active:
+        cat = categories.get(cat_key, {})
+        items = cat.get("items", [])
+        if not items:
+            continue
+        for item in items:
+            label = item.get("label", "Damages")
+            amount_display = item.get("amount_display", _need("amount"))
+            note = item.get("note", "")
+            lines.append(
+                f"{para}. {label}: {amount_display}."
+                + (f" {note}" if note else "")
+            )
+            para += 1
+
+    if not active:
+        lines.append(
+            f"{para}. {_need('damages — specify all economic losses, non-economic harm, and requested remediation with supporting records')}"
+        )
+        para += 1
+
+    if total_stated > 0:
+        lines.append(
+            f"{para}. Total stated damages: ${total_stated:,.2f}. Additional damages categories are "
+            "subject to quantification and amendment as discovery proceeds."
+        )
+        para += 1
+
+    missing = dmg.get("missing_amounts", [])
+    if missing:
+        lines.append(
+            f"[Damages Note: The following items require dollar quantification before filing: "
+            + "; ".join(missing) + "]"
+        )
+
+    return {
+        "title": "Damages",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "damages_strength": dmg.get("overall_strength", "weak"),
+        "missing_amounts": missing,
+    }
+
+
+def _build_evidence_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        ev = analyze_evidence_for_complaint(intake_state, complaint_id)
+    except EvidenceServiceError:
+        ev = {
+            "total_items": 0,
+            "categorized": {},
+            "missing_flags": [],
+            "strength": "weak",
+            "note": "Evidence analysis unavailable.",
+        }
+
+    lines: List[str] = []
+    para = para_start
+    categorized = ev.get("categorized", {})
+    missing_flags = ev.get("missing_flags", [])
+    total = ev.get("total_items", 0)
+
+    lines.append(
+        f"{para}. In support of the foregoing allegations, Plaintiff identifies the following "
+        "evidence categories. Items marked [FACT NEEDED] must be gathered and authenticated before filing."
+    )
+    para += 1
+
+    category_labels = {
+        "documentary": "Documentary Evidence",
+        "digital": "Digital / Electronic Evidence",
+        "witness": "Witness Declarations",
+        "communications": "Communications Records",
+        "other": "Other Evidence",
+    }
+
+    for cat_key, display in category_labels.items():
+        items = categorized.get(cat_key, [])
+        if items:
+            lines.append(
+                f"{para}. {display}: " + "; ".join(str(i) for i in items[:10]) + "."
+            )
+            para += 1
+
+    if total == 0:
+        lines.append(
+            f"{para}. {_need('evidence inventory — list all documents, communications, records, and witness information available to support each claim')}"
+        )
+        para += 1
+
+    for flag in missing_flags:
+        lines.append(f"{para}. {flag}")
+        para += 1
+
+    if ev.get("note"):
+        lines.append(f"[Evidence Note: {ev['note']}]")
+
+    return {
+        "title": "Evidence Summary",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "evidence_strength": ev.get("strength", "weak"),
+        "missing_flags": missing_flags,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Missing facts collector
 # ---------------------------------------------------------------------------
 
@@ -645,7 +828,7 @@ def _render_plain_text(
 ) -> str:
     divider = "\n" + "=" * 72 + "\n\n"
     parts: List[str] = []
-    for key in ["caption", "jurisdiction_venue", "parties", "standing", "facts", "capacity_defendants", "causes_of_action", "prayer"]:
+    for key in ["caption", "jurisdiction_venue", "parties", "standing", "facts", "timeline", "damages", "evidence", "capacity_defendants", "causes_of_action", "prayer"]:
         section = sections.get(key, {})
         if not section:
             continue
@@ -692,6 +875,15 @@ def generate_complaint_draft(
     facts_section = _build_facts(complaint, para)
     para += facts_section["paragraph_count"]
 
+    timeline_section = _build_timeline_section(intake_state, complaint_id, para)
+    para += timeline_section["paragraph_count"]
+
+    damages_section = _build_damages_section(intake_state, complaint_id, para)
+    para += damages_section["paragraph_count"]
+
+    evidence_section = _build_evidence_section(intake_state, complaint_id, para)
+    para += evidence_section["paragraph_count"]
+
     capacity_section = _build_capacity_defendants(results, complaint, para)
     para += capacity_section["paragraph_count"]
 
@@ -706,6 +898,9 @@ def generate_complaint_draft(
         "parties": parties_section,
         "standing": standing_section,
         "facts": facts_section,
+        "timeline": timeline_section,
+        "damages": damages_section,
+        "evidence": evidence_section,
         "capacity_defendants": capacity_section,
         "causes_of_action": causes_section,
         "prayer": prayer_section,
