@@ -24,6 +24,16 @@ const systemState = {
   deployment: 77
 };
 
+/* ── INTAKE STATE — single source for all intake-driven reactions ─ */
+const intakeState = {
+  score:            null,
+  missing:          [],
+  status:           null,
+  type:             null,
+  totalSubmissions: 0,
+  lastId:           null,
+};
+
 /* ── API DATA FETCH + GEOLOCATION ────────────────────────────────── */
 let dataSource = "mock";
 let userLat = null;
@@ -72,11 +82,26 @@ function updateLocationStatusUI() {
 
 async function fetchDeckStatus() {
   try {
-    const resp = await fetch("/api/command-deck/status");
+    const resp = await fetch("/api/command-deck/status/intake");
     if (!resp.ok) return;
     const data = await resp.json();
     const keys = ["standing", "capacity", "jurisdiction", "evidence", "compliance", "deployment"];
     keys.forEach(k => { if (data[k] !== undefined) systemState[k] = data[k]; });
+
+    if (data.intake_engine) {
+      const ie = data.intake_engine;
+      const newId = ie.latest_id || null;
+      checkForNewIntake(newId);
+      intakeState.score            = ie.latest_score  != null ? ie.latest_score  : intakeState.score;
+      intakeState.missing          = ie.latest_missing  || [];
+      intakeState.status           = ie.latest_status   || intakeState.status;
+      intakeState.type             = ie.latest_type     || intakeState.type;
+      intakeState.totalSubmissions = ie.total_submissions != null ? ie.total_submissions : intakeState.totalSubmissions;
+      intakeState.lastId           = newId;
+      updateIntakePanelFromState(ie);
+      syncIntakeToSystemState();
+      applyDerivedWeather();
+    }
   } catch (e) { /* keep existing mock data on failure */ }
 }
 
@@ -563,6 +588,133 @@ function syncAudioToWeather(condition) {
   if (audioEnabled && typeof NauticalAudio !== "undefined") {
     NauticalAudio.setWeather(condition);
     $soundModeValue.textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VESSEL REACTION LAYER — intake state → weather → vessel/gauges
+   ═══════════════════════════════════════════════════════════════════ */
+
+function updateIntakePanelFromState(ie) {
+  const score = ie.latest_score;
+  const scoreValEl  = document.getElementById('intakeScoreVal');
+  const scoreRingEl = document.getElementById('intakeScoreRing');
+  const statusEl    = document.getElementById('intakeStatus');
+  const totalEl     = document.getElementById('intakeTotal');
+  const typeEl      = document.getElementById('intakeLastType');
+  const idEl        = document.getElementById('intakeLatestId');
+  const missingEl   = document.getElementById('intakeMissing');
+
+  if (scoreValEl) scoreValEl.textContent = score != null ? score : '—';
+  if (scoreRingEl && score != null) {
+    const pct = Math.max(0, Math.min(score, 100));
+    scoreRingEl.style.background =
+      'conic-gradient(#2ecc71 0% ' + pct + '%, #1a2a3c ' + pct + '% 100%)';
+  }
+  if (statusEl)  statusEl.textContent  = ie.status        || '—';
+  if (totalEl)   totalEl.textContent   = ie.total_submissions != null ? ie.total_submissions : '—';
+  if (typeEl)    typeEl.textContent    = ie.latest_type    || '—';
+  if (idEl)      idEl.textContent      = ie.latest_id      || '—';
+  if (missingEl) {
+    const missing = ie.latest_missing || [];
+    missingEl.textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
+  }
+}
+
+function syncIntakeToSystemState() {
+  if (intakeState.score === null) return;
+  systemState.evidence = intakeState.score;
+  const penalty = Math.min(intakeState.missing.length * 8, 60);
+  systemState.compliance = Math.max(25, 94 - penalty);
+}
+
+function deriveWeatherFromIntake() {
+  if (intakeState.score === null) return null;
+  const score        = intakeState.score;
+  const missingCount = intakeState.missing.length;
+  const isComplete   = intakeState.status === 'complete' && missingCount === 0;
+  const highActivity = intakeState.totalSubmissions > 3;
+
+  if (highActivity && missingCount > 2) return 'storm';   // high activity + incomplete = storm
+  if (missingCount > 0 && score < 50)   return 'fog';    // missing evidence / weak score = fog
+  if (missingCount > 0)                  return 'rain';   // partial intake = rain
+  if (isComplete && score >= 90)         return 'clear';  // strong complete = clear
+  if (isComplete && score >= 60)         return 'cloudy'; // moderate complete = cloudy calm
+  return 'cloudy';
+}
+
+function applyDerivedWeather() {
+  const derived = deriveWeatherFromIntake();
+  if (!derived || derived === weatherData.condition) return;
+  const profile = WEATHER_PROFILES[derived] || WEATHER_PROFILES['clear'];
+  weatherData.condition      = derived;
+  weatherData.wind_speed     = profile.wind_speed;
+  weatherData.wind_direction = profile.wind_direction;
+  weatherData.humidity       = profile.humidity;
+  weatherData.visibility     = profile.visibility;
+  weatherData.temperature    = profile.temperature;
+  updateWeatherVisuals(derived);
+  updateVesselMotion();
+  updateNavIndicators();
+  updateEnvironmentPanel(weatherData);
+  syncAudioToWeather(derived);
+  if ($weatherBadge) $weatherBadge.textContent = derived.toUpperCase();
+}
+
+function checkForNewIntake(newId) {
+  if (intakeState.lastId !== null && newId !== null && intakeState.lastId !== newId) {
+    onNewIntakeDetected();
+  }
+}
+
+function onNewIntakeDetected() {
+  // Pulse all ops dials
+  Object.keys(systemState).forEach(key => {
+    const dial = document.querySelector('.ops-dial[data-key="' + key + '"]');
+    if (!dial) return;
+    dial.classList.remove('gauge-updated');
+    void dial.offsetWidth;
+    dial.classList.add('gauge-updated');
+    setTimeout(() => dial.classList.remove('gauge-updated'), 900);
+  });
+
+  // Water surge
+  const waterLayer = document.getElementById('waterLayer');
+  if (waterLayer) {
+    waterLayer.classList.remove('water-surge');
+    void waterLayer.offsetWidth;
+    waterLayer.classList.add('water-surge');
+    setTimeout(() => waterLayer.classList.remove('water-surge'), 1800);
+  }
+
+  // Vessel surge
+  const vessel = document.getElementById('vessel');
+  if (vessel) {
+    vessel.classList.add('motion-surge');
+    setTimeout(() => vessel.classList.remove('motion-surge'), 2200);
+  }
+
+  // Derived weather + visuals
+  applyDerivedWeather();
+  updateOpsDials();
+  updateStatusDial();
+
+  // Flash weather badge
+  if ($weatherBadge) {
+    $weatherBadge.classList.remove('badge-flash');
+    void $weatherBadge.offsetWidth;
+    $weatherBadge.classList.add('badge-flash');
+    setTimeout(() => $weatherBadge.classList.remove('badge-flash'), 1400);
+  }
+
+  // Activity banner
+  const banner = document.getElementById('activityBanner');
+  if (banner) {
+    banner.textContent = 'Recent system activity detected';
+    banner.classList.remove('active');
+    void banner.offsetWidth;
+    banner.classList.add('active');
+    setTimeout(() => banner.classList.remove('active'), 9000);
   }
 }
 

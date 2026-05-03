@@ -320,33 +320,7 @@
       </div>
     </div>
 
-    <script>
-    (function() {
-      function updateIntakePanel() {
-        fetch('/api/command-deck/status/intake')
-          .then(r => r.json())
-          .then(data => {
-            var ie = data.intake_engine || {};
-            var score = ie.latest_score;
-            document.getElementById('intakeScoreVal').textContent = score !== null && score !== undefined ? score : '—';
-            if (score !== null && score !== undefined) {
-              var pct = Math.max(0, Math.min(score, 100));
-              document.getElementById('intakeScoreRing').style.background =
-                'conic-gradient(#2ecc71 0% ' + pct + '%, #1a2a3c ' + pct + '% 100%)';
-            }
-            document.getElementById('intakeStatus').textContent = ie.status || '—';
-            document.getElementById('intakeTotal').textContent = ie.total_submissions !== undefined ? ie.total_submissions : '—';
-            document.getElementById('intakeLastType').textContent = ie.latest_type || '—';
-            document.getElementById('intakeLatestId').textContent = ie.latest_id || '—';
-            var missing = ie.latest_missing || [];
-            document.getElementById('intakeMissing').textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
-          })
-          .catch(function() {});
-      }
-      updateIntakePanel();
-      setInterval(updateIntakePanel, 30000);
-    })();
-    </script>
+    <!-- Intake panel updates handled by command_deck.js fetchDeckStatus() -->
 
 
  main
@@ -491,6 +465,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ACTIVITY BANNER -->
+    <div id="activityBanner" class="activity-banner"></div>
 
     <!-- FOOTER -->
     <footer class="deck-footer">

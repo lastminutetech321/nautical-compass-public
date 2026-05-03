@@ -1563,3 +1563,70 @@ body.cabin-light-off::after {
   background: rgba(0,0,0,0.25);
   z-index: 8;
 }
+
+/* === VESSEL REACTION LAYER === */
+
+/* Vessel surge — brief sharp rock on new intake */
+.vessel.motion-surge {
+  animation: vesselSurge 0.45s ease-in-out 4 !important;
+}
+@keyframes vesselSurge {
+  0%   { transform: translateY(0px)  rotate(0deg);    }
+  25%  { transform: translateY(-8px) rotate(-3deg);   }
+  75%  { transform: translateY(5px)  rotate(2deg);    }
+  100% { transform: translateY(0px)  rotate(0deg);    }
+}
+
+/* Water layer surge — single heave on new intake */
+.water-layer.water-surge {
+  animation: waterSurge 1.8s ease-in-out !important;
+}
+@keyframes waterSurge {
+  0%   { transform: translateY(0px);   }
+  20%  { transform: translateY(-10px); }
+  55%  { transform: translateY(6px);   }
+  80%  { transform: translateY(-3px);  }
+  100% { transform: translateY(0px);   }
+}
+
+/* Weather badge flash on new intake */
+.weather-badge.badge-flash {
+  animation: badgeFlash 0.35s ease-in-out 4;
+}
+@keyframes badgeFlash {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(1.18); }
+}
+
+/* Activity banner — slides in from bottom on new intake event */
+.activity-banner {
+  position: fixed;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.55);
+  color: #e2c275;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .4rem 1.2rem;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .35s ease, transform .35s ease;
+  z-index: 50;
+  white-space: nowrap;
+}
+.activity-banner.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vessel.motion-surge,
+  .water-layer.water-surge,
+  .weather-badge.badge-flash { animation: none !important; }
+  .activity-banner { transition: opacity .15s; }
+}
