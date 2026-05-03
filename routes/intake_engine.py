@@ -94,6 +94,26 @@ def load_latest_intake() -> dict | None:
     return None
 
 
+def load_intake_by_id(intake_id: str) -> dict | None:
+    if not INTAKE_LOG.exists():
+        return None
+    try:
+        with INTAKE_LOG.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                    if record.get("intake_id") == intake_id:
+                        return record
+                except Exception:
+                    continue
+    except Exception:
+        return None
+    return None
+
+
 def count_submissions() -> int:
     if not INTAKE_LOG.exists():
         return 0
@@ -163,8 +183,7 @@ async def intake_post(
 
 @router.get("/confirm", response_class=HTMLResponse)
 def intake_confirm(request: Request, id: str = ""):
-    latest = load_latest_intake()
-    record = latest if (latest and latest.get("intake_id") == id) else latest
+    record = load_intake_by_id(id) if id else load_latest_intake()
     return templates.TemplateResponse(request, "intake_confirm.html", context={
         "request":  request,
         "record":   record or {},
