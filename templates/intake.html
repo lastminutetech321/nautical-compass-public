@@ -3,208 +3,261 @@
 
 {% block head %}
 <style>
-  /* ── Intake page ─────────────────────────────────────────────── */
-  .intake-wrap {
-    max-width: 760px;
-    margin: 2.5rem auto;
-    padding: 0 1rem 3rem;
-  }
-  .intake-header {
-    margin-bottom: 2rem;
-  }
-  .intake-badge {
-    display: inline-block;
-    background: rgba(200,168,75,.15);
-    color: #c8a84b;
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: .09em;
-    padding: .25rem .65rem;
-    border-radius: 4px;
-    border: 1px solid rgba(200,168,75,.3);
-    margin-bottom: .9rem;
-    text-transform: uppercase;
-  }
-  .intake-header h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 .5rem;
-  }
-  .intake-header p {
-    color: #8ca8c8;
-    margin: 0;
-    font-size: .95rem;
-    line-height: 1.5;
-  }
-  .intake-form {
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(200,168,75,.18);
-    border-radius: 12px;
-    padding: 2rem;
-  }
-  .form-section {
-    margin-bottom: 2rem;
-    padding-bottom: 1.75rem;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-  }
-  .form-section:last-of-type {
-    border-bottom: none;
-    margin-bottom: 0;
-  }
-  .section-label {
-    font-size: .73rem;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: #c8a84b;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(200,168,75,.2);
-  }
-  .field-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  @media (max-width: 560px) {
-    .field-row { grid-template-columns: 1fr; }
-    .intake-form { padding: 1.25rem; }
-  }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: .3rem;
-    margin-bottom: .9rem;
-  }
-  .field:last-child { margin-bottom: 0; }
-  .field label {
-    font-size: .82rem;
-    font-weight: 600;
-    color: #b8cde0;
-  }
-  .field label .req {
-    color: #e87c6c;
-    margin-left: 2px;
-  }
-  .field input,
-  .field select,
-  .field textarea {
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 7px;
-    padding: .55rem .8rem;
-    font-size: .9rem;
-    color: #e8edf2;
-    background: rgba(255,255,255,.06);
-    transition: border-color .15s, background .15s;
-    width: 100%;
-    box-sizing: border-box;
-    font-family: inherit;
-  }
-  .field input::placeholder,
-  .field textarea::placeholder {
-    color: rgba(180,200,220,.4);
-    font-style: italic;
-  }
-  .field select option {
-    background: #0a1f3a;
-    color: #e8edf2;
-  }
-  .field input:focus,
-  .field select:focus,
-  .field textarea:focus {
-    outline: none;
-    border-color: rgba(200,168,75,.6);
-    background: rgba(255,255,255,.09);
-  }
-  .field textarea {
-    resize: vertical;
-    min-height: 100px;
-    line-height: 1.5;
-  }
-  .field-hint {
-    font-size: .77rem;
-    color: #5a7c9a;
-    line-height: 1.4;
-  }
-  .check-group {
-    display: flex;
-    flex-direction: column;
-    gap: .55rem;
-    margin-top: .35rem;
-  }
-  .check-item {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    font-size: .87rem;
-    color: #b8cde0;
-    cursor: pointer;
-  }
-  .check-item input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    accent-color: #c8a84b;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .path-info-box {
-    background: rgba(200,168,75,.07);
-    border: 1px solid rgba(200,168,75,.2);
-    border-radius: 8px;
-    padding: .85rem 1rem;
-    font-size: .84rem;
-    color: #a8c0d8;
-    line-height: 1.5;
-    margin-top: .75rem;
-    display: none;
-  }
-  .path-info-box.visible { display: block; }
-  .path-info-box strong {
-    color: #c8a84b;
-    display: block;
-    margin-bottom: .3rem;
-    font-size: .78rem;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-  }
-  .rail-section { display: none; }
-  .rail-section.visible { display: block; }
-  .intake-submit-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,.08);
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .score-note {
-    font-size: .8rem;
-    color: #5a7c9a;
-  }
-  .btn-submit {
-    background: linear-gradient(135deg, #c8a84b 0%, #a07c28 100%);
-    color: #0a1628;
-    border: none;
-    border-radius: 8px;
-    padding: .75rem 2.2rem;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: .03em;
-    transition: opacity .15s, transform .1s;
-  }
-  .btn-submit:hover { opacity: .9; transform: translateY(-1px); }
-  .btn-submit:active { transform: translateY(0); }
+/* ── Intake page ──────────────────────────────────────────────── */
+.intake-wrap {
+  max-width: 760px;
+  margin: 2.5rem auto;
+  padding: 0 1rem 3rem;
+}
+.intake-header { margin-bottom: 1.5rem; }
+.intake-badge {
+  display: inline-block;
+  background: rgba(200,168,75,.15);
+  color: #c8a84b;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  padding: .25rem .65rem;
+  border-radius: 4px;
+  border: 1px solid rgba(200,168,75,.3);
+  margin-bottom: .9rem;
+  text-transform: uppercase;
+}
+.intake-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 .5rem;
+}
+.intake-header p {
+  color: #8ca8c8;
+  margin: 0;
+  font-size: .95rem;
+  line-height: 1.5;
+}
+
+/* ── Intent grid ──────────────────────────────────────────────── */
+.intent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 560px) {
+  .intent-grid { grid-template-columns: 1fr 1fr; }
+}
+.intent-card {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px;
+  padding: .85rem 1rem;
+  min-height: 68px;
+  cursor: pointer;
+  background: rgba(255,255,255,.04);
+  transition: border-color .15s, background .15s;
+  text-align: left;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.intent-card:hover {
+  border-color: rgba(200,168,75,.5);
+  background: rgba(200,168,75,.07);
+}
+.intent-card.selected {
+  border-color: #c8a84b;
+  background: rgba(200,168,75,.13);
+}
+.intent-card:active { opacity: .85; }
+.ic-label {
+  font-size: .7rem;
+  font-weight: 700;
+  color: #c8a84b;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: .2rem;
+  line-height: 1.2;
+}
+.ic-desc {
+  font-size: .75rem;
+  color: #6a90b0;
+  line-height: 1.3;
+}
+
+/* ── Path info box ────────────────────────────────────────────── */
+.path-info-box {
+  background: rgba(200,168,75,.07);
+  border: 1px solid rgba(200,168,75,.2);
+  border-radius: 8px;
+  padding: .85rem 1rem;
+  font-size: .84rem;
+  color: #a8c0d8;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  display: none;
+}
+.path-info-box.visible { display: block; }
+.path-info-box strong {
+  color: #c8a84b;
+  display: block;
+  margin-bottom: .3rem;
+  font-size: .78rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+/* ── Form shell ───────────────────────────────────────────────── */
+.intake-form {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(200,168,75,.18);
+  border-radius: 12px;
+  padding: 2rem;
+}
+@media (max-width: 560px) { .intake-form { padding: 1.25rem; } }
+
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.section-label {
+  font-size: .73rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #c8a84b;
+  margin-bottom: .65rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(200,168,75,.2);
+}
+.section-helper {
+  font-size: .82rem;
+  color: #5a7a98;
+  margin-bottom: .85rem;
+  line-height: 1.4;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-bottom: .9rem;
+}
+.field:last-child { margin-bottom: 0; }
+.field label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: #b8cde0;
+}
+.field label .req { color: #e87c6c; margin-left: 2px; }
+.field input,
+.field select,
+.field textarea {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 7px;
+  padding: .55rem .8rem;
+  font-size: .9rem;
+  color: #e8edf2;
+  background: rgba(255,255,255,.06);
+  transition: border-color .15s, background .15s;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  color: rgba(180,200,220,.4);
+  font-style: italic;
+}
+.field select option { background: #0a1f3a; color: #e8edf2; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: rgba(200,168,75,.6);
+  background: rgba(255,255,255,.09);
+}
+.field textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+.field-hint { font-size: .77rem; color: #5a7c9a; line-height: 1.4; }
+.check-group {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  margin-top: .35rem;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .87rem;
+  color: #b8cde0;
+  cursor: pointer;
+}
+.check-item input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #c8a84b;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Rail + conditional section visibility ────────────────────── */
+.rail-section  { display: none; }
+.rail-section.visible  { display: block; }
+.cond-section  { display: none; }
+.cond-section.visible  { display: block; }
+
+/* ── Submit row ───────────────────────────────────────────────── */
+.intake-submit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.score-note { font-size: .8rem; color: #5a7c9a; }
+.btn-submit {
+  background: linear-gradient(135deg, #c8a84b 0%, #a07c28 100%);
+  color: #0a1628;
+  border: none;
+  border-radius: 8px;
+  padding: .75rem 2.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .03em;
+  transition: opacity .15s, transform .1s;
+}
+.btn-submit:hover { opacity: .9; transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+.no-type-prompt {
+  font-size: .83rem;
+  color: #3d6080;
+  font-style: italic;
+  display: none;
+  padding: .5rem 0 .25rem;
+}
+.no-type-prompt.visible { display: block; }
 </style>
 {% endblock %}
 
@@ -213,17 +266,77 @@
 
   <div class="intake-header">
     <div class="intake-badge">Universal Intake Engine</div>
-    <h1>Submit Your Intake</h1>
-    <p>Select the path that fits your situation. The form will guide you through the right questions. Required fields are marked <span style="color:#e87c6c">*</span>.</p>
+    <h1>What brings you here?</h1>
+    <p>Select your path below — the form adapts to show only what's relevant to your situation. Required fields are marked <span style="color:#e87c6c">*</span>.</p>
   </div>
 
+  <!-- ── Intent selector ────────────────────────────────────────── -->
+  <div class="intent-grid" id="intentGrid" role="group" aria-label="Select intake path">
+    <div class="intent-card" data-type="production" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Labor Rail</div>
+      <div class="ic-desc">Hire crew for an event or production</div>
+    </div>
+    <div class="intent-card" data-type="worker_profile" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Worker Profile</div>
+      <div class="ic-desc">Sign up to receive crew work</div>
+    </div>
+    <div class="intent-card" data-type="legal" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Legal / Standing</div>
+      <div class="ic-desc">Rights violations, permit denials, discrimination</div>
+    </div>
+    <div class="intent-card" data-type="partner" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Operator Setup</div>
+      <div class="ic-desc">Business formation &amp; operator onboarding</div>
+    </div>
+    <div class="intent-card" data-type="payment" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Billing Dispute</div>
+      <div class="ic-desc">Overcharges, collection, credit report</div>
+    </div>
+    <div class="intent-card" data-type="labor" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">Labor Dispute</div>
+      <div class="ic-desc">Unpaid wages, wrongful termination, crew dispute</div>
+    </div>
+    <div class="intent-card" data-type="general" role="button" tabindex="0" aria-pressed="false">
+      <div class="ic-label">General Inquiry</div>
+      <div class="ic-desc">Other questions or requests</div>
+    </div>
+  </div>
+
+  <!-- ── Path info boxes ────────────────────────────────────────── -->
+  <div id="info-production" class="path-info-box">
+    <strong>Labor Rail — Production &amp; Events</strong>
+    Use this path to request AV technicians, lighting, audio, or staging crew for a production or event. Include the event type, venue, date, crew call time, and specific skills or certifications required. Operator availability will be confirmed after intake.
+  </div>
+  <div id="info-worker_profile" class="path-info-box">
+    <strong>Worker Profile — Crew Sign-Up</strong>
+    Use this path to register as available crew. Include your trade, experience level, certifications, service area, and rate expectations. You will be matched to open calls based on your profile.
+  </div>
+  <div id="info-legal" class="path-info-box">
+    <strong>Legal / Standing Analysis</strong>
+    Use this path if your rights were violated by a government agency, employer, landlord, or institution — including permit denials, due process violations, discrimination, or retaliation. You do not need to know the legal theory. Just describe what happened.
+  </div>
+  <div id="info-partner" class="path-info-box">
+    <strong>Operator Setup — Business Onboarding</strong>
+    Use this path to register a business entity, begin operator onboarding, or apply for crew services operator status. Include your entity type, state of formation, and intended service area.
+  </div>
+  <div id="info-payment" class="path-info-box">
+    <strong>Billing &amp; Payment Dispute</strong>
+    Use this path for overcharges, unauthorized fees, billing errors, debt collection issues, or errors on your credit report. Include the company name and the exact dollar amount disputed.
+  </div>
+  <div id="info-labor" class="path-info-box">
+    <strong>Labor Dispute</strong>
+    Use this path for unpaid wages, crew pay disputes, unlawful termination, unsafe conditions, or workforce contract issues. Include your role, confirmed rate of pay, dates worked, and what was owed or withheld.
+  </div>
+
+  <!-- ── Main form ───────────────────────────────────────────────── -->
   <form class="intake-form" method="POST" action="/intake" id="intakeForm">
 
-    <!-- notes is populated by JS before submit — not shown to user -->
+    <!-- Hidden fields — intake_type set by card selection; notes aggregated by JS before submit -->
     <input type="hidden" id="notes" name="notes" value="">
+    <input type="hidden" id="intake_type" name="intake_type" value="">
 
-    <!-- ── Section 1: Identity ─────────────────────────────────── -->
-    <div class="form-section">
+    <!-- ── Identity ──────────────────────────────────────────────── -->
+    <div class="form-section" id="section-identity">
       <div class="section-label">Identity</div>
       <div class="field-row">
         <div class="field">
@@ -272,69 +385,32 @@
       </div>
     </div>
 
-    <!-- ── Section 2: Intake Type ─────────────────────────── -->
-    <div class="form-section">
-      <div class="section-label">Intake Type</div>
-      <div class="field">
-        <label for="intake_type">What kind of matter is this? <span class="req">*</span></label>
-        <select id="intake_type" name="intake_type">
-          <option value="">— Select your path —</option>
-          <option value="legal">Legal / Case — rights violation, permit denial, discrimination</option>
-          <option value="labor">Labor / Workforce — unpaid wages, crew dispute, wrongful termination</option>
-          <option value="payment">Payment / Billing Dispute — overcharge, collection, credit impact</option>
-          <option value="production">Production / Event — AV, staging, show production request</option>
-          <option value="partner">Partner / Operator Rail — business formation, operator onboarding</option>
-          <option value="general">General Inquiry</option>
-        </select>
-      </div>
-
-      <div id="info-legal" class="path-info-box">
-        <strong>Legal / Case Path</strong>
-        Use this path if your rights were violated by a government agency, employer, landlord, or institution — including permit denials, due process violations, discrimination, or retaliation. You do not need to know the legal theory. Just describe what happened.
-      </div>
-      <div id="info-labor" class="path-info-box">
-        <strong>Labor / Workforce Path</strong>
-        Use this path for unpaid wages, crew pay disputes, unlawful termination, unsafe conditions, or workforce contract issues. Include your role, rate of pay, dates worked, and what was owed or withheld.
-      </div>
-      <div id="info-payment" class="path-info-box">
-        <strong>Payment / Billing Dispute Path</strong>
-        Use this path for overcharges, unauthorized fees, billing errors, debt collection issues, or errors on your credit report tied to an account. Include the company name and the exact dollar amount disputed.
-      </div>
-      <div id="info-production" class="path-info-box">
-        <strong>Production / Event Path</strong>
-        Use this path for AV, staging, or event production intake. Include the event type, date, venue, and the crew or services you need. Operator availability will be checked after intake.
-      </div>
-      <div id="info-partner" class="path-info-box">
-        <strong>Partner / Operator Rail Path</strong>
-        Use this path to register a business entity, begin operator onboarding, or apply for crew services operator status. Include your entity type, state of formation, and intended service area.
-      </div>
-    </div>
-
-    <!-- ── Section 3: One-Line Summary ─────────────────────────── -->
-    <div class="form-section">
-      <div class="section-label">One-Line Summary</div>
+    <!-- ── One-Line Summary ──────────────────────────────────────── -->
+    <div class="form-section" id="section-summary">
+      <div class="section-label" id="label-summary">One-Line Summary</div>
       <div class="field">
         <label for="subject">Subject <span class="req">*</span></label>
         <input type="text" id="subject" name="subject"
-               placeholder="Briefly state what happened and when — e.g. 'AT&amp;T charged $350 ETF after I cancelled in March 2026'">
-        <span class="field-hint">Keep it to one line. Name the party and include the approximate date.</span>
+               placeholder="Briefly state what happened and when — name the party and include a date">
+        <span class="field-hint">Keep it to one line.</span>
       </div>
     </div>
 
-    <!-- ── Section 4: What Happened ────────────────────────────── -->
-    <div class="form-section">
-      <div class="section-label">What Happened</div>
+    <!-- ── What Happened ─────────────────────────────────────────── -->
+    <div class="form-section" id="section-description">
+      <div class="section-label" id="label-description">What Happened</div>
       <div class="field">
-        <label for="description">Describe what happened <span class="req">*</span></label>
+        <label for="description">Description <span class="req">*</span></label>
         <textarea id="description" name="description" rows="7"
                   placeholder="Start from the beginning. Who did what? When? What did you do or say? What response did you get? Include key dates and any dollar amounts involved."></textarea>
         <span class="field-hint" id="description-hint">Include what you were promised or entitled to, what went wrong, and how it affected you.</span>
       </div>
     </div>
 
-    <!-- ── Section 5: Who Caused Harm ──────────────────────────── -->
-    <div class="form-section">
+    <!-- ── Who Caused Harm (legal / labor / payment) ─────────────── -->
+    <div class="form-section cond-section" id="section-harm">
       <div class="section-label">Who Caused Harm</div>
+      <p class="section-helper">Name the person, company, or agency whose actions led to this matter.</p>
       <div class="field-row">
         <div class="field">
           <label for="respondent_name">Name of person, company, or agency</label>
@@ -358,8 +434,8 @@
       </div>
     </div>
 
-    <!-- ── Section 6: Dates & Timeline ─────────────────────────── -->
-    <div class="form-section">
+    <!-- ── Dates & Timeline (legal / labor / payment) ────────────── -->
+    <div class="form-section cond-section" id="section-dates">
       <div class="section-label">Dates &amp; Timeline</div>
       <div class="field-row">
         <div class="field">
@@ -381,8 +457,8 @@
       </div>
     </div>
 
-    <!-- ── Section 7: Evidence & Documents ─────────────────────── -->
-    <div class="form-section">
+    <!-- ── Evidence & Documents (legal / labor / payment) ────────── -->
+    <div class="form-section cond-section" id="section-evidence">
       <div class="section-label">Evidence &amp; Documents</div>
       <div class="field">
         <label>Check everything you have or can obtain</label>
@@ -402,8 +478,8 @@
       </div>
     </div>
 
-    <!-- ── Section 8: Damages & Losses ─────────────────────────── -->
-    <div class="form-section">
+    <!-- ── Damages & Losses (legal / labor / payment) ────────────── -->
+    <div class="form-section cond-section" id="section-damages">
       <div class="section-label">Damages &amp; Losses</div>
       <div class="field-row">
         <div class="field">
@@ -415,14 +491,14 @@
         <div class="field">
           <label for="other_losses">Other harm or consequences</label>
           <textarea id="other_losses" rows="3"
-                    placeholder="e.g. Credit score dropped 40 points; denied apartment rental; 3 days of lost income; emotional distress"></textarea>
+                    placeholder="e.g. Credit score dropped 40 points; denied apartment rental; 3 days of lost income"></textarea>
         </div>
       </div>
     </div>
 
-    <!-- ── Section 9: Desired Outcome ──────────────────────────── -->
-    <div class="form-section">
-      <div class="section-label">Desired Outcome</div>
+    <!-- ── Desired Outcome (all except worker_profile) ───────────── -->
+    <div class="form-section cond-section" id="section-outcome">
+      <div class="section-label" id="label-outcome">Desired Outcome</div>
       <div class="field">
         <label for="desired_outcome">What outcome would resolve this for you?</label>
         <textarea id="desired_outcome" name="desired_outcome_text" rows="3"
@@ -431,9 +507,9 @@
       </div>
     </div>
 
-    <!-- ── Labor Rail (shown for labor / production) ────────────── -->
+    <!-- ── Labor Rail (production / labor / worker_profile) ──────── -->
     <div class="form-section rail-section" id="rail-labor">
-      <div class="section-label">Labor Rail — Crew Details</div>
+      <div class="section-label" id="label-labor-rail">Labor Rail — Crew Details</div>
       <div class="field-row">
         <div class="field">
           <label for="role_type">Role / trade</label>
@@ -505,7 +581,7 @@
       </div>
     </div>
 
-    <!-- ── Operator Rail (shown for partner) ───────────────────── -->
+    <!-- ── Operator Rail (partner) ────────────────────────────────── -->
     <div class="form-section rail-section" id="rail-partner">
       <div class="section-label">Operator Rail — Business Details</div>
       <div class="field-row">
@@ -577,7 +653,7 @@
       </div>
     </div>
 
-    <!-- ── Legal Rail (shown for legal) ───────────────────────── -->
+    <!-- ── Legal Rail (legal) ─────────────────────────────────────── -->
     <div class="form-section rail-section" id="rail-legal">
       <div class="section-label">Legal Rail — Standing Detail</div>
       <div class="field-row">
@@ -604,7 +680,7 @@
           <label for="legal_work_loss">Income or work loss (dollar amount)</label>
           <input type="number" id="legal_work_loss" name="work_loss_amount"
                  min="0" step="0.01" placeholder="e.g. 2000">
-          <span class="field-hint">Wages, contracts, or income opportunities lost. Enter 0 if none.</span>
+          <span class="field-hint">Wages, contracts, or income lost. Enter 0 if none.</span>
         </div>
       </div>
       <div class="field">
@@ -625,9 +701,12 @@
       </div>
     </div>
 
+    <!-- ── No-type prompt + submit ────────────────────────────────── -->
+    <p class="no-type-prompt" id="noTypePrompt">Select a path above to reveal all relevant fields.</p>
+
     <div class="intake-submit-row">
       <span class="score-note">Fields marked <span style="color:#e87c6c">*</span> are required for a 100-point intake score.</span>
-      <button type="submit" class="btn-submit">Submit Intake →</button>
+      <button type="submit" class="btn-submit" id="submitBtn">Submit Intake →</button>
     </div>
 
   </form>
@@ -638,103 +717,205 @@
 <script>
 (function () {
 
-  /* Path-specific placeholder text — updates on intake_type change */
+  /* ── Path-specific placeholder text ─────────────────────────── */
   var PATH = {
     legal: {
-      subject:      "City of Springfield denied permit application without explanation — April 2026",
-      description:  "On March 15, 2026, I submitted a complete permit application for my business location. On April 2, 2026, I received a denial letter with no reason given. I have operated at this address for 7 years in full compliance with all local ordinances and have received no prior notice of non-compliance.",
-      desc_hint:    "Include: what permit or right was denied, by whom, when, and how it affected you.",
-      respondent:   "e.g. City of Springfield Permits Division / Officer Jane Smith",
-      financial:    "e.g. $4,500 in filing and preparation costs",
-      losses:       "e.g. Unable to open new location; lost $2,000/month in projected revenue; business opportunity forfeited",
-      outcome:      "e.g. Reversal of denial and issuance of permit; or written explanation of grounds for denial within 30 days"
+      summary_label: "One-Line Summary",
+      desc_label:    "What Happened",
+      subject:       "City of Springfield denied permit application without explanation — April 2026",
+      description:   "On March 15, 2026, I submitted a complete permit application for my business location. On April 2, 2026, I received a denial letter with no reason given. I have operated at this address for 7 years in full compliance with all local ordinances and have received no prior notice of non-compliance.",
+      desc_hint:     "Include: what permit or right was denied, by whom, when, and how it affected you.",
+      respondent:    "e.g. City of Springfield Permits Division / Officer Jane Smith",
+      financial:     "e.g. $4,500 in filing and preparation costs",
+      losses:        "e.g. Unable to open new location; lost $2,000/month in projected revenue",
+      outcome:       "e.g. Reversal of denial and issuance of permit; or written explanation within 30 days",
+      cta:           "Submit for Analysis →"
     },
     labor: {
-      subject:      "Crew coordinator failed to pay $1,350 for 3-day AV production — Las Vegas, March 2026",
-      description:  "I worked as an AV technician for a 3-day corporate event (March 10–12, 2026) at the Venetian, Las Vegas at a confirmed rate of $450/day. After the event the coordinator, Michael Torres of Phoenix Events LLC, stopped responding to my messages. I have not received the $1,350 owed. I have a signed work agreement and text messages confirming the rate.",
-      desc_hint:    "Include: your role, confirmed rate of pay, dates worked, and the steps you took to collect.",
-      respondent:   "e.g. Phoenix Events LLC / Michael Torres (coordinator)",
-      financial:    "e.g. $1,350 unpaid wages + $280 travel and accommodation costs",
-      losses:       "e.g. 3 days of wages withheld; travel unreimbursed; lost follow-on booking due to dispute",
-      outcome:      "e.g. Full payment of $1,350 wages plus $280 in unreimbursed expenses within 10 business days"
+      summary_label: "One-Line Summary",
+      desc_label:    "What Happened",
+      subject:       "Crew coordinator failed to pay $1,350 for 3-day AV production — Las Vegas, March 2026",
+      description:   "I worked as an AV technician for a 3-day corporate event (March 10–12, 2026) at the Venetian, Las Vegas at a confirmed rate of $450/day. After the event the coordinator, Michael Torres of Phoenix Events LLC, stopped responding to my messages. I have not received the $1,350 owed. I have a signed work agreement and text messages confirming the rate.",
+      desc_hint:     "Include: your role, confirmed rate of pay, dates worked, and the steps you took to collect.",
+      respondent:    "e.g. Phoenix Events LLC / Michael Torres (coordinator)",
+      financial:     "e.g. $1,350 unpaid wages + $280 travel and accommodation costs",
+      losses:        "e.g. 3 days of wages withheld; travel unreimbursed; lost follow-on booking",
+      outcome:       "e.g. Full payment of $1,350 wages plus $280 in unreimbursed expenses within 10 business days",
+      cta:           "Submit Dispute →"
     },
     payment: {
-      subject:      "AT&T charged $350 early termination fee after I relocated — March 2026",
-      description:  "I was an AT&T residential customer for 4 years. In March 2026, I relocated due to job loss and requested account cancellation. AT&T applied a $350 early termination fee and reported the balance to all three credit bureaus. The ETF was not clearly disclosed at the time of service enrollment. I have no prior late payments on this account.",
-      desc_hint:    "Include: the company name, account type, amount disputed, what you were told at signup, and the credit impact if any.",
-      respondent:   "e.g. AT&T / AT&T Collections",
-      financial:    "e.g. $350 unauthorized ETF",
-      losses:       "e.g. Credit score dropped 40 points; denied apartment rental application; anxiety and time spent disputing",
-      outcome:      "e.g. Remove ETF charge from account; delete the credit bureau tradeline entry; confirm account closed in writing"
+      summary_label: "One-Line Summary",
+      desc_label:    "What Happened",
+      subject:       "AT&T charged $350 early termination fee after I relocated — March 2026",
+      description:   "I was an AT&T residential customer for 4 years. In March 2026, I relocated due to job loss and requested account cancellation. AT&T applied a $350 early termination fee and reported the balance to all three credit bureaus. The ETF was not clearly disclosed at the time of service enrollment.",
+      desc_hint:     "Include: the company name, account type, amount disputed, what you were told at signup, and the credit impact if any.",
+      respondent:    "e.g. AT&T / AT&T Collections",
+      financial:     "e.g. $350 unauthorized ETF",
+      losses:        "e.g. Credit score dropped 40 points; denied apartment rental application",
+      outcome:       "e.g. Remove ETF charge; delete the credit bureau tradeline entry; confirm account closed in writing",
+      cta:           "Submit Dispute →"
     },
     production: {
-      subject:      "Corporate awards gala — full AV crew needed — Las Vegas, June 14 2026",
-      description:  "We are producing a 400-person corporate awards ceremony at the Venetian, Las Vegas on June 14, 2026. We need a full AV crew: 2 audio engineers, 2 lighting techs, 1 video engineer, and 1 crew lead. Load-in begins at 8:00 AM; show is at 7:00 PM; load-out by midnight. Rigging pre-call may be required the previous day.",
-      desc_hint:    "Include: event type, venue, date, show duration, crew call time, and specific equipment or skill requirements.",
-      respondent:   "e.g. Venetian Resort Las Vegas / In-house AV department (if applicable)",
-      financial:    "e.g. Labor budget $12,000 for crew call",
-      losses:       "",
-      outcome:      "e.g. Full AV crew confirmed by May 30, 2026; union or non-union both acceptable"
+      summary_label: "One-Line Summary",
+      desc_label:    "Event &amp; Crew Details",
+      subject:       "Corporate awards gala — full AV crew needed — Las Vegas, June 14 2026",
+      description:   "We are producing a 400-person corporate awards ceremony at the Venetian, Las Vegas on June 14, 2026. We need a full AV crew: 2 audio engineers, 2 lighting techs, 1 video engineer, and 1 crew lead. Load-in begins at 8:00 AM; show is at 7:00 PM; load-out by midnight. Rigging pre-call may be required the previous day.",
+      desc_hint:     "Include: event type, venue, date, show duration, crew call time, and specific equipment or skill requirements.",
+      respondent:    "",
+      financial:     "e.g. Labor budget $12,000 for crew call",
+      losses:        "",
+      outcome:       "e.g. Full AV crew confirmed by May 30, 2026; union or non-union both acceptable",
+      cta:           "Request Crew →"
     },
     partner: {
-      subject:      "Operator onboarding — Williams AV Services LLC — Las Vegas, NV",
-      description:  "I am establishing Williams AV Services LLC to provide AV production and crew services in the Las Vegas and Southwest US market. I seek to complete operator onboarding, register with the labor marketplace, and receive compliance checklist review. The LLC was formed in Nevada in January 2026 and my EIN is on file.",
-      desc_hint:    "Include: entity name, state of formation, EIN status, intended services, and primary service area.",
-      respondent:   "",
-      financial:    "",
-      losses:       "",
-      outcome:      "e.g. Complete operator onboarding checklist; activate crew services listing; confirm W-9 and insurance on file"
+      summary_label: "One-Line Summary",
+      desc_label:    "About Your Business",
+      subject:       "Operator onboarding — Williams AV Services LLC — Las Vegas, NV",
+      description:   "I am establishing Williams AV Services LLC to provide AV production and crew services in the Las Vegas and Southwest US market. I seek to complete operator onboarding, register with the labor marketplace, and receive compliance checklist review. The LLC was formed in Nevada in January 2026 and my EIN is on file.",
+      desc_hint:     "Include: entity name, state of formation, EIN status, intended services, and primary service area.",
+      respondent:    "",
+      financial:     "",
+      losses:        "",
+      outcome:       "e.g. Complete operator onboarding checklist; activate crew services listing; confirm W-9 and insurance on file",
+      cta:           "Begin Onboarding →"
+    },
+    worker_profile: {
+      summary_label: "Your Role &amp; Location",
+      desc_label:    "About You",
+      subject:       "AV Technician — 8 yrs experience — Las Vegas, NV — available immediately",
+      description:   "I have 8 years of experience in AV production, specializing in audio and lighting. Available for corporate events, trade shows, and concerts in the Las Vegas metro area. IATSE card holder, Dante certified, proficient with L-Acoustics and DiGiCo consoles.",
+      desc_hint:     "Describe your trade background, years of experience, certifications, equipment expertise, and the types of shows you work.",
+      respondent:    "",
+      financial:     "",
+      losses:        "",
+      outcome:       "",
+      cta:           "Submit Profile →"
     },
     general: {
-      subject:      "",
-      description:  "",
-      desc_hint:    "Include what you need, relevant background, key dates, and parties involved.",
-      respondent:   "e.g. Company or person name",
-      financial:    "e.g. $500 or $0",
-      losses:       "e.g. Lost wages, credit impact, emotional distress",
-      outcome:      "e.g. Refund; correction of records; written response"
+      summary_label: "One-Line Summary",
+      desc_label:    "What Happened",
+      subject:       "",
+      description:   "",
+      desc_hint:     "Include what you need, relevant background, key dates, and parties involved.",
+      respondent:    "e.g. Company or person name",
+      financial:     "e.g. $500 or $0",
+      losses:        "e.g. Lost wages, credit impact, emotional distress",
+      outcome:       "e.g. Refund; correction of records; written response",
+      cta:           "Submit Inquiry →"
     }
   };
 
-  var typeSelect       = document.getElementById('intake_type');
-  var subjectEl        = document.getElementById('subject');
-  var descEl           = document.getElementById('description');
-  var descHintEl       = document.getElementById('description-hint');
-  var respondentEl     = document.getElementById('respondent_name');
-  var financialEl      = document.getElementById('financial_loss');
-  var lossesEl         = document.getElementById('other_losses');
-  var outcomeEl        = document.getElementById('desired_outcome');
-  var railLabor        = document.getElementById('rail-labor');
-  var railPartner      = document.getElementById('rail-partner');
-  var railLegal        = document.getElementById('rail-legal');
-  var infoBoxes        = document.querySelectorAll('.path-info-box');
+  /* ── Conditional section visibility rules ────────────────────── */
+  var COND_SHOW = {
+    'section-harm':     ['legal', 'labor', 'payment'],
+    'section-dates':    ['legal', 'labor', 'payment'],
+    'section-evidence': ['legal', 'labor', 'payment'],
+    'section-damages':  ['legal', 'labor', 'payment'],
+    'section-outcome':  ['legal', 'labor', 'payment', 'production', 'partner', 'general']
+  };
+
+  /* ── DOM references ──────────────────────────────────────────── */
+  var intakeTypeInput = document.getElementById('intake_type');
+  var subjectEl       = document.getElementById('subject');
+  var descEl          = document.getElementById('description');
+  var descHintEl      = document.getElementById('description-hint');
+  var respondentEl    = document.getElementById('respondent_name');
+  var financialEl     = document.getElementById('financial_loss');
+  var lossesEl        = document.getElementById('other_losses');
+  var outcomeEl       = document.getElementById('desired_outcome');
+  var railLabor       = document.getElementById('rail-labor');
+  var railPartner     = document.getElementById('rail-partner');
+  var railLegal       = document.getElementById('rail-legal');
+  var infoBoxes       = document.querySelectorAll('.path-info-box');
+  var cards           = document.querySelectorAll('.intent-card');
+  var noTypePrompt    = document.getElementById('noTypePrompt');
+  var submitBtn       = document.getElementById('submitBtn');
+  var labelLaborRail  = document.getElementById('label-labor-rail');
+  var labelSummary    = document.getElementById('label-summary');
+  var labelDesc       = document.getElementById('label-description');
 
   function applyPath(type) {
     var d = PATH[type] || PATH['general'];
 
-    if (subjectEl)    subjectEl.placeholder    = d.subject      || "One-line summary — name the party and include a date";
-    if (descEl)       descEl.placeholder       = d.description  || "Describe what happened, key dates, and parties involved.";
-    if (descHintEl)   descHintEl.textContent   = d.desc_hint;
-    if (respondentEl) respondentEl.placeholder = d.respondent   || "e.g. Company or agency name";
-    if (financialEl)  financialEl.placeholder  = d.financial    || "e.g. $1,500 or $0";
-    if (lossesEl)     lossesEl.placeholder     = d.losses       || "e.g. Lost wages; credit impact; emotional distress";
-    if (outcomeEl)    outcomeEl.placeholder    = d.outcome      || "e.g. Payment owed; correction of records; written response";
+    /* Placeholders */
+    if (subjectEl)    subjectEl.placeholder    = d.subject      || 'One-line summary — name the party and include a date';
+    if (descEl)       descEl.placeholder       = d.description  || 'Describe what happened, key dates, and parties involved.';
+    if (descHintEl)   descHintEl.textContent   = d.desc_hint    || '';
+    if (respondentEl) respondentEl.placeholder = d.respondent   || 'e.g. Company or agency name';
+    if (financialEl)  financialEl.placeholder  = d.financial    || 'e.g. $1,500 or $0';
+    if (lossesEl)     lossesEl.placeholder     = d.losses       || 'e.g. Lost wages; credit impact; emotional distress';
+    if (outcomeEl)    outcomeEl.placeholder    = d.outcome      || 'e.g. Payment owed; correction of records; written response';
 
-    if (railLabor)   railLabor.classList.toggle('visible', type === 'labor' || type === 'production');
+    /* Section labels */
+    if (labelSummary) labelSummary.textContent = d.summary_label || 'One-Line Summary';
+    if (labelDesc)    labelDesc.innerHTML      = d.desc_label    || 'What Happened';
+
+    /* Rail sections */
+    if (railLabor)   railLabor.classList.toggle('visible',  type === 'labor' || type === 'production' || type === 'worker_profile');
     if (railPartner) railPartner.classList.toggle('visible', type === 'partner');
-    if (railLegal)   railLegal.classList.toggle('visible', type === 'legal');
+    if (railLegal)   railLegal.classList.toggle('visible',   type === 'legal');
 
+    /* Labor rail section label */
+    if (labelLaborRail) {
+      labelLaborRail.textContent = (type === 'worker_profile')
+        ? 'Your Profile — Skills & Availability'
+        : 'Labor Rail — Crew Details';
+    }
+
+    /* Info boxes */
     infoBoxes.forEach(function (box) { box.classList.remove('visible'); });
     var box = document.getElementById('info-' + type);
     if (box) box.classList.add('visible');
+
+    /* Conditional sections */
+    Object.keys(COND_SHOW).forEach(function (secId) {
+      var el = document.getElementById(secId);
+      if (el) el.classList.toggle('visible', COND_SHOW[secId].indexOf(type) !== -1);
+    });
+
+    /* Card highlights */
+    cards.forEach(function (card) {
+      var pressed = card.dataset.type === type;
+      card.classList.toggle('selected', pressed);
+      card.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    });
+
+    /* Submit button label */
+    if (submitBtn) submitBtn.textContent = d.cta || 'Submit Intake →';
+
+    /* Hide no-type prompt */
+    if (noTypePrompt) noTypePrompt.classList.remove('visible');
+
+    /* Update hidden field */
+    if (intakeTypeInput) intakeTypeInput.value = type;
   }
 
-  if (typeSelect) {
-    typeSelect.addEventListener('change', function () { applyPath(this.value); });
-    if (typeSelect.value) applyPath(typeSelect.value);
+  /* ── Card click / keyboard handlers ─────────────────────────── */
+  cards.forEach(function (card) {
+    card.addEventListener('click', function () { applyPath(this.dataset.type); });
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        applyPath(this.dataset.type);
+      }
+    });
+  });
+
+  /* ── Prefill from query param or Jinja context ───────────────── */
+  var prefillType = '{{ prefill_type | default("") }}';
+  if (!prefillType) {
+    try {
+      prefillType = new URLSearchParams(window.location.search).get('prefill_type') || '';
+    } catch (e) {}
+  }
+  if (prefillType && PATH[prefillType]) {
+    applyPath(prefillType);
+  } else {
+    /* Show nudge — identity fields are always visible, rest waits */
+    if (noTypePrompt) noTypePrompt.classList.add('visible');
   }
 
-  /* Aggregate structured fields into hidden notes before submit */
+  /* ── Aggregate structured fields into hidden notes before submit ─ */
   var form       = document.getElementById('intakeForm');
   var notesField = document.getElementById('notes');
 
@@ -753,8 +934,7 @@
           .map(function (el) { return el.value; }).join(', ');
       }
 
-      var parts = [];
-
+      var parts          = [];
       var respondent     = val('respondent_name');
       var respondentType = val('respondent_type');
       var incidentDate   = val('incident_date');
@@ -764,13 +944,14 @@
       var financial      = val('financial_loss');
       var losses         = val('other_losses');
       var outcome        = val('desired_outcome');
-      if (respondent)                        parts.push('Respondent: ' + respondent + (respondentType ? ' (' + respondentType + ')' : ''));
-      if (incidentDate)                      parts.push('Incident date: ' + incidentDate + (ongoing ? ' (ongoing)' : ''));
-      if (firstNotice && firstNotice !== incidentDate) parts.push('First notice: ' + firstNotice);
-      if (evidence)                          parts.push('Evidence available: ' + evidence);
-      if (financial)                         parts.push('Financial loss: ' + financial);
-      if (losses)                            parts.push('Other losses: ' + losses);
-      if (outcome)                           parts.push('Desired outcome: ' + outcome);
+
+      if (respondent)                                           parts.push('Respondent: ' + respondent + (respondentType ? ' (' + respondentType + ')' : ''));
+      if (incidentDate)                                         parts.push('Incident date: ' + incidentDate + (ongoing ? ' (ongoing)' : ''));
+      if (firstNotice && firstNotice !== incidentDate)          parts.push('First notice: ' + firstNotice);
+      if (evidence)                                             parts.push('Evidence available: ' + evidence);
+      if (financial)                                            parts.push('Financial loss: ' + financial);
+      if (losses)                                               parts.push('Other losses: ' + losses);
+      if (outcome)                                              parts.push('Desired outcome: ' + outcome);
 
       notesField.value = parts.join('\n');
     });

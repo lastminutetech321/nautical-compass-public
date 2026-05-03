@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import List
 from uuid import uuid4
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -153,10 +153,11 @@ def load_recent_intakes(limit: int = 10) -> list:
 # ---------------------------------------------------------------------------
 
 @router.get("", response_class=HTMLResponse)
-def intake_get(request: Request):
+def intake_get(request: Request, prefill_type: str = Query("")):
     return templates.TemplateResponse(request, "intake.html", context={
         "request": request,
         "v": int(time.time()),
+        "prefill_type": prefill_type,
     })
 
 
@@ -240,7 +241,7 @@ async def intake_post(
         }
         record["operator_rail"] = build_operator_profile(rail_data)
 
-    if intake_type.strip() in ("labor", "production"):
+    if intake_type.strip() in ("labor", "production", "worker_profile"):
         from services.labor_rail_service import build_labor_profile
         labor_data = {
             "role_type":       role_type.strip(),
