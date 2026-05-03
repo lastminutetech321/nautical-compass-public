@@ -11,6 +11,7 @@ from services.regulatory_routing_service import analyze_regulatory_routes, Regul
 from services.jurisdiction_service import analyze_jurisdiction, JurisdictionServiceError
 from services.legal_results_service import build_legal_results, LegalResultsServiceError
 from services.case_builder_service import build_case_packet, CaseBuilderServiceError
+from services.complaint_generator_service import generate_complaint_draft, ComplaintGeneratorServiceError
 
 legal_rail_router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -133,6 +134,17 @@ def post_case_packet(payload: CasePacketRequest):
         result = build_case_packet(payload.userId, payload.intakeState, payload.complaintId)
         return {"ok": True, "data": result}
     except CaseBuilderServiceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@legal_rail_router.post("/api/legal/complaint-draft")
+def post_complaint_draft(payload: LegalAnalysisRequest):
+    try:
+        result = generate_complaint_draft(payload.intakeState, payload.complaintId)
+        return {"ok": True, "complaint_draft": result}
+    except ComplaintGeneratorServiceError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))

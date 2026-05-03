@@ -105,6 +105,20 @@
       <a href="/modules/draft-packet" style="color:#d9aa3f;font-size:.85rem;">Open Draft Packet →</a>
     </div>
 
+    <div style="border:1px solid #2d3a50;border-radius:12px;padding:1.25rem;background:#111b2b;">
+      <div style="font-size:.75rem;color:#d9aa3f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;">
+        Complaint Draft
+      </div>
+      <p style="font-size:.85rem;color:#aec4e8;line-height:1.5;margin-bottom:1rem;">
+        Generate a structured federal complaint draft from your legal results —
+        jurisdiction, standing, capacity, causes of action, and prayer for relief.
+      </p>
+      <div style="font-size:.75rem;color:#667;margin-bottom:.75rem;">
+        POST /api/legal/complaint-draft · §1983 · Lujan · Kentucky v. Graham
+      </div>
+      <a href="/modules/draft-packet" style="color:#d9aa3f;font-size:.85rem;">Open Draft Packet →</a>
+    </div>
+
   </div>
 
   <!-- API ENDPOINTS -->
@@ -119,7 +133,8 @@
       POST /api/legal/regulatory-routes<br>
       POST /api/legal/jurisdiction<br>
       POST /api/legal/results<br>
-      POST /api/legal/case-packet
+      POST /api/legal/case-packet<br>
+      POST /api/legal/complaint-draft
     </div>
     <div style="font-size:.75rem;color:#667;margin-top:.5rem;">
       All endpoints accept <code style="color:#aec4e8;">{ "intakeState": {...}, "complaintId": "..." }</code>
