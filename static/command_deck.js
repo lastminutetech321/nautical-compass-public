@@ -101,6 +101,8 @@ async function fetchDeckStatus() {
       updateIntakePanelFromState(ie);
       syncIntakeToSystemState();
       applyDerivedWeather();
+      updateOperatorRailPanel(ie.operator_rail || null, ie);
+      updateLaborRailPanel(ie.labor_rail || null, ie);
     }
   } catch (e) { /* keep existing mock data on failure */ }
 }
@@ -618,6 +620,81 @@ function updateIntakePanelFromState(ie) {
   if (missingEl) {
     const missing = ie.latest_missing || [];
     missingEl.textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
+  }
+}
+
+/* ── RAIL READINESS COLOR ──────────────────────────────────────── */
+function railReadinessColor(score) {
+  if (score >= 80) return '#2ecc71';   // green — ready
+  if (score >= 40) return '#f1c40f';   // gold  — partial
+  return '#e74c3c';                    // red   — low
+}
+
+/* ── OPERATOR RAIL PANEL ───────────────────────────────────────── */
+function updateOperatorRailPanel(rail, ie) {
+  const panel = document.getElementById('operatorRailPanel');
+  if (!panel) return;
+  if (!rail) { panel.style.display = 'none'; return; }
+
+  panel.style.display = '';
+  const score = rail.readiness_score != null ? rail.readiness_score : 0;
+  const color = railReadinessColor(score);
+  panel.style.borderColor = color;
+
+  const ringEl = document.getElementById('orReadiness');
+  if (ringEl) { ringEl.textContent = score + '%'; ringEl.style.borderColor = color; ringEl.style.color = color; }
+
+  const set = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('orEntityType',  rail.entity_type_label);
+  set('orServiceType', rail.operator_type_label);
+  set('orServiceArea', rail.service_area);
+  if (ie) set('orLatestId', ie.latest_id);
+
+  const compEl = document.getElementById('orCompliance');
+  if (compEl) {
+    compEl.textContent = rail.compliance_complete ? 'Complete' : 'Partial';
+    compEl.style.color = rail.compliance_complete ? '#2ecc71' : '#f1c40f';
+  }
+
+  const missingEl = document.getElementById('orMissing');
+  if (missingEl) {
+    const m = rail.missing_compliance || [];
+    missingEl.textContent = m.length === 0 ? 'None' : m.join(', ');
+    missingEl.style.color = m.length === 0 ? '#2ecc71' : '#f1c40f';
+  }
+}
+
+/* ── LABOR RAIL PANEL ──────────────────────────────────────────── */
+function updateLaborRailPanel(lrail, ie) {
+  const panel = document.getElementById('laborRailPanel');
+  if (!panel) return;
+  if (!lrail) { panel.style.display = 'none'; return; }
+
+  panel.style.display = '';
+  const score = lrail.readiness_score != null ? lrail.readiness_score : 0;
+  const color = railReadinessColor(score);
+  panel.style.borderColor = color;
+
+  const ringEl = document.getElementById('lrReadiness');
+  if (ringEl) { ringEl.textContent = score + '%'; ringEl.style.borderColor = color; ringEl.style.color = color; }
+
+  const set = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('lrRole',         lrail.role_type_label);
+  set('lrAvailability', lrail.availability_label);
+  set('lrLocation',     lrail.labor_location);
+  if (ie) set('lrLatestId', ie.latest_id);
+
+  const crewEl = document.getElementById('lrCrewReady');
+  if (crewEl) {
+    crewEl.textContent = lrail.crew_ready ? 'Crew Ready' : 'Incomplete';
+    crewEl.style.color = lrail.crew_ready ? '#2ecc71' : '#f1c40f';
+  }
+
+  const missingEl = document.getElementById('lrMissing');
+  if (missingEl) {
+    const m = lrail.missing_readiness || [];
+    missingEl.textContent = m.length === 0 ? 'None' : m.join(', ');
+    missingEl.style.color = m.length === 0 ? '#2ecc71' : '#f1c40f';
   }
 }
 

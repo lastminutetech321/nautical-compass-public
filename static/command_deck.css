@@ -1630,3 +1630,106 @@ body.cabin-light-off::after {
   .weather-badge.badge-flash { animation: none !important; }
   .activity-banner { transition: opacity .15s; }
 }
+
+/* ── RAIL DECK PANELS — operator rail / labor rail ─────────────── */
+.rail-deck-row {
+  display: flex;
+  gap: .8rem;
+  margin: .6rem 1rem 0;
+  flex-wrap: wrap;
+}
+
+.rail-deck-panel {
+  flex: 1;
+  min-width: 280px;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  padding: .85rem 1.1rem;
+  font-family: 'Share Tech Mono', monospace;
+  transition: border-color .4s ease;
+}
+
+.rail-panel-type-badge {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: .65rem;
+}
+
+.rail-panel-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.rail-panel-score {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.rail-readiness-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--gold);
+  transition: border-color .4s ease, color .4s ease;
+}
+
+.rail-score-label {
+  font-size: .57rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-top: .3rem;
+}
+
+.rail-panel-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .28rem .7rem;
+}
+
+.rail-field {
+  display: flex;
+  flex-direction: column;
+  gap: .06rem;
+}
+
+.rail-field-full {
+  grid-column: 1 / -1;
+}
+
+.rail-field-label {
+  font-size: .57rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.rail-field-val {
+  font-size: .78rem;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-id {
+  font-size: .68rem;
+  color: #666;
+}
+
+@media (max-width: 680px) {
+  .rail-deck-row { flex-direction: column; }
+  .rail-deck-panel { min-width: 0; }
+}
