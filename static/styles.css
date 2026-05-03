@@ -27,8 +27,37 @@ body{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   color:var(--text);
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(200,148,51,.20), transparent 55%),
-    linear-gradient(180deg,#07111d,#040912 70%);
+    radial-gradient(ellipse 110% 52% at 50% 115%, rgba(0,55,110,.30), transparent 58%),
+    radial-gradient(1200px 600px at 10% -10%, rgba(200,148,51,.16), transparent 55%),
+    linear-gradient(180deg,#05101c 0%,#040c18 60%,#020910 100%);
+}
+
+/* === WATER BACKGROUND ANIMATION === */
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.85;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%, #0d2137, transparent 70%),
+    radial-gradient(ellipse 60% 45% at 75% 30%, #0e3d52, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 90%, #0a1628, transparent 70%);
+  animation:waterLayer 12s ease-in-out infinite;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse 50% 40% at 60% 40%, rgba(14,61,82,.35), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 30% 70%, rgba(13,33,55,.40), transparent 60%);
+  animation:waterDepth 16s ease-in-out infinite;
 }
 
 a{
@@ -628,6 +657,21 @@ body main > .page-shell{
 
 /* ANIMATION */
 
+@keyframes waterLayer{
+  0%,100%{opacity:.85;transform:scale(1) translateX(0) translateY(0)}
+  50%    {opacity:.70;transform:scale(1.04) translateX(-1%) translateY(.5%)}
+}
+
+@keyframes waterDepth{
+  0%,100%{opacity:.60;transform:scale(1)}
+  50%    {opacity:.85;transform:scale(1.06) translateY(-.8%)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body::before,
+  body::after{animation:none}
+}
+
 @keyframes waterMotion{
   0%{transform:translateX(-3%)}
   50%{transform:translateX(3%) translateY(-6px)}
@@ -952,4 +996,63 @@ body main > .page-shell{
   .form-field-full{
     grid-column:auto;
   }
+}
+
+/* === OCEAN SOUND TOGGLE === */
+
+.ocean-sound-btn{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  z-index:200;
+  padding:9px 16px;
+  border-radius:999px;
+  border:1px solid rgba(200,148,51,.50);
+  background:rgba(5,14,26,.88);
+  color:var(--bronze-soft);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.05em;
+  cursor:pointer;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 4px 20px rgba(0,0,0,.45);
+  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
+  white-space:nowrap;
+}
+
+.ocean-sound-btn:hover{
+  background:rgba(8,20,36,.94);
+  border-color:rgba(200,148,51,.80);
+  box-shadow:0 6px 26px rgba(0,0,0,.50);
+}
+
+.ocean-sound-btn.is-on{
+  border-color:rgba(200,148,51,.75);
+  background:rgba(10,22,38,.92);
+  box-shadow:0 4px 20px rgba(0,0,0,.45),0 0 14px rgba(200,148,51,.18);
+}
+
+/* === VIDEO BG UTILITIES === */
+
+.video-bg-container{
+  position:relative;
+  overflow:hidden;
+}
+
+.video-bg-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+}
+
+/* === STACKING CONTEXT — ensure cards/modals sit above water layers === */
+
+.card,
+.container,
+.modal{
+  position:relative;
+  z-index:1;
 }
