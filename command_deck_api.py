@@ -159,12 +159,22 @@ def command_deck_status_with_intake():
         if latest and latest.get("intake_type") == "partner" and latest.get("operator_rail"):
             rail = latest["operator_rail"]
             ie["operator_rail"] = {
-                "readiness_score":    rail.get("readiness_score"),
+                "readiness_score":     rail.get("readiness_score"),
                 "compliance_complete": rail.get("compliance_complete"),
-                "entity_type_label":  rail.get("entity_type_label"),
+                "entity_type_label":   rail.get("entity_type_label"),
                 "operator_type_label": rail.get("operator_type_label"),
-                "service_area":       rail.get("service_area"),
-                "missing_compliance": rail.get("missing_compliance", []),
+                "service_area":        rail.get("service_area"),
+                "missing_compliance":  rail.get("missing_compliance", []),
+            }
+        if latest and latest.get("intake_type") in ("labor", "production") and latest.get("labor_rail"):
+            lrail = latest["labor_rail"]
+            ie["labor_rail"] = {
+                "readiness_score":  lrail.get("readiness_score"),
+                "crew_ready":       lrail.get("crew_ready"),
+                "role_type_label":  lrail.get("role_type_label"),
+                "availability_label": lrail.get("availability_label"),
+                "labor_location":   lrail.get("labor_location"),
+                "missing_readiness": lrail.get("missing_readiness", []),
             }
         data["intake_engine"] = ie
     except Exception as exc:

@@ -19,6 +19,7 @@ Scoring:
 import json
 import time
 from pathlib import Path
+from typing import List
 from uuid import uuid4
 
 from fastapi import APIRouter, Form, Request
@@ -156,6 +157,14 @@ async def intake_post(
     ein_status: str         = Form(""),
     w9_status: str          = Form(""),
     insurance_status: str   = Form(""),
+    # Labor Rail fields
+    role_type: str          = Form(""),
+    availability: str       = Form(""),
+    skills: str             = Form(""),
+    rate_expectation: str   = Form(""),
+    labor_location: str     = Form(""),
+    union_status: str       = Form(""),
+    labor_evidence: List[str] = Form(default=[]),
 ):
     intake_id = f"int_{uuid4().hex[:10]}"
     created_at = int(time.time())
@@ -196,6 +205,19 @@ async def intake_post(
             "insurance_status":   insurance_status.strip(),
         }
         record["operator_rail"] = build_operator_profile(rail_data)
+
+    if intake_type.strip() in ("labor", "production"):
+        from services.labor_rail_service import build_labor_profile
+        labor_data = {
+            "role_type":       role_type.strip(),
+            "availability":    availability.strip(),
+            "skills":          skills.strip(),
+            "rate_expectation": rate_expectation.strip(),
+            "labor_location":  labor_location.strip(),
+            "union_status":    union_status.strip(),
+            "labor_evidence":  labor_evidence,
+        }
+        record["labor_rail"] = build_labor_profile(labor_data)
 
     store_intake(record)
 

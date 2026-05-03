@@ -437,7 +437,7 @@
       <div class="field-row">
         <div class="field">
           <label for="role_type">Role / trade</label>
-          <select id="role_type">
+          <select id="role_type" name="role_type">
             <option value="">— Select role —</option>
             <option value="av_technician">AV Technician</option>
             <option value="lighting_technician">Lighting Technician</option>
@@ -452,7 +452,7 @@
         </div>
         <div class="field">
           <label for="availability">Availability</label>
-          <select id="availability">
+          <select id="availability" name="availability">
             <option value="">— Select —</option>
             <option value="immediately">Available immediately</option>
             <option value="within_1_week">Available within 1 week</option>
@@ -461,10 +461,47 @@
           </select>
         </div>
       </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="labor_location">Location / service area</label>
+          <input type="text" id="labor_location" name="labor_location"
+                 placeholder="e.g. Las Vegas, NV / Southwest US / Nationwide">
+        </div>
+        <div class="field">
+          <label for="rate_expectation">Rate expectation</label>
+          <input type="text" id="rate_expectation" name="rate_expectation"
+                 placeholder="e.g. $450/day or $35/hr">
+          <span class="field-hint">Day rate or hourly. Write "open" if flexible.</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="skills">Key skills or certifications</label>
+          <input type="text" id="skills" name="skills"
+                 placeholder="e.g. Dante certified, Robe/MA2, IATSE card, OSHA 10">
+        </div>
+        <div class="field">
+          <label for="union_status">Union status</label>
+          <select id="union_status" name="union_status">
+            <option value="">— Select —</option>
+            <option value="iatse">IATSE member</option>
+            <option value="ibew">IBEW member</option>
+            <option value="non_union">Non-union</option>
+            <option value="open">Open to either</option>
+          </select>
+        </div>
+      </div>
       <div class="field">
-        <label for="skills">Key skills or certifications</label>
-        <input type="text" id="skills"
-               placeholder="e.g. Dante certified, Robe/MA2 experience, IATSE card, OSHA 10">
+        <label>Supporting documentation — check everything you have</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="signed_work_agreement"> Signed work agreement, day-of-show contract, or work order</label>
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="call_sheet"> Call sheet or crew confirmation email</label>
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="text_messages"> Text or email thread with coordinator / producer</label>
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="pay_stub_or_invoice"> Pay stub, invoice, or timecard</label>
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="rate_confirmation"> Written or recorded rate confirmation</label>
+          <label class="check-item"><input type="checkbox" name="labor_evidence" value="union_card"> Union card or local membership documentation</label>
+        </div>
+        <span class="field-hint" style="margin-top:.5rem">Do not attach files here. Indicate what you have; documents can be provided after intake review.</span>
       </div>
     </div>
 
@@ -677,10 +714,6 @@
       var financial      = val('financial_loss');
       var losses         = val('other_losses');
       var outcome        = val('desired_outcome');
-      var roleType       = val('role_type');
-      var availability   = val('availability');
-      var skills         = val('skills');
-
       if (respondent)                        parts.push('Respondent: ' + respondent + (respondentType ? ' (' + respondentType + ')' : ''));
       if (incidentDate)                      parts.push('Incident date: ' + incidentDate + (ongoing ? ' (ongoing)' : ''));
       if (firstNotice && firstNotice !== incidentDate) parts.push('First notice: ' + firstNotice);
@@ -688,9 +721,6 @@
       if (financial)                         parts.push('Financial loss: ' + financial);
       if (losses)                            parts.push('Other losses: ' + losses);
       if (outcome)                           parts.push('Desired outcome: ' + outcome);
-      if (roleType)                          parts.push('Role: ' + roleType);
-      if (availability)                      parts.push('Availability: ' + availability);
-      if (skills)                            parts.push('Skills: ' + skills);
 
       notesField.value = parts.join('\n');
     });

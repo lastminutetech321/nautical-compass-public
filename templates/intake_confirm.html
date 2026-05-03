@@ -210,6 +210,30 @@
     color: #374151;
     line-height: 1.7;
   }
+  .crew-badge {
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    letter-spacing: .04em;
+  }
+  .crew-badge.ready   { background: #d1fae5; color: #065f46; }
+  .crew-badge.partial { background: #fef3c7; color: #92400e; }
+  .crew-badge.low     { background: #fee2e2; color: #991b1b; }
+  .evidence-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .3rem;
+  }
+  .evidence-tag {
+    background: #e0f2fe;
+    color: #075985;
+    font-size: .77rem;
+    font-weight: 600;
+    padding: .18rem .5rem;
+    border-radius: 4px;
+  }
 
   /* Action row */
   .action-row {
@@ -321,6 +345,56 @@
         {% endif %}
         <tr><th>Status</th><td>{{ record.status | title }}</td></tr>
       </table>
+
+      {% if record.intake_type in ("labor", "production") and record.labor_rail %}
+      {% set lrail = record.labor_rail %}
+      <div class="rail-panel" style="border-color:#bfd4f0">
+        <div class="rail-panel-header">
+          <span class="rail-panel-title">Labor Rail — Crew Profile</span>
+          <span class="crew-badge {% if lrail.readiness_score >= 80 %}ready{% elif lrail.readiness_score >= 40 %}partial{% else %}low{% endif %}">
+            Readiness: {{ lrail.readiness_score }}%
+          </span>
+        </div>
+        <table class="summary-table" style="margin-bottom:.6rem">
+          <tr><th>Role / Trade</th><td>{{ lrail.role_type_label or '—' }}</td></tr>
+          <tr><th>Availability</th><td>{{ lrail.availability_label or '—' }}</td></tr>
+          <tr><th>Location</th><td>{{ lrail.labor_location or '—' }}</td></tr>
+          <tr><th>Rate</th><td>{{ lrail.rate_expectation or '—' }}</td></tr>
+          <tr><th>Skills</th><td>{{ lrail.skills or '—' }}</td></tr>
+          <tr><th>Union Status</th><td>{{ lrail.union_status_label or '—' }}</td></tr>
+        </table>
+        {% if lrail.labor_evidence %}
+        <div style="margin-bottom:.8rem">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1e3a6e;margin-bottom:.4rem">Documentation on File</div>
+          <div class="evidence-list">
+            {% for ev in lrail.labor_evidence %}
+            <span class="evidence-tag">{{ ev | replace('_', ' ') | title }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if lrail.missing_readiness %}
+        <div class="missing-block" style="margin-bottom:.8rem">
+          <h4>Missing Readiness Items</h4>
+          <div class="missing-tags">
+            {% for item in lrail.missing_readiness %}
+            <span class="missing-tag">{{ item }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if lrail.next_steps %}
+        <div class="next-steps-block">
+          <h4>Next Steps</h4>
+          <ol class="next-steps-list">
+            {% for step in lrail.next_steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+          </ol>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
 
       {% if record.intake_type == "partner" and record.operator_rail %}
       {% set rail = record.operator_rail %}
