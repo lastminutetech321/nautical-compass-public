@@ -320,34 +320,123 @@
       </div>
     </div>
 
-    <script>
-    (function() {
-      function updateIntakePanel() {
-        fetch('/api/command-deck/status/intake')
-          .then(r => r.json())
-          .then(data => {
-            var ie = data.intake_engine || {};
-            var score = ie.latest_score;
-            document.getElementById('intakeScoreVal').textContent = score !== null && score !== undefined ? score : '—';
-            if (score !== null && score !== undefined) {
-              var pct = Math.max(0, Math.min(score, 100));
-              document.getElementById('intakeScoreRing').style.background =
-                'conic-gradient(#2ecc71 0% ' + pct + '%, #1a2a3c ' + pct + '% 100%)';
-            }
-            document.getElementById('intakeStatus').textContent = ie.status || '—';
-            document.getElementById('intakeTotal').textContent = ie.total_submissions !== undefined ? ie.total_submissions : '—';
-            document.getElementById('intakeLastType').textContent = ie.latest_type || '—';
-            document.getElementById('intakeLatestId').textContent = ie.latest_id || '—';
-            var missing = ie.latest_missing || [];
-            document.getElementById('intakeMissing').textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
-          })
-          .catch(function() {});
-      }
-      updateIntakePanel();
-      setInterval(updateIntakePanel, 30000);
-    })();
-    </script>
+    <!-- Intake panel updates handled by command_deck.js fetchDeckStatus() -->
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         RAIL AUDIT BADGE STRIP
+         ═══════════════════════════════════════════════════════════════ -->
+    <div id="railAuditStrip" class="rail-audit-strip">
+
+      <div id="auditBadgeOperator" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Operator Rail</span>
+        <span id="auditStatusOperator" class="audit-badge-status audit-needs-review">NEEDS REVIEW</span>
+        <span id="auditMetaOperator" class="audit-badge-meta">no data</span>
+      </div>
+
+      <div id="auditBadgeLabor" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Labor Rail</span>
+        <span id="auditStatusLabor" class="audit-badge-status audit-needs-review">NEEDS REVIEW</span>
+        <span id="auditMetaLabor" class="audit-badge-meta">no data</span>
+      </div>
+
+      <div id="auditBadgeFeed" class="audit-badge audit-badge-needs-review">
+        <span class="audit-badge-type">Recent Feed</span>
+        <span id="auditStatusFeed" class="audit-badge-status audit-needs-review">—</span>
+        <span id="auditMetaFeed" class="audit-badge-meta">—</span>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         RAIL VISIBILITY PANELS — operator rail / labor rail
+         ═══════════════════════════════════════════════════════════════ -->
+    <div id="railDeckRow" class="rail-deck-row">
+
+      <!-- Operator Rail -->
+      <div id="operatorRailPanel" class="rail-deck-panel" style="display:none">
+        <div class="rail-panel-type-badge">&#9875; Operator Rail</div>
+        <div class="rail-panel-body">
+          <div class="rail-panel-score">
+            <div id="orReadiness" class="rail-readiness-ring">—</div>
+            <div class="rail-score-label">Readiness</div>
+          </div>
+          <div class="rail-panel-fields">
+            <div class="rail-field">
+              <span class="rail-field-label">Entity</span>
+              <span id="orEntityType" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Service</span>
+              <span id="orServiceType" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Area</span>
+              <span id="orServiceArea" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Compliance</span>
+              <span id="orCompliance" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field rail-field-full">
+              <span class="rail-field-label">Missing</span>
+              <span id="orMissing" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field rail-field-full">
+              <span class="rail-field-label">Latest ID</span>
+              <span id="orLatestId" class="rail-field-val rail-id">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Labor Rail -->
+      <div id="laborRailPanel" class="rail-deck-panel" style="display:none">
+        <div class="rail-panel-type-badge">&#9875; Labor Rail</div>
+        <div class="rail-panel-body">
+          <div class="rail-panel-score">
+            <div id="lrReadiness" class="rail-readiness-ring">—</div>
+            <div class="rail-score-label">Readiness</div>
+          </div>
+          <div class="rail-panel-fields">
+            <div class="rail-field">
+              <span class="rail-field-label">Role</span>
+              <span id="lrRole" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Available</span>
+              <span id="lrAvailability" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Location</span>
+              <span id="lrLocation" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field">
+              <span class="rail-field-label">Status</span>
+              <span id="lrCrewReady" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field rail-field-full">
+              <span class="rail-field-label">Missing</span>
+              <span id="lrMissing" class="rail-field-val">—</span>
+            </div>
+            <div class="rail-field rail-field-full">
+              <span class="rail-field-label">Latest ID</span>
+              <span id="lrLatestId" class="rail-field-val rail-id">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         RECENT RAIL ACTIVITY FEED
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="recent-feed-panel">
+      <div class="recent-feed-header">&#9875; Recent Rail Activity</div>
+      <div id="recentFeedList" class="recent-feed-list">
+        <div class="feed-empty">Loading recent activity…</div>
+      </div>
+    </div>
 
  main
     <!-- ENVIRONMENT PANEL -->
@@ -491,6 +580,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ACTIVITY BANNER -->
+    <div id="activityBanner" class="activity-banner"></div>
 
     <!-- FOOTER -->
     <footer class="deck-footer">

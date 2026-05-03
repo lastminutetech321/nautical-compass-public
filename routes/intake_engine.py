@@ -19,6 +19,7 @@ Scoring:
 import json
 import time
 from pathlib import Path
+from typing import List
 from uuid import uuid4
 
 from fastapi import APIRouter, Form, Request
@@ -94,6 +95,26 @@ def load_latest_intake() -> dict | None:
     return None
 
 
+def load_intake_by_id(intake_id: str) -> dict | None:
+    if not INTAKE_LOG.exists():
+        return None
+    try:
+        with INTAKE_LOG.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                    if record.get("intake_id") == intake_id:
+                        return record
+                except Exception:
+                    continue
+    except Exception:
+        return None
+    return None
+
+
 def count_submissions() -> int:
     if not INTAKE_LOG.exists():
         return 0
@@ -101,6 +122,23 @@ def count_submissions() -> int:
         return sum(1 for line in INTAKE_LOG.open(encoding="utf-8") if line.strip())
     except Exception:
         return 0
+
+
+def load_recent_intakes(limit: int = 10) -> list:
+    """Return the most recent `limit` submissions from JSONL, newest first."""
+    if not INTAKE_LOG.exists():
+        return []
+    try:
+        lines = [l.strip() for l in INTAKE_LOG.open(encoding="utf-8") if l.strip()]
+        records = []
+        for line in reversed(lines[-limit:]):
+            try:
+                records.append(json.loads(line))
+            except Exception:
+                continue
+        return records
+    except Exception:
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +166,22 @@ async def intake_post(
     preferred_contact: str  = Form(""),
     urgency: str            = Form(""),
     notes: str              = Form(""),
+    # Operator Rail fields
+    entity_type: str        = Form(""),
+    operator_type_rail: str = Form(""),
+    service_area: str       = Form(""),
+    formation_state: str    = Form(""),
+    ein_status: str         = Form(""),
+    w9_status: str          = Form(""),
+    insurance_status: str   = Form(""),
+    # Labor Rail fields
+    role_type: str          = Form(""),
+    availability: str       = Form(""),
+    skills: str             = Form(""),
+    rate_expectation: str   = Form(""),
+    labor_location: str     = Form(""),
+    union_status: str       = Form(""),
+    labor_evidence: List[str] = Form(default=[]),
 ):
     intake_id = f"int_{uuid4().hex[:10]}"
     created_at = int(time.time())
@@ -156,6 +210,32 @@ async def intake_post(
         **data,
     }
 
+    if intake_type.strip() == "partner":
+        from services.operator_rail_service import build_operator_profile
+        rail_data = {
+            "entity_type":        entity_type.strip(),
+            "operator_type_rail": operator_type_rail.strip(),
+            "service_area":       service_area.strip(),
+            "formation_state":    formation_state.strip(),
+            "ein_status":         ein_status.strip(),
+            "w9_status":          w9_status.strip(),
+            "insurance_status":   insurance_status.strip(),
+        }
+        record["operator_rail"] = build_operator_profile(rail_data)
+
+    if intake_type.strip() in ("labor", "production"):
+        from services.labor_rail_service import build_labor_profile
+        labor_data = {
+            "role_type":       role_type.strip(),
+            "availability":    availability.strip(),
+            "skills":          skills.strip(),
+            "rate_expectation": rate_expectation.strip(),
+            "labor_location":  labor_location.strip(),
+            "union_status":    union_status.strip(),
+            "labor_evidence":  labor_evidence,
+        }
+        record["labor_rail"] = build_labor_profile(labor_data)
+
     store_intake(record)
 
     return RedirectResponse(f"/intake/confirm?id={intake_id}", status_code=303)
@@ -163,8 +243,7 @@ async def intake_post(
 
 @router.get("/confirm", response_class=HTMLResponse)
 def intake_confirm(request: Request, id: str = ""):
-    latest = load_latest_intake()
-    record = latest if (latest and latest.get("intake_id") == id) else latest
+    record = load_intake_by_id(id) if id else load_latest_intake()
     return templates.TemplateResponse(request, "intake_confirm.html", context={
         "request":  request,
         "record":   record or {},

@@ -1563,3 +1563,348 @@ body.cabin-light-off::after {
   background: rgba(0,0,0,0.25);
   z-index: 8;
 }
+
+/* === VESSEL REACTION LAYER === */
+
+/* Vessel surge — brief sharp rock on new intake */
+.vessel.motion-surge {
+  animation: vesselSurge 0.45s ease-in-out 4 !important;
+}
+@keyframes vesselSurge {
+  0%   { transform: translateY(0px)  rotate(0deg);    }
+  25%  { transform: translateY(-8px) rotate(-3deg);   }
+  75%  { transform: translateY(5px)  rotate(2deg);    }
+  100% { transform: translateY(0px)  rotate(0deg);    }
+}
+
+/* Water layer surge — single heave on new intake */
+.water-layer.water-surge {
+  animation: waterSurge 1.8s ease-in-out !important;
+}
+@keyframes waterSurge {
+  0%   { transform: translateY(0px);   }
+  20%  { transform: translateY(-10px); }
+  55%  { transform: translateY(6px);   }
+  80%  { transform: translateY(-3px);  }
+  100% { transform: translateY(0px);   }
+}
+
+/* Weather badge flash on new intake */
+.weather-badge.badge-flash {
+  animation: badgeFlash 0.35s ease-in-out 4;
+}
+@keyframes badgeFlash {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(1.18); }
+}
+
+/* Activity banner — slides in from bottom on new intake event */
+.activity-banner {
+  position: fixed;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.55);
+  color: #e2c275;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .4rem 1.2rem;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .35s ease, transform .35s ease;
+  z-index: 50;
+  white-space: nowrap;
+}
+.activity-banner.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vessel.motion-surge,
+  .water-layer.water-surge,
+  .weather-badge.badge-flash { animation: none !important; }
+  .activity-banner { transition: opacity .15s; }
+}
+
+/* ── RAIL DECK PANELS — operator rail / labor rail ─────────────── */
+.rail-deck-row {
+  display: flex;
+  gap: .8rem;
+  margin: .6rem 1rem 0;
+  flex-wrap: wrap;
+}
+
+.rail-deck-panel {
+  flex: 1;
+  min-width: 280px;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid var(--brass);
+  border-radius: 10px;
+  padding: .85rem 1.1rem;
+  font-family: 'Share Tech Mono', monospace;
+  transition: border-color .4s ease;
+}
+
+.rail-panel-type-badge {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: .65rem;
+}
+
+.rail-panel-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.rail-panel-score {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.rail-readiness-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--gold);
+  transition: border-color .4s ease, color .4s ease;
+}
+
+.rail-score-label {
+  font-size: .57rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-top: .3rem;
+}
+
+.rail-panel-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .28rem .7rem;
+}
+
+.rail-field {
+  display: flex;
+  flex-direction: column;
+  gap: .06rem;
+}
+
+.rail-field-full {
+  grid-column: 1 / -1;
+}
+
+.rail-field-label {
+  font-size: .57rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.rail-field-val {
+  font-size: .78rem;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-id {
+  font-size: .68rem;
+  color: #666;
+}
+
+@media (max-width: 680px) {
+  .rail-deck-row { flex-direction: column; }
+  .rail-deck-panel { min-width: 0; }
+}
+
+/* ── RECENT RAIL ACTIVITY FEED ─────────────────────────────────── */
+.recent-feed-panel {
+  margin: .6rem 1rem 0;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 10px;
+  padding: .85rem 1.1rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.recent-feed-header {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: .55rem;
+}
+
+.recent-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: 64px 140px 1fr auto;
+  align-items: center;
+  gap: .35rem .65rem;
+  padding: .32rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.feed-item:last-child { border-bottom: none; }
+
+.feed-type-badge {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .14rem .38rem;
+  border-radius: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.feed-type-partner    { background: rgba(52,152,219,.2);  color: #5dade2; }
+.feed-type-labor      { background: rgba(46,204,113,.15); color: #2ecc71; }
+.feed-type-production { background: rgba(243,156,18,.15); color: #f39c12; }
+.feed-type-legal      { background: rgba(231,76,60,.15);  color: #e74c3c; }
+.feed-type-payment    { background: rgba(155,89,182,.15); color: #9b59b6; }
+.feed-type-general    { background: rgba(149,165,166,.1); color: #7f8c8d; }
+
+.feed-rail-label {
+  font-size: .67rem;
+  color: #7a8899;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-subject {
+  font-size: .71rem;
+  color: #b0bac8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-meta {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.feed-status {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.feed-status-complete { color: #2ecc71; }
+.feed-status-partial  { color: #f1c40f; }
+
+.feed-date {
+  font-size: .6rem;
+  color: #444;
+  white-space: nowrap;
+}
+
+.feed-empty {
+  font-size: .71rem;
+  color: #444;
+  padding: .4rem 0;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .feed-item {
+    grid-template-columns: 60px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: .2rem .5rem;
+  }
+  .feed-rail-label { display: none; }
+  .feed-subject    { grid-column: 2 / -1; }
+}
+
+/* ── RAIL AUDIT BADGE STRIP ────────────────────────────────────── */
+.rail-audit-strip {
+  display: flex;
+  gap: .55rem;
+  margin: .6rem 1rem 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.audit-badge {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  background: rgba(10,15,30,0.82);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 6px;
+  padding: .38rem .7rem;
+  font-family: 'Share Tech Mono', monospace;
+  transition: border-color .35s ease;
+}
+
+/* Border color keyed to status */
+.audit-badge-ready        { border-color: rgba(46,204,113,.45);  }
+.audit-badge-partial      { border-color: rgba(241,196,15,.45);  }
+.audit-badge-low          { border-color: rgba(231,76,60,.45);   }
+.audit-badge-needs-review { border-color: rgba(201,168,76,.3);   }
+
+.audit-badge-type {
+  font-size: .6rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: #6a7a8a;
+  white-space: nowrap;
+}
+
+.audit-badge-status {
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: .1rem .4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Status pill colors */
+.audit-ready        { color: #2ecc71; background: rgba(46,204,113,.12);  }
+.audit-partial      { color: #f1c40f; background: rgba(241,196,15,.12);  }
+.audit-low          { color: #e74c3c; background: rgba(231,76,60,.12);   }
+.audit-needs-review { color: #c9a84c; background: rgba(201,168,76,.12);  }
+
+.audit-badge-meta {
+  font-size: .59rem;
+  color: #4a5a6a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+@media (max-width: 680px) {
+  .rail-audit-strip { gap: .4rem; }
+  .audit-badge-meta { max-width: 110px; }
+}

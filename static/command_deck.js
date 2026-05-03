@@ -24,6 +24,16 @@ const systemState = {
   deployment: 77
 };
 
+/* ── INTAKE STATE — single source for all intake-driven reactions ─ */
+const intakeState = {
+  score:            null,
+  missing:          [],
+  status:           null,
+  type:             null,
+  totalSubmissions: 0,
+  lastId:           null,
+};
+
 /* ── API DATA FETCH + GEOLOCATION ────────────────────────────────── */
 let dataSource = "mock";
 let userLat = null;
@@ -72,12 +82,155 @@ function updateLocationStatusUI() {
 
 async function fetchDeckStatus() {
   try {
-    const resp = await fetch("/api/command-deck/status");
+    const resp = await fetch("/api/command-deck/status/intake");
     if (!resp.ok) return;
     const data = await resp.json();
     const keys = ["standing", "capacity", "jurisdiction", "evidence", "compliance", "deployment"];
     keys.forEach(k => { if (data[k] !== undefined) systemState[k] = data[k]; });
+
+    if (data.intake_engine) {
+      const ie = data.intake_engine;
+      const newId = ie.latest_id || null;
+      checkForNewIntake(newId);
+      intakeState.score            = ie.latest_score  != null ? ie.latest_score  : intakeState.score;
+      intakeState.missing          = ie.latest_missing  || [];
+      intakeState.status           = ie.latest_status   || intakeState.status;
+      intakeState.type             = ie.latest_type     || intakeState.type;
+      intakeState.totalSubmissions = ie.total_submissions != null ? ie.total_submissions : intakeState.totalSubmissions;
+      intakeState.lastId           = newId;
+      updateIntakePanelFromState(ie);
+      syncIntakeToSystemState();
+      applyDerivedWeather();
+      updateOperatorRailPanel(ie.operator_rail || null, ie);
+      updateLaborRailPanel(ie.labor_rail || null, ie);
+      updateRailAuditBadges(ie, data.recent_intakes || []);
+    }
+    if (data.recent_intakes) {
+      updateRecentFeed(data.recent_intakes);
+    }
   } catch (e) { /* keep existing mock data on failure */ }
+}
+
+/* ── RAIL AUDIT BADGES ─────────────────────────────────────────── */
+function auditStatusFromScore(score) {
+  if (score == null) return { label: 'NEEDS REVIEW', cls: 'audit-needs-review' };
+  if (score >= 80)   return { label: 'READY',        cls: 'audit-ready'        };
+  if (score >= 40)   return { label: 'PARTIAL',      cls: 'audit-partial'      };
+  return                    { label: 'LOW',           cls: 'audit-low'          };
+}
+
+function applyAuditBadge(type, score, id, meta) {
+  var badgeEl  = document.getElementById('auditBadge'  + type);
+  var statusEl = document.getElementById('auditStatus' + type);
+  var metaEl   = document.getElementById('auditMeta'   + type);
+  if (!badgeEl || !statusEl || !metaEl) return;
+
+  var s = auditStatusFromScore(score);
+
+  badgeEl.classList.remove(
+    'audit-badge-ready', 'audit-badge-partial',
+    'audit-badge-low',   'audit-badge-needs-review'
+  );
+  badgeEl.classList.add('audit-badge-' + s.cls.replace('audit-', ''));
+
+  statusEl.textContent = s.label;
+  statusEl.className   = 'audit-badge-status ' + s.cls;
+
+  metaEl.textContent = meta || 'no data';
+}
+
+function updateRailAuditBadges(ie, recentIntakes) {
+  // ── Operator Rail ────────────────────────────────────────────────
+  var orScore = null, orId = null, orType = null;
+  if (ie.operator_rail) {
+    orScore = ie.operator_rail.readiness_score != null ? ie.operator_rail.readiness_score : null;
+    orId    = ie.latest_id;
+    orType  = ie.latest_type;
+  } else {
+    for (var i = 0; i < recentIntakes.length; i++) {
+      if (recentIntakes[i].rail_type === 'operator') {
+        orScore = recentIntakes[i].readiness;
+        orId    = recentIntakes[i].intake_id;
+        orType  = recentIntakes[i].intake_type;
+        break;
+      }
+    }
+  }
+  var orMeta = orId ? orId + (orType ? ' · ' + orType : '') : 'no data';
+  applyAuditBadge('Operator', orScore, orId, orMeta);
+
+  // ── Labor Rail ───────────────────────────────────────────────────
+  var lrScore = null, lrId = null, lrType = null;
+  if (ie.labor_rail) {
+    lrScore = ie.labor_rail.readiness_score != null ? ie.labor_rail.readiness_score : null;
+    lrId    = ie.latest_id;
+    lrType  = ie.latest_type;
+  } else {
+    for (var j = 0; j < recentIntakes.length; j++) {
+      if (recentIntakes[j].rail_type === 'labor') {
+        lrScore = recentIntakes[j].readiness;
+        lrId    = recentIntakes[j].intake_id;
+        lrType  = recentIntakes[j].intake_type;
+        break;
+      }
+    }
+  }
+  var lrMeta = lrId ? lrId + (lrType ? ' · ' + lrType : '') : 'no data';
+  applyAuditBadge('Labor', lrScore, lrId, lrMeta);
+
+  // ── Recent Feed ──────────────────────────────────────────────────
+  var feedScore = null, feedMeta = '—';
+  if (recentIntakes && recentIntakes.length > 0) {
+    var complete = recentIntakes.filter(function(r) { return r.status === 'complete'; }).length;
+    feedScore = Math.round((complete / recentIntakes.length) * 100);
+    feedMeta  = recentIntakes.length + ' record' + (recentIntakes.length !== 1 ? 's' : '') +
+                ' · ' + complete + ' complete';
+  }
+  applyAuditBadge('Feed', feedScore, null, feedMeta);
+}
+
+/* ── RECENT RAIL ACTIVITY FEED ─────────────────────────────────── */
+function updateRecentFeed(items) {
+  var container = document.getElementById('recentFeedList');
+  if (!container) return;
+
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="feed-empty">No recent intake activity</div>';
+    return;
+  }
+
+  var TYPE_LABELS = {
+    partner:    'Partner',
+    labor:      'Labor',
+    production: 'Prod',
+    legal:      'Legal',
+    payment:    'Payment',
+    general:    'General'
+  };
+
+  var RAIL_LABELS = { operator: 'Operator Rail', labor: 'Labor Rail' };
+
+  container.innerHTML = items.map(function(item) {
+    var type       = item.intake_type || 'general';
+    var typeLabel  = TYPE_LABELS[type] || type;
+    var railLabel  = RAIL_LABELS[item.rail_type] || '';
+    var readiness  = item.readiness != null ? item.readiness + '%' : '';
+    var statusCls  = item.status === 'complete' ? 'feed-status-complete' : 'feed-status-partial';
+    var date       = item.created_at
+      ? new Date(item.created_at * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
+    var railStr    = railLabel ? (railLabel + (readiness ? ' · ' + readiness : '')) : '—';
+
+    return '<div class="feed-item">' +
+      '<span class="feed-type-badge feed-type-' + type + '">' + typeLabel + '</span>' +
+      '<span class="feed-rail-label">' + railStr + '</span>' +
+      '<span class="feed-subject">' + (item.subject || '—') + '</span>' +
+      '<span class="feed-meta">' +
+        '<span class="feed-status ' + statusCls + '">' + (item.status || '—') + '</span>' +
+        (date ? '<span class="feed-date">' + date + '</span>' : '') +
+      '</span>' +
+    '</div>';
+  }).join('');
 }
 
 async function fetchDeckWeather() {
@@ -563,6 +716,208 @@ function syncAudioToWeather(condition) {
   if (audioEnabled && typeof NauticalAudio !== "undefined") {
     NauticalAudio.setWeather(condition);
     $soundModeValue.textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VESSEL REACTION LAYER — intake state → weather → vessel/gauges
+   ═══════════════════════════════════════════════════════════════════ */
+
+function updateIntakePanelFromState(ie) {
+  const score = ie.latest_score;
+  const scoreValEl  = document.getElementById('intakeScoreVal');
+  const scoreRingEl = document.getElementById('intakeScoreRing');
+  const statusEl    = document.getElementById('intakeStatus');
+  const totalEl     = document.getElementById('intakeTotal');
+  const typeEl      = document.getElementById('intakeLastType');
+  const idEl        = document.getElementById('intakeLatestId');
+  const missingEl   = document.getElementById('intakeMissing');
+
+  if (scoreValEl) scoreValEl.textContent = score != null ? score : '—';
+  if (scoreRingEl && score != null) {
+    const pct = Math.max(0, Math.min(score, 100));
+    scoreRingEl.style.background =
+      'conic-gradient(#2ecc71 0% ' + pct + '%, #1a2a3c ' + pct + '% 100%)';
+  }
+  if (statusEl)  statusEl.textContent  = ie.status        || '—';
+  if (totalEl)   totalEl.textContent   = ie.total_submissions != null ? ie.total_submissions : '—';
+  if (typeEl)    typeEl.textContent    = ie.latest_type    || '—';
+  if (idEl)      idEl.textContent      = ie.latest_id      || '—';
+  if (missingEl) {
+    const missing = ie.latest_missing || [];
+    missingEl.textContent = missing.length === 0 ? 'None' : missing.length + ' field(s)';
+  }
+}
+
+/* ── RAIL READINESS COLOR ──────────────────────────────────────── */
+function railReadinessColor(score) {
+  if (score >= 80) return '#2ecc71';   // green — ready
+  if (score >= 40) return '#f1c40f';   // gold  — partial
+  return '#e74c3c';                    // red   — low
+}
+
+/* ── OPERATOR RAIL PANEL ───────────────────────────────────────── */
+function updateOperatorRailPanel(rail, ie) {
+  const panel = document.getElementById('operatorRailPanel');
+  if (!panel) return;
+  if (!rail) { panel.style.display = 'none'; return; }
+
+  panel.style.display = '';
+  const score = rail.readiness_score != null ? rail.readiness_score : 0;
+  const color = railReadinessColor(score);
+  panel.style.borderColor = color;
+
+  const ringEl = document.getElementById('orReadiness');
+  if (ringEl) { ringEl.textContent = score + '%'; ringEl.style.borderColor = color; ringEl.style.color = color; }
+
+  const set = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('orEntityType',  rail.entity_type_label);
+  set('orServiceType', rail.operator_type_label);
+  set('orServiceArea', rail.service_area);
+  if (ie) set('orLatestId', ie.latest_id);
+
+  const compEl = document.getElementById('orCompliance');
+  if (compEl) {
+    compEl.textContent = rail.compliance_complete ? 'Complete' : 'Partial';
+    compEl.style.color = rail.compliance_complete ? '#2ecc71' : '#f1c40f';
+  }
+
+  const missingEl = document.getElementById('orMissing');
+  if (missingEl) {
+    const m = rail.missing_compliance || [];
+    missingEl.textContent = m.length === 0 ? 'None' : m.join(', ');
+    missingEl.style.color = m.length === 0 ? '#2ecc71' : '#f1c40f';
+  }
+}
+
+/* ── LABOR RAIL PANEL ──────────────────────────────────────────── */
+function updateLaborRailPanel(lrail, ie) {
+  const panel = document.getElementById('laborRailPanel');
+  if (!panel) return;
+  if (!lrail) { panel.style.display = 'none'; return; }
+
+  panel.style.display = '';
+  const score = lrail.readiness_score != null ? lrail.readiness_score : 0;
+  const color = railReadinessColor(score);
+  panel.style.borderColor = color;
+
+  const ringEl = document.getElementById('lrReadiness');
+  if (ringEl) { ringEl.textContent = score + '%'; ringEl.style.borderColor = color; ringEl.style.color = color; }
+
+  const set = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('lrRole',         lrail.role_type_label);
+  set('lrAvailability', lrail.availability_label);
+  set('lrLocation',     lrail.labor_location);
+  if (ie) set('lrLatestId', ie.latest_id);
+
+  const crewEl = document.getElementById('lrCrewReady');
+  if (crewEl) {
+    crewEl.textContent = lrail.crew_ready ? 'Crew Ready' : 'Incomplete';
+    crewEl.style.color = lrail.crew_ready ? '#2ecc71' : '#f1c40f';
+  }
+
+  const missingEl = document.getElementById('lrMissing');
+  if (missingEl) {
+    const m = lrail.missing_readiness || [];
+    missingEl.textContent = m.length === 0 ? 'None' : m.join(', ');
+    missingEl.style.color = m.length === 0 ? '#2ecc71' : '#f1c40f';
+  }
+}
+
+function syncIntakeToSystemState() {
+  if (intakeState.score === null) return;
+  systemState.evidence = intakeState.score;
+  const penalty = Math.min(intakeState.missing.length * 8, 60);
+  systemState.compliance = Math.max(25, 94 - penalty);
+}
+
+function deriveWeatherFromIntake() {
+  if (intakeState.score === null) return null;
+  const score        = intakeState.score;
+  const missingCount = intakeState.missing.length;
+  const isComplete   = intakeState.status === 'complete' && missingCount === 0;
+  const highActivity = intakeState.totalSubmissions > 3;
+
+  if (highActivity && missingCount > 2) return 'storm';   // high activity + incomplete = storm
+  if (missingCount > 0 && score < 50)   return 'fog';    // missing evidence / weak score = fog
+  if (missingCount > 0)                  return 'rain';   // partial intake = rain
+  if (isComplete && score >= 90)         return 'clear';  // strong complete = clear
+  if (isComplete && score >= 60)         return 'cloudy'; // moderate complete = cloudy calm
+  return 'cloudy';
+}
+
+function applyDerivedWeather() {
+  const derived = deriveWeatherFromIntake();
+  if (!derived || derived === weatherData.condition) return;
+  const profile = WEATHER_PROFILES[derived] || WEATHER_PROFILES['clear'];
+  weatherData.condition      = derived;
+  weatherData.wind_speed     = profile.wind_speed;
+  weatherData.wind_direction = profile.wind_direction;
+  weatherData.humidity       = profile.humidity;
+  weatherData.visibility     = profile.visibility;
+  weatherData.temperature    = profile.temperature;
+  updateWeatherVisuals(derived);
+  updateVesselMotion();
+  updateNavIndicators();
+  updateEnvironmentPanel(weatherData);
+  syncAudioToWeather(derived);
+  if ($weatherBadge) $weatherBadge.textContent = derived.toUpperCase();
+}
+
+function checkForNewIntake(newId) {
+  if (intakeState.lastId !== null && newId !== null && intakeState.lastId !== newId) {
+    onNewIntakeDetected();
+  }
+}
+
+function onNewIntakeDetected() {
+  // Pulse all ops dials
+  Object.keys(systemState).forEach(key => {
+    const dial = document.querySelector('.ops-dial[data-key="' + key + '"]');
+    if (!dial) return;
+    dial.classList.remove('gauge-updated');
+    void dial.offsetWidth;
+    dial.classList.add('gauge-updated');
+    setTimeout(() => dial.classList.remove('gauge-updated'), 900);
+  });
+
+  // Water surge
+  const waterLayer = document.getElementById('waterLayer');
+  if (waterLayer) {
+    waterLayer.classList.remove('water-surge');
+    void waterLayer.offsetWidth;
+    waterLayer.classList.add('water-surge');
+    setTimeout(() => waterLayer.classList.remove('water-surge'), 1800);
+  }
+
+  // Vessel surge
+  const vessel = document.getElementById('vessel');
+  if (vessel) {
+    vessel.classList.add('motion-surge');
+    setTimeout(() => vessel.classList.remove('motion-surge'), 2200);
+  }
+
+  // Derived weather + visuals
+  applyDerivedWeather();
+  updateOpsDials();
+  updateStatusDial();
+
+  // Flash weather badge
+  if ($weatherBadge) {
+    $weatherBadge.classList.remove('badge-flash');
+    void $weatherBadge.offsetWidth;
+    $weatherBadge.classList.add('badge-flash');
+    setTimeout(() => $weatherBadge.classList.remove('badge-flash'), 1400);
+  }
+
+  // Activity banner
+  const banner = document.getElementById('activityBanner');
+  if (banner) {
+    banner.textContent = 'Recent system activity detected';
+    banner.classList.remove('active');
+    void banner.offsetWidth;
+    banner.classList.add('active');
+    setTimeout(() => banner.classList.remove('active'), 9000);
   }
 }
 

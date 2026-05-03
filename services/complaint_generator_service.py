@@ -19,6 +19,10 @@ Controlling authority referenced throughout:
 from typing import Any, Dict, List, Optional
 
 from services.legal_results_service import build_legal_results, LegalResultsServiceError
+from services.timeline_service import build_complaint_timeline, TimelineServiceError
+from services.damages_service import analyze_damages, DamagesServiceError
+from services.evidence_service import analyze_evidence_for_complaint, EvidenceServiceError
+from services.remedy_service import build_remedy_analysis, RemedyServiceError
 
 
 DISCLAIMER = (
@@ -339,57 +343,68 @@ def _build_capacity_defendants(results: Dict[str, Any], complaint: Dict[str, Any
     lines: List[str] = []
     para = para_start
 
-    lines.append(
-        f"{para}. The capacity in which each Defendant is sued is governed by "
-        "Kentucky v. Graham, 473 U.S. 159 (1985), which held that a suit against a government "
-        "official in their official capacity is a suit against the governmental entity itself, "
-        "while a suit in individual capacity seeks to impose personal liability on the officer."
-    )
-    para += 1
-
-    if individual:
+    if target_type == "government":
         lines.append(
-            f"{para}. The following Defendant(s) are sued in their individual (personal) capacity: "
-            + ", ".join(individual) + ". "
-            "Personal liability under 42 U.S.C. §1983 for individual-capacity defendants was confirmed "
-            "in Hafer v. Melo, 502 U.S. 21 (1991)."
+            f"{para}. The capacity in which each Defendant is sued is governed by "
+            "Kentucky v. Graham, 473 U.S. 159 (1985), which held that a suit against a government "
+            "official in their official capacity is a suit against the governmental entity itself, "
+            "while a suit in individual capacity seeks to impose personal liability on the officer."
         )
         para += 1
 
-    if official:
+        if individual:
+            lines.append(
+                f"{para}. The following Defendant(s) are sued in their individual (personal) capacity: "
+                + ", ".join(individual) + ". "
+                "Personal liability under 42 U.S.C. §1983 for individual-capacity defendants was confirmed "
+                "in Hafer v. Melo, 502 U.S. 21 (1991)."
+            )
+            para += 1
+
+        if official:
+            lines.append(
+                f"{para}. The following Defendant(s) are sued in their official capacity: "
+                + ", ".join(official) + ". "
+                "An official-capacity §1983 claim functions as a claim against the governmental entity."
+            )
+            para += 1
+
+        if sovereign_immunity:
+            lines.append(
+                f"{para}. Defendant's sovereign immunity defense: "
+                + (immunity_notes[0] if immunity_notes else
+                   "The Eleventh Amendment bars retrospective damages against the State in federal court. "
+                   "Will v. Michigan Dept. of State Police, 491 U.S. 58 (1989). "
+                   "Plaintiff must seek damages from individually named officers.")
+            )
+            para += 1
+
+        if ex_parte:
+            lines.append(
+                f"{para}. Plaintiff seeks prospective injunctive relief against Defendant(s) in their "
+                "official capacity pursuant to Ex parte Young, 209 U.S. 123 (1908), which held that "
+                "the Eleventh Amendment does not bar suits against state officers seeking prospective "
+                "relief to end ongoing constitutional violations."
+            )
+            para += 1
+
+    else:
+        # Private actor — no Kentucky v. Graham, no sovereign immunity, no Ex parte Young
+        target_name_priv = complaint.get("targetName", "") or _need("defendant entity name")
         lines.append(
-            f"{para}. The following Defendant(s) are sued in their official capacity: "
-            + ", ".join(official) + ". "
-            "An official-capacity §1983 claim functions as a claim against the governmental entity."
+            f"{para}. Defendant {target_name_priv} is a private entity subject to direct corporate "
+            "liability under applicable state tort and contract law. No sovereign immunity defense "
+            "is available. Government-capacity doctrine does not apply to private actors."
         )
         para += 1
 
-    if sovereign_immunity:
-        lines.append(
-            f"{para}. Defendant's sovereign immunity defense: "
-            + (immunity_notes[0] if immunity_notes else
-               "The Eleventh Amendment bars retrospective damages against the State in federal court. "
-               "Will v. Michigan Dept. of State Police, 491 U.S. 58 (1989). "
-               "Plaintiff must seek damages from individually named officers.")
-        )
-        para += 1
-
-    if ex_parte:
-        lines.append(
-            f"{para}. Plaintiff seeks prospective injunctive relief against Defendant(s) in their "
-            "official capacity pursuant to Ex parte Young, 209 U.S. 123 (1908), which held that "
-            "the Eleventh Amendment does not bar suits against state officers seeking prospective "
-            "relief to end ongoing constitutional violations."
-        )
-        para += 1
-
-    if not individual and not official and target_type == "private":
-        target_name = complaint.get("targetName", "") or _need("defendant entity name")
-        lines.append(
-            f"{para}. Defendant {target_name} is a private actor. Standard entity and individual "
-            "liability rules apply. No Eleventh Amendment sovereign immunity issues arise."
-        )
-        para += 1
+        if individual:
+            lines.append(
+                f"{para}. The following individual Defendant(s) are sued for direct personal liability: "
+                + ", ".join(individual) + ". "
+                "Standard individual tort and contract liability rules apply."
+            )
+            para += 1
 
     return {
         "title": "Capacity and Defendant Identification",
@@ -543,62 +558,298 @@ def _build_causes_of_action(results: Dict[str, Any], complaint: Dict[str, Any], 
     }
 
 
-def _build_prayer_for_relief(results: Dict[str, Any], complaint: Dict[str, Any]) -> Dict[str, Any]:
-    rights = results.get("rights", {})
-    capacity = results.get("capacity", {})
-    standing = results.get("standing", {})
-    has_1983 = any(c.get("type", "").startswith("§1983") for c in rights.get("claims", []))
-    ex_parte = capacity.get("ex_parte_young_available", False)
-    seeks_injunction = bool(complaint.get("desiredOutcome", "") and any(
-        t in (complaint.get("desiredOutcome", "") or "").lower()
-        for t in ["stop", "injunction", "cease", "enjoin", "prevent", "policy"]
-    ))
-    financial_loss = float(complaint.get("financialLossAmount", 0) or 0)
+def _build_prayer_for_relief(remedy: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Render the prayer for relief from a build_remedy_analysis() result.
+    Relief items are lettered (a), (b), (c)... in order.
+    Punitive damages are only listed when legally available (individual defendants /
+    private actor). Newport bar and fees-only-where-authorized are enforced upstream
+    in remedy_service.py.
+    """
+    relief_items = remedy.get("relief_items", [])
+    fees_authorized = remedy.get("fees_authorized", False)
+    injunctive_available = remedy.get("injunctive_available", False)
+    unavailable = remedy.get("unavailable_relief", [])
 
-    items: List[str] = []
+    letter = ord("a")
+    rendered: List[str] = []
 
-    if financial_loss > 0:
-        items.append(
-            f"(a) Compensatory damages in an amount not less than ${financial_loss:,.2f}, "
-            "plus additional compensatory damages to be proven at trial;"
+    for item in relief_items:
+        item_type = item.get("type", "")
+        label = item.get("label", "")
+        amount = item.get("amount_display")
+        basis = item.get("legal_basis", "")
+        lc = chr(letter)
+
+        if item_type == "compensatory":
+            if amount and not str(amount).startswith("[FACT NEEDED"):
+                line = f"({lc}) Compensatory damages in an amount {amount};"
+            else:
+                line = f"({lc}) Compensatory damages in an amount to be determined at trial"
+                if amount and str(amount).startswith("[FACT NEEDED"):
+                    line += f" — {amount};"
+                else:
+                    line += ";"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "punitive":
+            line = f"({lc}) {label} pursuant to {basis}"
+            line += ", in an amount sufficient to punish and deter future misconduct;"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "injunctive":
+            line = f"({lc}) Preliminary and permanent injunctive relief"
+            if basis:
+                line += f" pursuant to {basis}"
+            line += (
+                ", enjoining Defendant(s) from continuing the unlawful "
+                "conduct, policy, or practice described herein;"
+            )
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "declaratory":
+            line = (
+                f"({lc}) Declaratory relief pursuant to {basis or '28 U.S.C. §2201'}, "
+                "declaring that Defendant(s)' conduct violates Plaintiff's rights;"
+            )
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "record_correction":
+            line = (
+                f"({lc}) An order directing Defendant(s) to correct all inaccurate records "
+                "and produce the complete account timeline, CP&I records, and all documentation "
+                "relating to Plaintiff's account and the conduct alleged herein"
+            )
+            if basis:
+                line += f" ({basis})"
+            line += ";"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "attorney_fees":
+            line = f"({lc}) Reasonable attorney's fees pursuant to {basis or '42 U.S.C. §1988'};"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "costs":
+            line = f"({lc}) Costs and disbursements of this action pursuant to {basis or 'Fed. R. Civ. P. 54(d)'};"
+            rendered.append(line)
+            letter += 1
+
+        elif item_type == "further_relief":
+            rendered.append(f"({lc}) Such other and further relief as this Court deems just and proper.")
+            letter += 1
+
+    if not rendered:
+        rendered.append(
+            _need("prayer for relief — list all damages, injunctions, declaratory relief, fees, and costs")
         )
-    else:
-        items.append(f"(a) Compensatory damages in an amount to be determined at trial;")
 
-    items.append("(b) Punitive damages against the individual Defendant(s) to deter future misconduct;")
-
-    if ex_parte or seeks_injunction:
-        items.append(
-            "(c) Preliminary and permanent injunctive relief pursuant to Ex parte Young, "
-            "209 U.S. 123 (1908), enjoining Defendant(s) from continuing the unconstitutional "
-            "policy, practice, or conduct described herein;"
+    # Append Newport bar note when punitive is unavailable (entity-only government defendant)
+    newport_notes = [u for u in unavailable if u.get("type") == "punitive_unavailable"]
+    if newport_notes:
+        rendered.append(
+            "[NOTE: Punitive damages are not available against the municipal/government entity — "
+            "Newport v. Fact Concerts, Inc., 453 U.S. 247 (1981). "
+            "To seek punitive damages, name individual officers in their individual capacity.]"
         )
-
-    items.append(
-        "(d) Declaratory relief pursuant to 28 U.S.C. §2201, declaring that Defendant(s)' "
-        "conduct violates Plaintiff's constitutional rights;"
-    )
-
-    if has_1983:
-        items.append(
-            "(e) Reasonable attorney's fees and costs pursuant to 42 U.S.C. §1988;"
-        )
-    else:
-        items.append("(e) Costs and disbursements of this action;")
-
-    items.append("(f) Such other and further relief as this Court deems just and proper.")
 
     text = (
         "WHEREFORE, Plaintiff respectfully prays that this Court enter judgment in Plaintiff's "
         "favor and against Defendant(s) and award the following relief:\n\n"
-        + "\n\n".join(items)
+        + "\n\n".join(rendered)
     )
 
     return {
         "title": "Prayer for Relief",
         "text": text,
-        "includes_1988_fees": has_1983,
-        "includes_injunction": ex_parte or seeks_injunction,
+        "includes_1988_fees": fees_authorized,
+        "includes_injunction": injunctive_available,
+        "relief_count": len([r for r in rendered if not r.startswith("[NOTE")]),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Phase 3B section builders
+# ---------------------------------------------------------------------------
+
+def _build_timeline_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        tl = build_complaint_timeline(intake_state, complaint_id)
+    except TimelineServiceError:
+        tl = {"events": [], "inferred": True, "strength": "weak", "note": "Timeline unavailable."}
+
+    lines: List[str] = []
+    para = para_start
+    events = tl.get("events", [])
+
+    lines.append(
+        f"{para}. The following timeline sets forth key dates and events material to Plaintiff's claims, "
+        + ("reconstructed from the factual narrative where structured dates were not provided."
+           if tl.get("inferred") else "as documented in the intake record.")
+    )
+    para += 1
+
+    if events:
+        for ev in events[:8]:
+            date = ev.get("date", _need("event date"))
+            description = ev.get("description", "") or ev.get("event", _need("event description"))
+            lines.append(f"{para}. On or about {date}: {description}")
+            para += 1
+    else:
+        lines.append(
+            f"{para}. {_need('timeline of events — list key dates: initial incident, communications, escalations, and most recent relevant event')}"
+        )
+        para += 1
+
+    if tl.get("note"):
+        lines.append(f"[Timeline Note: {tl['note']}]")
+
+    return {
+        "title": "Timeline of Events",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "event_count": len(events),
+        "timeline_strength": tl.get("strength", "weak"),
+    }
+
+
+def _build_damages_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        dmg = analyze_damages(intake_state, complaint_id)
+    except DamagesServiceError:
+        dmg = {
+            "categories": {},
+            "active_categories": [],
+            "total_stated_dollars": 0,
+            "damages_weak": True,
+            "missing_amounts": [],
+            "overall_strength": "weak",
+        }
+
+    lines: List[str] = []
+    para = para_start
+    categories = dmg.get("categories", {})
+    active = dmg.get("active_categories", [])
+    total_stated = dmg.get("total_stated_dollars", 0)
+
+    lines.append(
+        f"{para}. As a direct and proximate result of Defendant's conduct, Plaintiff has suffered "
+        "the following damages, categorized below. Amounts marked [FACT NEEDED] require "
+        "quantification with supporting documentation before filing."
+    )
+    para += 1
+
+    for cat_key in active:
+        cat = categories.get(cat_key, {})
+        items = cat.get("items", [])
+        if not items:
+            continue
+        for item in items:
+            label = item.get("label", "Damages")
+            amount_display = item.get("amount_display", _need("amount"))
+            note = item.get("note", "")
+            lines.append(
+                f"{para}. {label}: {amount_display}."
+                + (f" {note}" if note else "")
+            )
+            para += 1
+
+    if not active:
+        lines.append(
+            f"{para}. {_need('damages — specify all economic losses, non-economic harm, and requested remediation with supporting records')}"
+        )
+        para += 1
+
+    if total_stated > 0:
+        lines.append(
+            f"{para}. Total stated damages: ${total_stated:,.2f}. Additional damages categories are "
+            "subject to quantification and amendment as discovery proceeds."
+        )
+        para += 1
+
+    missing = dmg.get("missing_amounts", [])
+    if missing:
+        lines.append(
+            f"[Damages Note: The following items require dollar quantification before filing: "
+            + "; ".join(missing) + "]"
+        )
+
+    return {
+        "title": "Damages",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "damages_strength": dmg.get("overall_strength", "weak"),
+        "missing_amounts": missing,
+    }
+
+
+def _build_evidence_section(intake_state: Dict[str, Any], complaint_id: Optional[str], para_start: int) -> Dict[str, Any]:
+    try:
+        ev = analyze_evidence_for_complaint(intake_state, complaint_id)
+    except EvidenceServiceError:
+        ev = {
+            "total_items": 0,
+            "categorized": {},
+            "missing_flags": [],
+            "strength": "weak",
+            "note": "Evidence analysis unavailable.",
+        }
+
+    lines: List[str] = []
+    para = para_start
+    categorized = ev.get("categorized", {})
+    missing_flags = ev.get("missing_flags", [])
+    total = ev.get("total_items", 0)
+
+    lines.append(
+        f"{para}. In support of the foregoing allegations, Plaintiff identifies the following "
+        "evidence categories. Items marked [FACT NEEDED] must be gathered and authenticated before filing."
+    )
+    para += 1
+
+    category_labels = {
+        "documentary": "Documentary Evidence",
+        "digital": "Digital / Electronic Evidence",
+        "witness": "Witness Declarations",
+        "communications": "Communications Records",
+        "other": "Other Evidence",
+    }
+
+    for cat_key, display in category_labels.items():
+        items = categorized.get(cat_key, [])
+        if items:
+            lines.append(
+                f"{para}. {display}: " + "; ".join(str(i) for i in items[:10]) + "."
+            )
+            para += 1
+
+    if total == 0:
+        lines.append(
+            f"{para}. {_need('evidence inventory — list all documents, communications, records, and witness information available to support each claim')}"
+        )
+        para += 1
+
+    for flag in missing_flags:
+        lines.append(f"{para}. {flag}")
+        para += 1
+
+    if ev.get("note"):
+        lines.append(f"[Evidence Note: {ev['note']}]")
+
+    return {
+        "title": "Evidence Summary",
+        "paragraph_start": para_start,
+        "text": "\n\n".join(lines),
+        "paragraph_count": para - para_start,
+        "evidence_strength": ev.get("strength", "weak"),
+        "missing_flags": missing_flags,
     }
 
 
@@ -635,7 +886,7 @@ def _render_plain_text(
 ) -> str:
     divider = "\n" + "=" * 72 + "\n\n"
     parts: List[str] = []
-    for key in ["caption", "jurisdiction_venue", "parties", "standing", "facts", "capacity_defendants", "causes_of_action", "prayer"]:
+    for key in ["caption", "jurisdiction_venue", "parties", "standing", "facts", "timeline", "damages", "evidence", "capacity_defendants", "causes_of_action", "prayer"]:
         section = sections.get(key, {})
         if not section:
             continue
@@ -682,13 +933,27 @@ def generate_complaint_draft(
     facts_section = _build_facts(complaint, para)
     para += facts_section["paragraph_count"]
 
+    timeline_section = _build_timeline_section(intake_state, complaint_id, para)
+    para += timeline_section["paragraph_count"]
+
+    damages_section = _build_damages_section(intake_state, complaint_id, para)
+    para += damages_section["paragraph_count"]
+
+    evidence_section = _build_evidence_section(intake_state, complaint_id, para)
+    para += evidence_section["paragraph_count"]
+
     capacity_section = _build_capacity_defendants(results, complaint, para)
     para += capacity_section["paragraph_count"]
 
     causes_section = _build_causes_of_action(results, complaint, para)
     para += causes_section["paragraph_count"]
 
-    prayer_section = _build_prayer_for_relief(results, complaint)
+    try:
+        remedy = build_remedy_analysis(intake_state, results, complaint_id)
+    except RemedyServiceError:
+        remedy = {"relief_items": [], "unavailable_relief": [], "fees_authorized": False, "injunctive_available": False}
+
+    prayer_section = _build_prayer_for_relief(remedy)
 
     sections = {
         "caption": caption_section,
@@ -696,6 +961,9 @@ def generate_complaint_draft(
         "parties": parties_section,
         "standing": standing_section,
         "facts": facts_section,
+        "timeline": timeline_section,
+        "damages": damages_section,
+        "evidence": evidence_section,
         "capacity_defendants": capacity_section,
         "causes_of_action": causes_section,
         "prayer": prayer_section,

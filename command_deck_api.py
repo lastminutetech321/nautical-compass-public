@@ -144,10 +144,10 @@ def command_deck_status_with_intake():
     data["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     try:
-        from routes.intake_engine import load_latest_intake, count_submissions
+        from routes.intake_engine import load_latest_intake, count_submissions, load_recent_intakes
         latest = load_latest_intake()
         total = count_submissions()
-        data["intake_engine"] = {
+        ie: dict = {
             "status":            "active" if latest else "idle",
             "total_submissions": total,
             "latest_id":         latest.get("intake_id") if latest else None,
@@ -156,8 +156,53 @@ def command_deck_status_with_intake():
             "latest_type":       latest.get("intake_type") if latest else None,
             "latest_status":     latest.get("status") if latest else None,
         }
+        if latest and latest.get("intake_type") == "partner" and latest.get("operator_rail"):
+            rail = latest["operator_rail"]
+            ie["operator_rail"] = {
+                "readiness_score":     rail.get("readiness_score"),
+                "compliance_complete": rail.get("compliance_complete"),
+                "entity_type_label":   rail.get("entity_type_label"),
+                "operator_type_label": rail.get("operator_type_label"),
+                "service_area":        rail.get("service_area"),
+                "missing_compliance":  rail.get("missing_compliance", []),
+            }
+        if latest and latest.get("intake_type") in ("labor", "production") and latest.get("labor_rail"):
+            lrail = latest["labor_rail"]
+            ie["labor_rail"] = {
+                "readiness_score":  lrail.get("readiness_score"),
+                "crew_ready":       lrail.get("crew_ready"),
+                "role_type_label":  lrail.get("role_type_label"),
+                "availability_label": lrail.get("availability_label"),
+                "labor_location":   lrail.get("labor_location"),
+                "missing_readiness": lrail.get("missing_readiness", []),
+            }
+        data["intake_engine"] = ie
+
+        recent_raw = load_recent_intakes(limit=10)
+        recent = []
+        for r in recent_raw:
+            rail_type = "none"
+            readiness = None
+            if r.get("intake_type") == "partner" and r.get("operator_rail"):
+                rail_type = "operator"
+                readiness = r["operator_rail"].get("readiness_score")
+            elif r.get("intake_type") in ("labor", "production") and r.get("labor_rail"):
+                rail_type = "labor"
+                readiness = r["labor_rail"].get("readiness_score")
+            subj = (r.get("subject") or "")
+            recent.append({
+                "intake_id":   r.get("intake_id"),
+                "intake_type": r.get("intake_type"),
+                "subject":     subj[:60] + ("…" if len(subj) > 60 else ""),
+                "status":      r.get("status"),
+                "created_at":  r.get("created_at"),
+                "rail_type":   rail_type,
+                "readiness":   readiness,
+            })
+        data["recent_intakes"] = recent
     except Exception as exc:
         data["intake_engine"] = {"status": "error", "error": str(exc)}
+        data["recent_intakes"] = []
 
     return JSONResponse(content=data)
 

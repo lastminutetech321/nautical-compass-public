@@ -151,8 +151,9 @@ def _analyze_private_capacity(complaint: Dict[str, Any]) -> Dict[str, Any]:
         individual_defendants.append(target_person)
         recommended.append(f"{target_person} (individual — personal liability)")
     if target_name:
-        official_defendants.append(target_name)
-        recommended.append(f"{target_name} (entity — corporate or business liability)")
+        # Private entities are NOT official-capacity defendants; keep official_defendants empty
+        # so downstream complaint generation uses direct corporate liability framing instead.
+        recommended.append(f"{target_name} (entity — direct corporate/business liability)")
 
     return {
         "individual_defendants": individual_defendants,
