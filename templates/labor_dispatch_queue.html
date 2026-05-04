@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Coordinator — Internal Surface</div>
+    <h2>Dispatch Queue</h2>
+    <p class="hero-copy">
+      Pending connection requests between employers and workers.
+      No contact details are shown here. Approve or reject each request
+      to facilitate mediated contact.
+    </p>
+  </div>
+
+  {# Status filter tabs #}
+  <div style="display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;">
+    <a href="/labor/dispatch/queue"
+       style="padding:6px 16px; border-radius:10px; font-size:.85rem; font-weight:600; text-decoration:none;
+              {% if not status_filter %}background:#1a56db; color:#fff;{% else %}background:rgba(0,0,0,.06); color:inherit;{% endif %}">
+      All ({{ total }})
+    </a>
+    {% for label in ["pending", "approved", "rejected"] %}
+      <a href="/labor/dispatch/queue?status={{ label }}"
+         style="padding:6px 16px; border-radius:10px; font-size:.85rem; font-weight:600; text-decoration:none;
+                {% if status_filter == label %}background:#1a56db; color:#fff;{% else %}background:rgba(0,0,0,.06); color:inherit;{% endif %}">
+        {{ label | capitalize }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <p style="margin-top:12px; color:var(--text-muted,#888); font-size:.9rem;">
+    {% if total == 0 %}
+      No assignments in the queue{% if status_filter %} with status "{{ status_filter }}"{% endif %}.
+    {% elif total == 1 %}
+      1 assignment
+    {% else %}
+      {{ total }} assignments
+    {% endif %}
+  </p>
+
+  {% if queue %}
+    <div style="display:grid; gap:14px; margin-top:8px;">
+      {% for item in queue %}
+        <div class="feature-card">
+          <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;">
+
+            <div>
+              {# Assignment identity — no PII #}
+              <div class="feature-kicker">{{ item.contact_req_id }}</div>
+              <p style="margin:4px 0 8px; font-size:.9rem;">
+                Worker: <strong>{{ item.display_id }}</strong>
+                {% if item.worker_role %}
+                  &nbsp;&middot;&nbsp;{{ item.worker_role | upper }}
+                {% endif %}
+                {% if item.worker_market %}
+                  &nbsp;&middot;&nbsp;{{ item.worker_market }}
+                {% endif %}
+              </p>
+
+              {# Job context #}
+              {% if item.job_roles or item.job_location %}
+                <p style="font-size:.85rem; color:var(--text-muted,#888); margin:0 0 6px;">
+                  Job: {{ item.job_roles or "—" }}
+                  {% if item.job_location %}&nbsp;&middot;&nbsp;{{ item.job_location }}{% endif %}
+                  {% if item.job_date %}&nbsp;&middot;&nbsp;{{ item.job_date }}{% endif %}
+                </p>
+              {% endif %}
+
+              {# Match score #}
+              {% if item.match_score %}
+                <p style="font-size:.82rem; color:var(--text-muted,#888); margin:0 0 10px;">
+                  Match score at request time: <strong>{{ item.match_score }}</strong>
+                </p>
+              {% endif %}
+
+              {# Action buttons — only for pending #}
+              {% if item.status == "pending" %}
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <form method="post" action="/labor/dispatch/action">
+                    <input type="hidden" name="contact_req_id" value="{{ item.contact_req_id }}" />
+                    <input type="hidden" name="action" value="approve" />
+                    <button class="btn" type="submit"
+                            style="background:#198754; color:#fff; font-size:.82rem; padding:6px 16px;">
+                      Approve
+                    </button>
+                  </form>
+                  <form method="post" action="/labor/dispatch/action">
+                    <input type="hidden" name="contact_req_id" value="{{ item.contact_req_id }}" />
+                    <input type="hidden" name="action" value="reject" />
+                    <button class="btn" type="submit"
+                            style="background:#dc3545; color:#fff; font-size:.82rem; padding:6px 16px;">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+
+            {# Status badge #}
+            <div style="text-align:center; min-width:90px;">
+              <span style="
+                display:inline-block; padding:5px 12px; border-radius:10px;
+                font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+                {% if item.status == 'approved' %}background:#e6f4ea; color:#1e7e34;
+                {% elif item.status == 'rejected' %}background:#f8d7da; color:#842029;
+                {% else %}background:#fff3cd; color:#856404;{% endif %}
+              ">{{ item.status }}</span>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="feature-card" style="margin-top:8px;">
+      <p style="color:var(--text-muted,#888);">
+        No assignments in the queue yet.
+        They appear here when employers submit connection requests from the match results page.
+      </p>
+      <a class="feature-link" href="/labor/matches">Open Match Pool ↗</a>
+    </div>
+  {% endif %}
+
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <a class="feature-link" href="/labor/matches">Match Pool ↗</a>
+    <a class="feature-link" href="/labor/dispatch-directory">Dispatch Directory ↗</a>
+  </div>
+
+</section>
+{% endblock %}

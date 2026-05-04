@@ -106,14 +106,36 @@
             </p>
 
             {# Contact request — platform-mediated, no PII returned #}
-            <form method="post" action="/labor/contact-request" style="margin-top:12px;">
-              <input type="hidden" name="requester_role" value="employer" />
-              <input type="hidden" name="target_display_id" value="{{ c.display_id }}" />
-              <input type="hidden" name="request_context" value="{{ job.request_id }}" />
-              <button class="btn" type="submit" style="font-size:.82rem; padding:6px 16px;">
-                Request Connection &rarr;
-              </button>
-            </form>
+            {% set assign_status = existing_assignments.get(c.display_id) if existing_assignments else none %}
+            {% if assign_status == "pending" %}
+              <div style="margin-top:12px;">
+                <span style="display:inline-block; padding:5px 14px; border-radius:10px;
+                  background:#fff3cd; color:#856404; font-size:.82rem; font-weight:600;">
+                  Pending Review
+                </span>
+                <a href="/labor/dispatch/status/{{ existing_assignments.keys() | list | first }}"
+                   style="font-size:.78rem; margin-left:8px; color:var(--text-muted,#888);">Check status ↗</a>
+              </div>
+            {% elif assign_status == "approved" %}
+              <div style="margin-top:12px;">
+                <span style="display:inline-block; padding:5px 14px; border-radius:10px;
+                  background:#e6f4ea; color:#1e7e34; font-size:.82rem; font-weight:600;">
+                  Connection Approved
+                </span>
+              </div>
+            {% else %}
+              <form method="post" action="/labor/contact-request" style="margin-top:12px;">
+                <input type="hidden" name="requester_role"    value="employer" />
+                <input type="hidden" name="target_display_id" value="{{ c.display_id }}" />
+                <input type="hidden" name="request_context"   value="{{ job.request_id }}" />
+                <input type="hidden" name="worker_role"        value="{{ c.role }}" />
+                <input type="hidden" name="worker_market"      value="{{ c.market }}" />
+                <input type="hidden" name="match_score"        value="{{ c.score }}" />
+                <button class="btn" type="submit" style="font-size:.82rem; padding:6px 16px;">
+                  Request Connection &rarr;
+                </button>
+              </form>
+            {% endif %}
           </div>
 
           {# Score circle #}

@@ -22,9 +22,10 @@ import time
 from pathlib import Path
 from uuid import uuid4
 
-CAREER_DNA_PATH    = Path("runtime/career_dna_ledger.jsonl")
-INTAKE_SUBS_PATH   = Path("runtime/intake_submissions.jsonl")
-JOB_REQUESTS_PATH  = Path("runtime/labor_job_requests.jsonl")
+CAREER_DNA_PATH         = Path("runtime/career_dna_ledger.jsonl")
+INTAKE_SUBS_PATH        = Path("runtime/intake_submissions.jsonl")
+JOB_REQUESTS_PATH       = Path("runtime/labor_job_requests.jsonl")
+DISPATCH_ASSIGNMENTS_PATH = Path("runtime/labor_dispatch_assignments.jsonl")
 
 MIN_READINESS_SCORE = 30   # pool view: profiles below this are hidden
 MIN_JOB_MATCH_SCORE = 20   # job view: candidates below this are hidden
@@ -633,3 +634,150 @@ def match_workers_to_job(job: dict) -> list[dict]:
 
     candidates.sort(key=lambda c: c["score"], reverse=True)
     return candidates
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Dispatch assignment persistence and workflow
+#
+# Assignment schema (one JSON object per line, append-only):
+#   contact_req_id  — unique connection request ID
+#   request_id      — job request this assignment belongs to
+#   display_id      — opaque worker token (WRK-XXXXXX), never real worker_id
+#   status          — "pending" | "approved" | "rejected"
+#   worker_role     — role string from match results (no PII)
+#   worker_market   — market string from match results (no PII)
+#   match_score     — integer score at time of request
+#   created_at      — Unix timestamp
+#
+# Status updates are appended as new lines; latest entry per
+# contact_req_id wins (same append-only pattern as career_dna_ledger).
+# ---------------------------------------------------------------------------
+
+def save_dispatch_assignment(data: dict) -> None:
+    """Append a new dispatch assignment entry (status=pending on creation)."""
+    DISPATCH_ASSIGNMENTS_PATH.parent.mkdir(exist_ok=True)
+    entry = {
+        "contact_req_id": data["contact_req_id"],
+        "request_id":     data.get("request_id", ""),
+        "display_id":     data.get("display_id", ""),
+        "status":         data.get("status", "pending"),
+        "worker_role":    data.get("worker_role", ""),
+        "worker_market":  data.get("worker_market", ""),
+        "match_score":    int(data.get("match_score") or 0),
+        "created_at":     int(time.time()),
+        # no PII: no real worker_id, no email, no phone
+    }
+    with DISPATCH_ASSIGNMENTS_PATH.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _load_latest_assignments() -> dict[str, dict]:
+    """Read all assignment lines; deduplicate by contact_req_id keeping latest."""
+    if not DISPATCH_ASSIGNMENTS_PATH.exists():
+        return {}
+    latest: dict[str, dict] = {}
+    try:
+        for line in DISPATCH_ASSIGNMENTS_PATH.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+                cid = obj.get("contact_req_id")
+                if cid:
+                    latest[cid] = obj   # later lines overwrite earlier ones
+            except Exception:
+                continue
+    except Exception:
+        return {}
+    return latest
+
+
+def update_dispatch_assignment(contact_req_id: str, status: str) -> None:
+    """
+    Append a status-update entry for an existing assignment.
+    Carries forward all context fields from the original record.
+    No-op if contact_req_id is not found.
+    """
+    existing = _load_latest_assignments().get(contact_req_id)
+    if not existing:
+        return
+    entry = {**existing, "status": status, "created_at": int(time.time())}
+    DISPATCH_ASSIGNMENTS_PATH.parent.mkdir(exist_ok=True)
+    with DISPATCH_ASSIGNMENTS_PATH.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def get_assignment_status(contact_req_id: str) -> dict | None:
+    """Return the latest assignment dict for a contact_req_id, or None."""
+    return _load_latest_assignments().get(contact_req_id)
+
+
+def get_existing_assignments(request_id: str) -> dict[str, str]:
+    """
+    Return {display_id: status} for all assignments belonging to a job request.
+    Used by the results page to suppress duplicate contact buttons.
+    """
+    result: dict[str, str] = {}
+    for assignment in _load_latest_assignments().values():
+        if assignment.get("request_id") == request_id:
+            did = assignment.get("display_id", "")
+            if did:
+                result[did] = assignment.get("status", "pending")
+    return result
+
+
+def _load_all_job_requests() -> dict[str, dict]:
+    """Load all job requests keyed by request_id (for queue join)."""
+    if not JOB_REQUESTS_PATH.exists():
+        return {}
+    jobs: dict[str, dict] = {}
+    try:
+        for line in JOB_REQUESTS_PATH.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+                rid = obj.get("request_id")
+                if rid:
+                    jobs[rid] = obj
+            except Exception:
+                continue
+    except Exception:
+        return {}
+    return jobs
+
+
+def load_dispatch_queue(status_filter: str = "") -> list[dict]:
+    """
+    Return all dispatch assignments with job context, newest first.
+    Optional status_filter: "pending" | "approved" | "rejected" | "" (all).
+    No PII in returned dicts.
+    """
+    assignments = _load_latest_assignments()
+    jobs        = _load_all_job_requests()
+
+    queue = []
+    for assignment in assignments.values():
+        if status_filter and assignment.get("status") != status_filter:
+            continue
+        rid = assignment.get("request_id", "")
+        job = jobs.get(rid, {})
+        queue.append({
+            "contact_req_id": assignment.get("contact_req_id", ""),
+            "request_id":     rid,
+            "display_id":     assignment.get("display_id", ""),
+            "status":         assignment.get("status", "pending"),
+            "worker_role":    assignment.get("worker_role", ""),
+            "worker_market":  assignment.get("worker_market", ""),
+            "match_score":    assignment.get("match_score", 0),
+            "created_at":     assignment.get("created_at", 0),
+            "job_roles":      job.get("roles_needed", ""),
+            "job_location":   job.get("location", ""),
+            "job_date":       job.get("event_date", ""),
+            "job_shift":      job.get("shift_window", ""),
+        })
+
+    queue.sort(key=lambda a: a.get("created_at", 0), reverse=True)
+    return queue

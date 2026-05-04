@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Dispatch Status</div>
+    <h2>Connection Request</h2>
+    <p class="hero-copy">
+      Status of your platform-mediated connection request.
+      No contact details are shared at any stage through this interface.
+    </p>
+  </div>
+
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Request ID</div>
+    <p style="font-family:monospace; font-size:.95rem; margin:4px 0 16px;">{{ contact_req_id }}</p>
+
+    {% if assignment %}
+
+      {# Status badge #}
+      <div style="margin-bottom:16px;">
+        <span style="
+          display:inline-block; padding:6px 18px; border-radius:12px;
+          font-size:.9rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+          {% if assignment.status == 'approved' %}background:#e6f4ea; color:#1e7e34;
+          {% elif assignment.status == 'rejected' %}background:#f8d7da; color:#842029;
+          {% else %}background:#fff3cd; color:#856404;{% endif %}
+        ">{{ assignment.status }}</span>
+      </div>
+
+      {# What happens next — no PII #}
+      {% if assignment.status == "pending" %}
+        <p style="font-size:.9rem; line-height:1.7;">
+          Your request is in the coordinator review queue.
+          If approved, a dispatch coordinator will facilitate contact between parties.
+          No phone numbers or email addresses will be shared through this system.
+        </p>
+
+      {% elif assignment.status == "approved" %}
+        <p style="font-size:.9rem; line-height:1.7;">
+          This connection request has been approved by a dispatch coordinator.
+          A coordinator will reach out separately to facilitate next steps.
+          Direct contact details are provided only through that facilitated channel.
+        </p>
+
+      {% elif assignment.status == "rejected" %}
+        <p style="font-size:.9rem; line-height:1.7;">
+          This connection request was not approved at this time.
+          You may submit a new dispatch request from the match pool
+          if your crew need has changed.
+        </p>
+        <a class="feature-link" style="margin-top:12px; display:inline-block;"
+           href="/labor/matches">Submit a New Request ↗</a>
+      {% endif %}
+
+      {# Sanitized assignment context — no PII #}
+      {% if assignment.worker_role or assignment.worker_market %}
+        <div style="margin-top:20px; padding:12px 16px; border-radius:10px; background:rgba(0,0,0,.04);">
+          <div class="feature-kicker">Request Context</div>
+          {% if assignment.worker_role %}
+            <p style="font-size:.85rem; margin:4px 0;">Role: {{ assignment.worker_role | upper }}</p>
+          {% endif %}
+          {% if assignment.worker_market %}
+            <p style="font-size:.85rem; margin:4px 0;">Market: {{ assignment.worker_market }}</p>
+          {% endif %}
+          {% if assignment.match_score %}
+            <p style="font-size:.85rem; margin:4px 0;">Match score: {{ assignment.match_score }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <p style="color:var(--text-muted,#888);">
+        No assignment found for this request ID.
+        The link may be incorrect or the request may not have been created yet.
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <a class="feature-link" href="/labor/matches">Back to Match Pool ↗</a>
+    <a class="feature-link" href="/labor/dispatch-directory">Dispatch Directory ↗</a>
+  </div>
+
+</section>
+{% endblock %}

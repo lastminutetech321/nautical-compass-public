@@ -14,6 +14,11 @@ from services.labor_matching import (
     save_job_request,
     load_job_request,
     match_workers_to_job,
+    save_dispatch_assignment,
+    update_dispatch_assignment,
+    get_assignment_status,
+    get_existing_assignments,
+    load_dispatch_queue,
 )
 
 templates = Jinja2Templates(directory="templates")
@@ -124,7 +129,8 @@ def labor_match_results(request: Request, request_id: str):
             }),
         )
 
-    candidates = match_workers_to_job(job)
+    candidates           = match_workers_to_job(job)
+    existing_assignments = get_existing_assignments(request_id)
 
     log_page_view(
         request,
@@ -138,9 +144,10 @@ def labor_match_results(request: Request, request_id: str):
         request,
         "labor_match_results.html",
         context=_ctx(request, {
-            "job":        job,
-            "candidates": candidates,
-            "total":      len(candidates),
+            "job":                job,
+            "candidates":         candidates,
+            "total":              len(candidates),
+            "existing_assignments": existing_assignments,
         }),
     )
 
@@ -193,16 +200,30 @@ def labor_dispatch_directory(
 @labor_rail_router.post("/labor/contact-request", response_class=HTMLResponse)
 async def labor_contact_request(
     request: Request,
-    requester_role: str = Form(""),
+    requester_role:    str = Form(""),
     target_display_id: str = Form(""),
-    request_context: str = Form(""),
+    request_context:   str = Form(""),   # holds job request_id
+    worker_role:       str = Form(""),
+    worker_market:     str = Form(""),
+    match_score:       str = Form("0"),
 ):
     """
     Anti-contact-exposure endpoint.
-    Logs the intent to connect but NEVER returns contact details of either party.
-    All contact is mediated through platform dispatch.
+    Logs the intent to connect, persists a pending dispatch assignment,
+    but NEVER returns contact details of either party.
     """
     contact_req_id = f"cr_{uuid4().hex[:10]}"
+
+    # Persist pending assignment (no PII stored)
+    save_dispatch_assignment({
+        "contact_req_id": contact_req_id,
+        "request_id":     request_context,
+        "display_id":     target_display_id,
+        "status":         "pending",
+        "worker_role":    worker_role,
+        "worker_market":  worker_market,
+        "match_score":    int(match_score) if match_score.lstrip("-").isdigit() else 0,
+    })
 
     write_event(
         rail="labor",
@@ -214,10 +235,12 @@ async def labor_contact_request(
         actor_type="visitor",
         next_action="dispatch_coordinator_review",
         payload={
-            "contact_req_id":   contact_req_id,
-            "requester_role":   requester_role,
+            "contact_req_id":    contact_req_id,
+            "requester_role":    requester_role,
             "target_display_id": target_display_id,
-            # request_context omitted from ledger — may contain raw remarks
+            "request_id":        request_context,
+            # worker_role / worker_market omitted from ledger — not needed for audit
+            # raw notes never accepted or stored
         },
     )
 
@@ -229,15 +252,85 @@ async def labor_contact_request(
             "summary":      "Your request has been recorded for dispatch coordinator review. "
                             "Direct contact details are not shared through this interface. "
                             "A coordinator will facilitate contact if the match is approved.",
-            "return_href":  "/labor/matches",
-            "return_label": "Back to Match Pool",
-            "next_href":    "/labor/dispatch-directory",
-            "next_label":   "View Dispatch Directory",
+            "return_href":  f"/labor/matches/results/{request_context}" if request_context else "/labor/matches",
+            "return_label": "Back to Match Results",
+            "next_href":    f"/labor/dispatch/status/{contact_req_id}",
+            "next_label":   "Check Request Status",
             "record_id":    contact_req_id,
             "step_number":  1,
             "step_total":   2,
             "step_name":    "Contact Request",
             "why_next":     "Direct contact is mediated — no phone or email is shared at this stage.",
+        }),
+    )
+
+
+@labor_rail_router.get("/labor/dispatch/queue", response_class=HTMLResponse)
+def labor_dispatch_queue(
+    request: Request,
+    status: str = Query(""),
+):
+    # Operator-only surface — no auth guard in Phase 3; document as internal
+    queue = load_dispatch_queue(status_filter=status)
+    log_page_view(
+        request,
+        rail="labor",
+        event_type="dispatch_queue_viewed",
+        title="Dispatch coordinator queue viewed",
+        next_action="dispatch_action_taken",
+    )
+    return templates.TemplateResponse(
+        request,
+        "labor_dispatch_queue.html",
+        context=_ctx(request, {
+            "queue":         queue,
+            "total":         len(queue),
+            "status_filter": status,
+        }),
+    )
+
+
+@labor_rail_router.post("/labor/dispatch/action")
+async def labor_dispatch_action(
+    request: Request,
+    contact_req_id: str = Form(""),
+    action: str         = Form(""),
+):
+    # Validate action to prevent injection
+    if action not in ("approve", "reject"):
+        return RedirectResponse(url="/labor/dispatch/queue", status_code=303)
+
+    new_status = "approved" if action == "approve" else "rejected"
+    update_dispatch_assignment(contact_req_id, new_status)
+
+    write_event(
+        rail="labor",
+        event_type=f"dispatch_{new_status}",
+        title=f"Dispatch assignment {new_status}",
+        route="/labor/dispatch/action",
+        status=new_status,
+        actor_id=get_actor_id(request),
+        actor_type="coordinator",
+        next_action="dispatch_queue_review",
+        payload={
+            "contact_req_id": contact_req_id,
+            "action":         action,
+            # no worker contact, no employer contact stored
+        },
+    )
+
+    return RedirectResponse(url="/labor/dispatch/queue", status_code=303)
+
+
+@labor_rail_router.get("/labor/dispatch/status/{contact_req_id}", response_class=HTMLResponse)
+def labor_dispatch_status(request: Request, contact_req_id: str):
+    assignment = get_assignment_status(contact_req_id)
+    return templates.TemplateResponse(
+        request,
+        "labor_dispatch_status.html",
+        context=_ctx(request, {
+            "contact_req_id": contact_req_id,
+            "assignment":     assignment,
         }),
     )
 
