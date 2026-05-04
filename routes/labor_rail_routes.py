@@ -6,6 +6,8 @@ from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from services.living_ledger import log_page_view, write_event, get_actor_id
+from labor_signal.services_skill_gap import generate_user_skill_gap
+from labor_signal.schemas import UserSkillGapRequest
 from services.labor_matching import (
     get_match_pool,
     get_worker_readiness_breakdown,
@@ -165,13 +167,26 @@ def labor_growth_ladder(request: Request):
 @labor_rail_router.get("/labor/readiness", response_class=HTMLResponse)
 def labor_readiness(request: Request, worker_id: str = Query("")):
     breakdown = get_worker_readiness_breakdown(worker_id or None)
+    skill_gap = None
+    if breakdown.get("role"):
+        try:
+            gap_req = UserSkillGapRequest(
+                user_id=breakdown.get("worker_id") or "anonymous",
+                region_code="DC",
+                target_role=breakdown["role"],
+                skills=breakdown.get("skill_flags") or [],
+                certifications=breakdown.get("skill_flags") or [],
+            )
+            skill_gap = generate_user_skill_gap(gap_req)
+        except Exception:
+            pass
     log_page_view(request, rail="labor", event_type="readiness_dashboard_viewed",
                   title="Readiness score dashboard viewed",
                   next_action="labor_profile_edit_opened")
     return templates.TemplateResponse(
         request,
         "labor_readiness.html",
-        context=_ctx(request, {"breakdown": breakdown}),
+        context=_ctx(request, {"breakdown": breakdown, "skill_gap": skill_gap}),
     )
 
 

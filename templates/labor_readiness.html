@@ -107,6 +107,78 @@
     </div>
   {% endif %}
 
+  {# Market Skill Gap #}
+  {% if skill_gap %}
+    <div class="feature-card" style="margin-top:16px;">
+      <div class="feature-kicker">Market Skill Gap</div>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div style="
+          width:64px; height:64px; border-radius:50%; flex-shrink:0;
+          background:{% if skill_gap.current_match_score >= 80 %}#e6f4ea{% elif skill_gap.current_match_score >= 55 %}#fff3cd{% else %}#f8d7da{% endif %};
+          color:{% if skill_gap.current_match_score >= 80 %}#1e7e34{% elif skill_gap.current_match_score >= 55 %}#856404{% else %}#842029{% endif %};
+          display:flex; align-items:center; justify-content:center;
+          font-size:1.3rem; font-weight:800;
+        ">{{ skill_gap.current_match_score|int }}%</div>
+        <div>
+          <div style="font-size:.82rem; color:var(--text-muted,#888); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Match Score</div>
+          <div style="font-size:.95rem; margin-top:2px;">
+            Target: <strong>{{ skill_gap.target_role }}</strong>
+          </div>
+          <div style="margin-top:4px;">
+            <span style="
+              display:inline-block; padding:2px 10px; border-radius:10px; font-size:.78rem; font-weight:600;
+              {% if skill_gap.recommended_path == 'direct_match' %}background:#e6f4ea; color:#1e7e34;
+              {% elif skill_gap.recommended_path == 'upskill_then_route' %}background:#fff3cd; color:#856404;
+              {% elif skill_gap.recommended_path == 'pivot_role_first' %}background:#fff3e0; color:#a0522d;
+              {% else %}background:#f8d7da; color:#842029;{% endif %}
+            ">
+              {% if skill_gap.recommended_path == 'direct_match' %}Direct Match
+              {% elif skill_gap.recommended_path == 'upskill_then_route' %}Upskill Then Route
+              {% elif skill_gap.recommended_path == 'pivot_role_first' %}Pivot Role First
+              {% else %}Training Required{% endif %}
+            </span>
+            <span style="margin-left:8px; font-size:.82rem; color:var(--text-muted,#888);">
+              ~{{ skill_gap.estimated_readiness_days }} days to ready
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {% if skill_gap.missing_skills %}
+        <div style="margin-top:14px;">
+          <div style="font-size:.8rem; font-weight:600; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;">Missing Skills</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            {% for s in skill_gap.missing_skills %}
+              <span style="background:#f8d7da; color:#842029; padding:3px 10px; border-radius:10px; font-size:.8rem; font-weight:600;">{{ s }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if skill_gap.missing_certifications %}
+        <div style="margin-top:12px;">
+          <div style="font-size:.8rem; font-weight:600; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;">Missing Certifications</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            {% for c in skill_gap.missing_certifications %}
+              <span style="background:#fff3cd; color:#856404; padding:3px 10px; border-radius:10px; font-size:.8rem; font-weight:600;">{{ c }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if skill_gap.training_priority %}
+        <div style="margin-top:12px;">
+          <div style="font-size:.8rem; font-weight:600; color:var(--text-muted,#888); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">Training Priority</div>
+          <ul style="margin:0; padding-left:18px; line-height:1.8; font-size:.88rem;">
+            {% for item in skill_gap.training_priority %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
   {# Navigation #}
   <div class="feature-card" style="margin-top:24px;">
     <div class="feature-kicker">Quick Links</div>
