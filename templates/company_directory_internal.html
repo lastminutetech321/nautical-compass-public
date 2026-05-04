@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% block title %}Internal Company Directory • Nautical Compass{% endblock %}
+
+{% block head %}
+<style>
+  .dir-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+  .dir-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #c8a84b;
+    margin-bottom: 8px;
+  }
+  .dir-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .dir-sub {
+    color: #9fb0cf;
+    font-size: 14px;
+    margin: 0 0 20px;
+  }
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: flex-end;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9fb0cf;
+  }
+  .filter-group select {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    min-width: 160px;
+  }
+  .btn-gold {
+    padding: 9px 20px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #c8a84b, #e0b45c);
+    color: #07111d;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-ghost {
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .stat-pill {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    font-size: 13px;
+    color: #eef4ff;
+  }
+  .stat-pill span {
+    color: #e0b45c;
+    font-weight: 700;
+  }
+  .city-section {
+    margin-bottom: 36px;
+  }
+  .city-heading {
+    font-size: 16px;
+    font-weight: 800;
+    color: #c8a84b;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(200,148,75,.22);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .city-count {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: rgba(200,148,75,.14);
+    border: 1px solid rgba(200,148,75,.28);
+    color: #e0b45c;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.09);
+  }
+  table.dir-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.dir-table thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #9fb0cf;
+    background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.09);
+    white-space: nowrap;
+  }
+  table.dir-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    transition: background .12s;
+  }
+  table.dir-table tbody tr:hover {
+    background: rgba(200,168,75,.05);
+  }
+  table.dir-table tbody td {
+    padding: 9px 12px;
+    vertical-align: top;
+    color: #eef4ff;
+    font-size: 13px;
+  }
+  table.dir-table tbody td.muted {
+    color: #9fb0cf;
+  }
+  .badge-dnc {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(220, 60, 60, .18);
+    border: 1px solid rgba(220, 60, 60, .35);
+    color: #f87171;
+    letter-spacing: .04em;
+  }
+  .badge-dnu {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(200, 120, 50, .18);
+    border: 1px solid rgba(200, 120, 50, .35);
+    color: #fb923c;
+    letter-spacing: .04em;
+  }
+  .badge-ok {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(80,200,120,.10);
+    border: 1px solid rgba(80,200,120,.22);
+    color: #4ade80;
+  }
+  .status-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(200,148,75,.12);
+    border: 1px solid rgba(200,148,75,.24);
+    color: #e0b45c;
+    white-space: nowrap;
+  }
+  .status-tag.empty {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(255,255,255,.10);
+    color: #9fb0cf;
+  }
+  .notes-cell {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #9fb0cf;
+    font-size: 12px;
+  }
+  .empty-state {
+    padding: 48px 20px;
+    text-align: center;
+    color: #9fb0cf;
+  }
+  .action-links {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 600px) {
+    .dir-title { font-size: 22px; }
+    .filter-bar { flex-direction: column; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dir-wrap">
+  <div class="dir-kicker">Admin • Internal Directory</div>
+  <h1 class="dir-title">Labor Company Directory</h1>
+  <p class="dir-sub">Full internal view — all fields, grouped by city. DNC = Do Not Contact, DNU = Do Not Use.</p>
+
+  <div class="action-links">
+    <a href="/admin/company-import" class="btn-ghost">Import More Records</a>
+    <a href="/company-directory" class="btn-ghost">View Public Directory</a>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-pill">Total Records: <span>{{ all_total }}</span></div>
+    {% if filter_city or filter_status %}
+    <div class="stat-pill">Showing: <span>{{ total }}</span> filtered</div>
+    {% endif %}
+  </div>
+
+  <!-- Filter Bar -->
+  <form method="GET" action="/admin/company-directory" class="filter-bar">
+    <div class="filter-group">
+      <label>City</label>
+      <select name="city" onchange="this.form.submit()">
+        <option value="">All Cities</option>
+        {% for c in cities %}
+        <option value="{{ c }}" {% if c == filter_city %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select name="status" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == filter_status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group" style="justify-content: flex-end;">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn-gold">Filter</button>
+    </div>
+    {% if filter_city or filter_status %}
+    <div class="filter-group" style="justify-content: flex-end;">
+      <label>&nbsp;</label>
+      <a href="/admin/company-directory" class="btn-ghost">Clear</a>
+    </div>
+    {% endif %}
+  </form>
+
+  {% if not grouped %}
+  <div class="empty-state">
+    <p>No records found. <a href="/admin/company-import" style="color:#c8a84b;">Import companies</a> first.</p>
+  </div>
+  {% else %}
+
+  {% for city_name, companies in grouped.items() %}
+  <div class="city-section">
+    <div class="city-heading">
+      {{ city_name }}
+      <span class="city-count">{{ companies|length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table class="dir-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>State</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Website</th>
+            <th>Status</th>
+            <th>ST Pay</th>
+            <th>Load In</th>
+            <th>Load Out</th>
+            <th>DNC</th>
+            <th>DNU</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for co in companies %}
+          <tr>
+            <td>{{ co.company_name or "—" }}</td>
+            <td class="muted">{{ co.state or "—" }}</td>
+            <td class="muted">{{ co.phone or "—" }}</td>
+            <td class="muted" style="word-break:break-all;">{{ co.email or "—" }}</td>
+            <td class="muted">
+              {% if co.website %}
+                <a href="{{ co.website }}" target="_blank" rel="noopener" style="color:#c8a84b;">link</a>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if co.status %}
+                <span class="status-tag">{{ co.status }}</span>
+              {% else %}
+                <span class="status-tag empty">—</span>
+              {% endif %}
+            </td>
+            <td class="muted">{{ co.st_pay or "—" }}</td>
+            <td class="muted">
+              {% if co.load_in_min %}{{ co.load_in_min }}m{% else %}—{% endif %}
+            </td>
+            <td class="muted">
+              {% if co.load_out_min %}{{ co.load_out_min }}m{% else %}—{% endif %}
+            </td>
+            <td>
+              {% if co.do_not_contact %}
+                <span class="badge-dnc">DNC</span>
+              {% else %}
+                <span class="badge-ok">OK</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if co.do_not_use %}
+                <span class="badge-dnu">DNU</span>
+              {% else %}
+                <span class="badge-ok">OK</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="notes-cell" title="{{ co.internal_notes or '' }}">
+                {{ co.internal_notes or "—" }}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% endif %}
+</div>
+{% endblock %}

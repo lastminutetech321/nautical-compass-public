@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Company Import Preview • Nautical Compass{% endblock %}
+
+{% block head %}
+<style>
+  .dir-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+  .dir-header {
+    margin-bottom: 24px;
+  }
+  .dir-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #c8a84b;
+    margin-bottom: 8px;
+  }
+  .dir-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .dir-sub {
+    color: #9fb0cf;
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+  .alert-warn {
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: rgba(200, 100, 50, .12);
+    border: 1px solid rgba(200, 100, 50, .30);
+    color: #f9a87a;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .alert-info {
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: rgba(200, 148, 75, .10);
+    border: 1px solid rgba(200, 148, 75, .28);
+    color: #e0b45c;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #c8a84b, #e0b45c);
+    color: #07111d;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  table.dir-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.dir-table thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #9fb0cf;
+    background: rgba(255,255,255,.05);
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    white-space: nowrap;
+  }
+  table.dir-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    transition: background .15s;
+  }
+  table.dir-table tbody tr:hover {
+    background: rgba(200,168,75,.06);
+  }
+  table.dir-table tbody td {
+    padding: 10px 14px;
+    vertical-align: top;
+    color: #eef4ff;
+  }
+  table.dir-table tbody td.muted {
+    color: #9fb0cf;
+  }
+  .cb-cell {
+    width: 36px;
+    text-align: center;
+  }
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #c8a84b;
+    cursor: pointer;
+  }
+  .status-tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(200,148,75,.14);
+    border: 1px solid rgba(200,148,75,.28);
+    color: #e0b45c;
+    white-space: nowrap;
+  }
+  .status-tag.empty {
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.12);
+    color: #9fb0cf;
+  }
+  .submit-bar {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .count-label {
+    font-size: 13px;
+    color: #9fb0cf;
+  }
+  #selectedCount {
+    color: #e0b45c;
+    font-weight: 700;
+  }
+  @media (max-width: 600px) {
+    .dir-title { font-size: 22px; }
+    .controls-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dir-wrap">
+  <div class="dir-header">
+    <div class="dir-kicker">Admin • Company Import</div>
+    <h1 class="dir-title">Labor Company Import Preview</h1>
+    <p class="dir-sub">
+      Review parsed entries from <strong>USA_Labor_Companies.pdf</strong>.
+      Select the records you want to import, then click Save Selected.
+    </p>
+  </div>
+
+  {% if not has_raw %}
+  <div class="alert-warn">
+    <strong>No raw data found.</strong>
+    Run <code>python3 scripts/parse_labor_companies.py</code> first to generate
+    <code>runtime/company_directory_raw.json</code>.
+  </div>
+  {% else %}
+
+  <div class="alert-info">
+    <strong>{{ total }} entries parsed.</strong>
+    Some entries may be garbled or malformed — review carefully before importing.
+    Garbled entries should be corrected manually in the JSON file before import.
+  </div>
+
+  <form method="POST" action="/admin/company-import/save" id="importForm">
+    <div class="controls-row">
+      <button type="button" class="btn-ghost" onclick="selectAll()">Select All</button>
+      <button type="button" class="btn-ghost" onclick="deselectAll()">Deselect All</button>
+      <span class="count-label"><span id="selectedCount">0</span> of {{ total }} selected</span>
+    </div>
+
+    <div class="table-scroll">
+      <table class="dir-table">
+        <thead>
+          <tr>
+            <th class="cb-cell">
+              <input type="checkbox" id="headerCheck" onchange="toggleAll(this)" title="Toggle all">
+            </th>
+            <th>#</th>
+            <th>Company Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Website</th>
+            <th>Status</th>
+            <th>ST Pay</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr>
+            <td class="cb-cell">
+              <input
+                type="checkbox"
+                name="approved_ids"
+                value="{{ entry._idx }}"
+                class="row-cb"
+                onchange="updateCount()"
+              >
+            </td>
+            <td class="muted">{{ loop.index }}</td>
+            <td>{{ entry.company_name or "—" }}</td>
+            <td>{{ entry.city or "—" }}</td>
+            <td class="muted">{{ entry.state or "—" }}</td>
+            <td class="muted">{{ entry.phone or "—" }}</td>
+            <td class="muted" style="word-break:break-all;">{{ entry.email or "—" }}</td>
+            <td class="muted" style="word-break:break-all;">
+              {% if entry.website %}
+                <a href="{{ entry.website }}" target="_blank" rel="noopener" style="color:#c8a84b;">link</a>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if entry.status %}
+                <span class="status-tag">{{ entry.status }}</span>
+              {% else %}
+                <span class="status-tag empty">—</span>
+              {% endif %}
+            </td>
+            <td class="muted">{{ entry.st_pay or "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="submit-bar">
+      <button type="submit" class="btn-gold">Save Selected</button>
+      <a href="/admin/company-directory" class="btn-ghost">View Directory</a>
+      <span class="count-label"><span id="selectedCount2">0</span> records will be imported</span>
+    </div>
+  </form>
+
+  {% endif %}
+</div>
+
+<script>
+  function getCheckboxes() {
+    return document.querySelectorAll('.row-cb');
+  }
+  function updateCount() {
+    const checked = document.querySelectorAll('.row-cb:checked').length;
+    const els = document.querySelectorAll('#selectedCount, #selectedCount2');
+    els.forEach(el => el.textContent = checked);
+    const hdr = document.getElementById('headerCheck');
+    if (hdr) {
+      const total = getCheckboxes().length;
+      hdr.indeterminate = checked > 0 && checked < total;
+      hdr.checked = checked === total;
+    }
+  }
+  function toggleAll(source) {
+    getCheckboxes().forEach(cb => cb.checked = source.checked);
+    updateCount();
+  }
+  function selectAll() {
+    getCheckboxes().forEach(cb => cb.checked = true);
+    const hdr = document.getElementById('headerCheck');
+    if (hdr) hdr.checked = true;
+    updateCount();
+  }
+  function deselectAll() {
+    getCheckboxes().forEach(cb => cb.checked = false);
+    const hdr = document.getElementById('headerCheck');
+    if (hdr) hdr.checked = false;
+    updateCount();
+  }
+  // Init count on load
+  updateCount();
+</script>
+{% endblock %}

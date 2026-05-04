@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Labor Company Directory • Nautical Compass{% endblock %}
+
+{% block head %}
+<style>
+  .dir-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px 72px;
+  }
+  .dir-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #c8a84b;
+    margin-bottom: 8px;
+  }
+  .dir-title {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .dir-sub {
+    color: #9fb0cf;
+    font-size: 15px;
+    margin: 0 0 28px;
+    line-height: 1.6;
+    max-width: 60ch;
+  }
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    align-items: flex-end;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9fb0cf;
+  }
+  .filter-group select {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    min-width: 180px;
+  }
+  .btn-gold {
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #c8a84b, #e0b45c);
+    color: #07111d;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-ghost {
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .stats-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .stat-pill {
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.11);
+    font-size: 13px;
+    color: #eef4ff;
+  }
+  .stat-pill span {
+    color: #e0b45c;
+    font-weight: 700;
+  }
+  .city-section {
+    margin-bottom: 40px;
+  }
+  .city-heading {
+    font-size: 17px;
+    font-weight: 800;
+    color: #c8a84b;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(200,148,75,.20);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .city-count {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: rgba(200,148,75,.12);
+    border: 1px solid rgba(200,148,75,.24);
+    color: #e0b45c;
+  }
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .company-card {
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    transition: border-color .15s, background .15s;
+  }
+  .company-card:hover {
+    border-color: rgba(200,148,75,.28);
+    background: rgba(200,168,75,.05);
+  }
+  .company-name {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    line-height: 1.3;
+  }
+  .company-location {
+    font-size: 13px;
+    color: #9fb0cf;
+    margin: 0 0 10px;
+  }
+  .company-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .status-tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(200,148,75,.12);
+    border: 1px solid rgba(200,148,75,.24);
+    color: #e0b45c;
+    white-space: nowrap;
+  }
+  .status-tag.empty {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(255,255,255,.09);
+    color: #9fb0cf;
+  }
+  .website-link {
+    font-size: 12px;
+    color: #c8a84b;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+  .na-text {
+    color: #9fb0cf;
+    font-size: 12px;
+  }
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #9fb0cf;
+  }
+  .empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #eef4ff;
+  }
+  @media (max-width: 600px) {
+    .dir-title { font-size: 26px; }
+    .filter-bar { flex-direction: column; }
+    .company-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dir-wrap">
+  <div class="dir-kicker">Labor Network</div>
+  <h1 class="dir-title">Company Directory</h1>
+  <p class="dir-sub">
+    Browse our vetted labor company network. Entries are organized by city.
+    Use the filters below to narrow results.
+  </p>
+
+  <!-- Filter Bar -->
+  <form method="GET" action="/company-directory" class="filter-bar">
+    <div class="filter-group">
+      <label>City</label>
+      <select name="city" onchange="this.form.submit()">
+        <option value="">All Cities</option>
+        {% for c in cities %}
+        <option value="{{ c }}" {% if c == filter_city %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select name="status" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == filter_status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-group" style="justify-content:flex-end;">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn-gold">Filter</button>
+    </div>
+    {% if filter_city or filter_status %}
+    <div class="filter-group" style="justify-content:flex-end;">
+      <label>&nbsp;</label>
+      <a href="/company-directory" class="btn-ghost">Clear Filters</a>
+    </div>
+    {% endif %}
+  </form>
+
+  <div class="stats-row">
+    <div class="stat-pill">Companies Listed: <span>{{ total }}</span></div>
+  </div>
+
+  {% if not grouped %}
+  <div class="empty-state">
+    <h3>No companies found</h3>
+    <p>
+      {% if filter_city or filter_status %}
+        No results match your current filters. <a href="/company-directory" style="color:#c8a84b;">Clear filters</a> to see all companies.
+      {% else %}
+        The directory is currently empty. Check back soon.
+      {% endif %}
+    </p>
+  </div>
+  {% else %}
+
+  {% for city_name, companies in grouped.items() %}
+  <div class="city-section">
+    <div class="city-heading">
+      {{ city_name }}
+      <span class="city-count">{{ companies|length }}</span>
+    </div>
+    <div class="company-grid">
+      {% for co in companies %}
+      <div class="company-card">
+        <div class="company-name">{{ co.company_name or "N/A" }}</div>
+        <div class="company-location">
+          {{ co.city or "N/A" }}{% if co.state %}, {{ co.state }}{% endif %}
+        </div>
+        <div class="company-footer">
+          {% if co.status %}
+            <span class="status-tag">{{ co.status }}</span>
+          {% else %}
+            <span class="status-tag empty">Status N/A</span>
+          {% endif %}
+          {% if co.website %}
+            <a href="{{ co.website }}" target="_blank" rel="noopener" class="website-link">Visit Site</a>
+          {% else %}
+            <span class="na-text">No website</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  {% endif %}
+</div>
+{% endblock %}

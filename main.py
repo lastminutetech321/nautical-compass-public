@@ -24,6 +24,7 @@ from routes.intake_engine import router as intake_router, api_router as intake_a
 from routes.operator_rail_routes import operator_rail_router
 from routes.labor_rail_routes import labor_rail_router
 from routes.legal_rail_routes import legal_rail_router
+from routes.company_directory_routes import router as company_directory_router
 
 app = FastAPI(title="Nautical Compass")
 app.include_router(core_routes)
@@ -32,6 +33,7 @@ app.include_router(intake_api_router)
 app.include_router(operator_rail_router)
 app.include_router(labor_rail_router)
 app.include_router(legal_rail_router)
+app.include_router(company_directory_router)
 
 app.include_router(financial_engine_router)
 app.include_router(financial_engine_panel_router)
