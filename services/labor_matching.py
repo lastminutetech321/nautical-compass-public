@@ -1,26 +1,33 @@
 """
-Phase 1 Labor Matching — reads worker profiles from JSONL ledgers,
-scores and ranks them for the /labor/matches dispatch pool view.
+Labor Matching — Phase 1 + Phase 2.
 
 Data sources (read-only):
   runtime/career_dna_ledger.jsonl    — primary: labor_profile_submitted events
   runtime/intake_submissions.jsonl   — secondary: intake_type=="labor" records
 
+Write (append-only):
+  runtime/labor_job_requests.jsonl   — one structured job per line (Phase 2)
+
 Privacy rules enforced here:
   - No email, phone, exact address, or raw notes exposed in returned dicts
   - Worker identity shown only as a shortened display token
+  - Job request notes are never written to JSONL
 """
 
 from __future__ import annotations
 
 import json
 import re
+import time
 from pathlib import Path
+from uuid import uuid4
 
-CAREER_DNA_PATH = Path("runtime/career_dna_ledger.jsonl")
-INTAKE_SUBS_PATH = Path("runtime/intake_submissions.jsonl")
+CAREER_DNA_PATH    = Path("runtime/career_dna_ledger.jsonl")
+INTAKE_SUBS_PATH   = Path("runtime/intake_submissions.jsonl")
+JOB_REQUESTS_PATH  = Path("runtime/labor_job_requests.jsonl")
 
-MIN_READINESS_SCORE = 30  # profiles below this are hidden from the pool
+MIN_READINESS_SCORE = 30   # pool view: profiles below this are hidden
+MIN_JOB_MATCH_SCORE = 20   # job view: candidates below this are hidden
 
 
 # ---------------------------------------------------------------------------
@@ -447,3 +454,182 @@ def get_dispatch_companies(city_filter: str = "", status_filter: str = "") -> li
         companies.append(safe)
 
     return companies
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Job request parsing and persistence
+# ---------------------------------------------------------------------------
+
+def parse_job_request(data: dict) -> dict:
+    """
+    Build a structured job object from raw form data.
+    Notes are intentionally excluded — may contain raw operator remarks.
+    """
+    roles_raw = (data.get("roles_needed") or data.get("requested_roles_headcount") or "").strip()
+    location  = (data.get("location") or "").strip()
+
+    # "A2 x2, V1 x1, Stagehand x4" → ["a2", "v1", "stagehand"]
+    clean = re.sub(r"x\s*\d+", "", roles_raw, flags=re.IGNORECASE)
+    role_keywords = [p.strip().lower() for p in re.split(r"[,;|]", clean) if p.strip()]
+
+    # "Convention Center, DC" → ["convention", "center", "dc"]
+    location_tokens = [w.lower() for w in re.split(r"[\s,]+", location) if len(w) > 1]
+
+    return {
+        "request_id":      data.get("request_id") or f"req_{uuid4().hex}",
+        "roles_needed":    roles_raw,
+        "role_keywords":   role_keywords,
+        "event_date":      (data.get("event_date") or "").strip(),
+        "shift_window":    (data.get("shift_window") or "").strip(),
+        "location":        location,
+        "location_tokens": location_tokens,
+        "created_at":      int(time.time()),
+        # notes deliberately omitted
+    }
+
+
+def save_job_request(job: dict) -> None:
+    """Append one job request to labor_job_requests.jsonl (append-only)."""
+    JOB_REQUESTS_PATH.parent.mkdir(exist_ok=True)
+    with JOB_REQUESTS_PATH.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(job, ensure_ascii=False) + "\n")
+
+
+def load_job_request(request_id: str) -> dict | None:
+    """Return a job request dict by request_id, or None if not found."""
+    if not JOB_REQUESTS_PATH.exists():
+        return None
+    try:
+        for line in JOB_REQUESTS_PATH.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+                if obj.get("request_id") == request_id:
+                    return obj
+            except Exception:
+                continue
+    except Exception:
+        return None
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Job-specific worker scoring
+# ---------------------------------------------------------------------------
+#
+#  Dimension            Max pts   Notes
+#  ──────────────────── ───────   ─────────────────────────────────────────
+#  Role overlap          40       keyword match worker.role vs job.role_keywords
+#  Market / location     25       token overlap worker.market vs job.location
+#  Availability          20       ready=20, limited=10, else=0
+#  Certifications        10       any cert tag or skill flag present
+#  Transport              3       transport field truthy
+#  Verified source        2       career_dna source
+#                       ───
+#                       100
+
+def match_workers_to_job(job: dict) -> list[dict]:
+    """
+    Score every worker in the pool against a specific job request.
+    Returns list of candidate dicts sorted by match score descending.
+    Candidates below MIN_JOB_MATCH_SCORE are excluded.
+    No PII is included in returned dicts.
+    """
+    career_workers = _load_from_career_dna()
+    intake_workers = _load_from_intake_subs()
+    merged: dict[str, dict] = {**intake_workers, **career_workers}
+
+    role_keywords    = job.get("role_keywords") or []
+    location_tokens  = job.get("location_tokens") or []
+
+    candidates = []
+
+    for profile in merged.values():
+        cert_tags   = profile.get("cert_tags") or parse_cert_tags(profile.get("cert_raw", ""))
+        skill_flags = detect_skill_flags(cert_tags)
+        readiness   = normalize_readiness(profile.get("availability"))
+        transport   = (profile.get("transport") or "").strip().lower()
+        worker_role = (profile.get("role") or "").strip().lower()
+        worker_mkt  = (profile.get("market") or "").strip().lower()
+
+        score   = 0
+        reasons = []
+
+        # --- Role overlap (max 40) ---
+        if worker_role and role_keywords:
+            best = 0
+            best_kw = ""
+            for kw in role_keywords:
+                if kw == worker_role or kw in worker_role or worker_role in kw:
+                    best, best_kw = 40, kw
+                    break
+                parts_overlap = any(p in worker_role for p in kw.split() if len(p) > 1) or \
+                                any(p in kw for p in worker_role.split() if len(p) > 1)
+                if parts_overlap and best < 20:
+                    best, best_kw = 20, kw
+            score += best
+            if best == 40:
+                reasons.append(f"Role match: {best_kw.upper()}")
+            elif best == 20:
+                reasons.append(f"Partial role: {best_kw.upper()}")
+        elif worker_role:
+            # job has no role filter — partial credit
+            score += 20
+            reasons.append("Role on file")
+
+        # --- Market / location (max 25) ---
+        if worker_mkt and location_tokens:
+            overlap = sum(1 for t in location_tokens if t in worker_mkt)
+            if overlap >= 2:
+                score += 25
+                reasons.append("Strong market match")
+            elif overlap == 1:
+                score += 15
+                reasons.append("Partial market match")
+        elif worker_mkt:
+            score += 10
+            reasons.append("Market on file")
+
+        # --- Availability (max 20) ---
+        if readiness == "ready":
+            score += 20
+            reasons.append("Available now")
+        elif readiness == "limited":
+            score += 10
+            reasons.append("Limited availability")
+
+        # --- Certifications (max 10) ---
+        if cert_tags or skill_flags:
+            score += 10
+            if skill_flags:
+                reasons.append(f"Skills: {', '.join(skill_flags[:3])}")
+
+        # --- Transport (max 3) ---
+        if transport and transport not in ("no", "none", "false", "0"):
+            score += 3
+
+        # --- Verified source (max 2) ---
+        if profile.get("source") == "career_dna":
+            score += 2
+
+        score = min(score, 100)
+
+        if score < MIN_JOB_MATCH_SCORE:
+            continue
+
+        candidates.append({
+            "display_id":  _display_token(profile["worker_id"]),
+            "role":        profile.get("role") or "",
+            "market":      profile.get("market") or "",
+            "readiness":   readiness,
+            "score":       score,
+            "skill_flags": skill_flags,
+            "cert_count":  len(cert_tags),
+            "reasons":     reasons,
+            "rate_band":   "Market Rate",
+        })
+
+    candidates.sort(key=lambda c: c["score"], reverse=True)
+    return candidates

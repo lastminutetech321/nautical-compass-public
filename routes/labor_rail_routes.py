@@ -1,15 +1,19 @@
 import os
 import time
+from uuid import uuid4
 
 from fastapi import APIRouter, Form, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from uuid import uuid4
 from services.living_ledger import log_page_view, write_event, get_actor_id
 from services.labor_matching import (
     get_match_pool,
     get_worker_readiness_breakdown,
     get_dispatch_companies,
+    parse_job_request,
+    save_job_request,
+    load_job_request,
+    match_workers_to_job,
 )
 
 templates = Jinja2Templates(directory="templates")
@@ -51,7 +55,7 @@ def labor_matches(
     )
 
 
-@labor_rail_router.post("/labor/matches/request", response_class=HTMLResponse)
+@labor_rail_router.post("/labor/matches/request")
 async def labor_matches_request(
     request: Request,
     roles_needed: str = Form(""),
@@ -60,7 +64,15 @@ async def labor_matches_request(
     location: str     = Form(""),
     notes: str        = Form(""),
 ):
-    request_id = f"req_{uuid4().hex}"
+    job = parse_job_request({
+        "roles_needed": roles_needed,
+        "event_date":   event_date,
+        "shift_window": shift_window,
+        "location":     location,
+        # notes intentionally excluded from job object
+    })
+
+    save_job_request(job)
 
     write_event(
         rail="labor",
@@ -70,33 +82,65 @@ async def labor_matches_request(
         status="submitted",
         actor_id=get_actor_id(request),
         actor_type="employer",
-        next_action="labor_match_pool_review",
+        next_action="labor_match_results_viewed",
         payload={
-            "request_id":   request_id,
-            "roles_needed": roles_needed,
-            "event_date":   event_date,
-            "shift_window": shift_window,
-            "location":     location,
-            # notes omitted from ledger payload — may contain raw operator remarks
+            "request_id":    job["request_id"],
+            "roles_needed":  roles_needed,
+            "event_date":    event_date,
+            "shift_window":  shift_window,
+            "location":      location,
+            "role_keywords": job["role_keywords"],
+            # notes omitted — may contain raw operator remarks
         },
+    )
+
+    return RedirectResponse(
+        url=f"/labor/matches/results/{job['request_id']}",
+        status_code=303,
+    )
+
+
+@labor_rail_router.get("/labor/matches/results/{request_id}", response_class=HTMLResponse)
+def labor_match_results(request: Request, request_id: str):
+    job = load_job_request(request_id)
+
+    if not job:
+        return templates.TemplateResponse(
+            request,
+            "submission_success.html",
+            context=_ctx(request, {
+                "title":        "Request Not Found",
+                "summary":      "No dispatch request was found for this ID. "
+                                "It may have expired or the link is incorrect.",
+                "return_href":  "/labor/matches",
+                "return_label": "Back to Match Pool",
+                "next_href":    "/labor/matches",
+                "next_label":   "Submit a New Request",
+                "record_id":    request_id,
+                "step_number":  1,
+                "step_total":   1,
+                "step_name":    "Request Lookup",
+                "why_next":     "Submit a new dispatch request to run matching.",
+            }),
+        )
+
+    candidates = match_workers_to_job(job)
+
+    log_page_view(
+        request,
+        rail="labor",
+        event_type="labor_match_results_viewed",
+        title="Match results viewed",
+        next_action="contact_request_initiated",
     )
 
     return templates.TemplateResponse(
         request,
-        "submission_success.html",
+        "labor_match_results.html",
         context=_ctx(request, {
-            "title":        "Dispatch Request Received",
-            "summary":      "Your labor request has been logged for dispatch review. "
-                            "Matching will run against the available pool.",
-            "return_href":  "/labor/matches",
-            "return_label": "Back to Match Pool",
-            "next_href":    "/labor/match-review",
-            "next_label":   "Open Single Match Review",
-            "record_id":    request_id,
-            "step_number":  1,
-            "step_total":   2,
-            "step_name":    "Dispatch Request",
-            "why_next":     "Your request is now the employer-side target for worker matching.",
+            "job":        job,
+            "candidates": candidates,
+            "total":      len(candidates),
         }),
     )
 
@@ -158,8 +202,7 @@ async def labor_contact_request(
     Logs the intent to connect but NEVER returns contact details of either party.
     All contact is mediated through platform dispatch.
     """
-    from uuid import uuid4 as _uuid4
-    contact_req_id = f"cr_{_uuid4().hex[:10]}"
+    contact_req_id = f"cr_{uuid4().hex[:10]}"
 
     write_event(
         rail="labor",

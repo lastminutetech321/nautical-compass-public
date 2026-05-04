@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Match Results</div>
+    <h2>Dispatch Candidates</h2>
+    <p class="hero-copy">
+      Workers ranked by fit against your specific request.
+      Contact details are never shown — use the request button to initiate a mediated connection.
+    </p>
+  </div>
+
+  {# Job summary — no notes shown #}
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Request {{ job.request_id }}</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-top:8px;">
+      <div>
+        <div style="font-size:.78rem; color:var(--text-muted,#888); text-transform:uppercase; font-weight:700; letter-spacing:.06em;">Roles Needed</div>
+        <div style="font-size:.95rem; font-weight:600; margin-top:3px;">{{ job.roles_needed or "—" }}</div>
+      </div>
+      <div>
+        <div style="font-size:.78rem; color:var(--text-muted,#888); text-transform:uppercase; font-weight:700; letter-spacing:.06em;">Location</div>
+        <div style="font-size:.95rem; font-weight:600; margin-top:3px;">{{ job.location or "—" }}</div>
+      </div>
+      <div>
+        <div style="font-size:.78rem; color:var(--text-muted,#888); text-transform:uppercase; font-weight:700; letter-spacing:.06em;">Event Date</div>
+        <div style="font-size:.95rem; font-weight:600; margin-top:3px;">{{ job.event_date or "—" }}</div>
+      </div>
+      <div>
+        <div style="font-size:.78rem; color:var(--text-muted,#888); text-transform:uppercase; font-weight:700; letter-spacing:.06em;">Shift</div>
+        <div style="font-size:.95rem; font-weight:600; margin-top:3px;">{{ job.shift_window or "—" }}</div>
+      </div>
+    </div>
+    {% if job.role_keywords %}
+      <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;">
+        {% for kw in job.role_keywords %}
+          <span style="background:#e8f0fe; color:#1a56db; padding:3px 10px; border-radius:10px; font-size:.78rem; font-weight:600;">{{ kw | upper }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Result count #}
+  <p style="margin-top:16px; color:var(--text-muted,#888); font-size:.9rem;">
+    {% if total == 0 %}
+      No workers in the current pool match this request.
+    {% elif total == 1 %}
+      1 candidate found
+    {% else %}
+      {{ total }} candidates found
+    {% endif %}
+  </p>
+
+  {# Candidate list #}
+  {% if candidates %}
+    <div style="display:grid; gap:16px; margin-top:8px;">
+      {% for c in candidates %}
+        <div class="feature-card" style="display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start;">
+
+          <div>
+            {# Role + market #}
+            <div class="feature-kicker">{{ c.role | upper if c.role else "CREW" }}</div>
+            <p style="margin:4px 0 8px; font-size:.95rem;">
+              {% if c.market %}
+                <strong>{{ c.market }}</strong>
+              {% else %}
+                <em style="color:var(--text-muted,#888);">Market not specified</em>
+              {% endif %}
+            </p>
+
+            {# Readiness badge #}
+            <span style="
+              display:inline-block; padding:3px 10px; border-radius:12px; font-size:.8rem; font-weight:600;
+              {% if c.readiness == 'ready' %}background:#e6f4ea; color:#1e7e34;
+              {% elif c.readiness == 'limited' %}background:#fff3cd; color:#856404;
+              {% else %}background:#f8d7da; color:#842029;{% endif %}
+            ">
+              {% if c.readiness == 'ready' %}Ready Now
+              {% elif c.readiness == 'limited' %}Limited Availability
+              {% else %}Availability Unknown{% endif %}
+            </span>
+
+            {# Skill flags #}
+            {% if c.skill_flags %}
+              <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
+                {% for flag in c.skill_flags %}
+                  <span style="background:#e8f0fe; color:#1a56db; padding:2px 8px; border-radius:10px; font-size:.78rem; font-weight:500;">{{ flag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {# Match reasons #}
+            {% if c.reasons %}
+              <ul style="margin:10px 0 0; padding-left:18px; font-size:.82rem; color:var(--text-muted,#888); line-height:1.8;">
+                {% for r in c.reasons %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            {# Cert count + rate placeholder #}
+            <p style="margin-top:8px; font-size:.82rem; color:var(--text-muted,#888);">
+              {% if c.cert_count > 0 %}{{ c.cert_count }} credential{{ "s" if c.cert_count != 1 else "" }} on file &nbsp;·&nbsp;{% endif %}
+              Rate: <em>{{ c.rate_band }}</em>
+            </p>
+
+            {# Contact request — platform-mediated, no PII returned #}
+            <form method="post" action="/labor/contact-request" style="margin-top:12px;">
+              <input type="hidden" name="requester_role" value="employer" />
+              <input type="hidden" name="target_display_id" value="{{ c.display_id }}" />
+              <input type="hidden" name="request_context" value="{{ job.request_id }}" />
+              <button class="btn" type="submit" style="font-size:.82rem; padding:6px 16px;">
+                Request Connection &rarr;
+              </button>
+            </form>
+          </div>
+
+          {# Score circle #}
+          <div style="text-align:center; min-width:68px;">
+            <div style="
+              width:60px; height:60px; border-radius:50%;
+              background:{% if c.score >= 70 %}#e6f4ea{% elif c.score >= 40 %}#fff3cd{% else %}#f8d7da{% endif %};
+              color:{% if c.score >= 70 %}#1e7e34{% elif c.score >= 40 %}#856404{% else %}#842029{% endif %};
+              display:flex; align-items:center; justify-content:center;
+              font-size:1.1rem; font-weight:800; margin:0 auto;
+            ">{{ c.score }}</div>
+            <div style="font-size:.72rem; color:var(--text-muted,#888); margin-top:4px;">Match</div>
+            <div style="font-size:.68rem; color:var(--text-muted,#888);">{{ c.display_id }}</div>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="feature-card" style="margin-top:8px;">
+      <p style="color:var(--text-muted,#888);">
+        No workers in the current pool match this request.
+        The pool updates as workers submit labor intake profiles.
+      </p>
+      <a class="feature-link" href="/labor/matches">Back to Match Pool ↗</a>
+    </div>
+  {% endif %}
+
+  {# Navigation #}
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <a class="feature-link" href="/labor/matches">Back to Match Pool ↗</a>
+    <a class="feature-link" href="/labor/dispatch-directory">Dispatch Directory ↗</a>
+    <a class="feature-link" href="/labor/growth-ladder">Growth Ladder ↗</a>
+  </div>
+
+</section>
+{% endblock %}
