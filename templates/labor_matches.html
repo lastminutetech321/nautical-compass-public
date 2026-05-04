@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Dispatch Pool</div>
+    <h2>Labor Matches</h2>
+    <p class="hero-copy">
+      Available crew profiles ranked by dispatch readiness.
+      Filter by role or market to narrow the pool.
+    </p>
+  </div>
+
+  {# Filter bar #}
+  <div class="feature-card" style="margin-top: 24px;">
+    <form method="get" action="/labor/matches" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+      <div>
+        <label for="role" style="display:block; font-size:.85rem; margin-bottom:4px;">Role</label>
+        <input id="role" name="role" type="text" value="{{ role_filter }}"
+               placeholder="audio_engineer, stagehand…" style="width:220px;" />
+      </div>
+      <div>
+        <label for="market" style="display:block; font-size:.85rem; margin-bottom:4px;">Market</label>
+        <input id="market" name="market" type="text" value="{{ market_filter }}"
+               placeholder="DC, Las Vegas…" style="width:220px;" />
+      </div>
+      <div>
+        <button class="btn" type="submit">Filter</button>
+        {% if role_filter or market_filter %}
+          <a class="feature-link" href="/labor/matches" style="margin-left:8px;">Clear ↗</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  {# Result count #}
+  <p style="margin-top:16px; color:var(--text-muted, #888); font-size:.9rem;">
+    {% if total == 0 %}
+      No profiles meet the minimum readiness threshold for the current filter.
+    {% elif total == 1 %}
+      1 profile in pool
+    {% else %}
+      {{ total }} profiles in pool
+    {% endif %}
+    {% if role_filter or market_filter %}
+      &mdash; filtered
+    {% endif %}
+  </p>
+
+  {# Candidate list #}
+  {% if pool %}
+    <div style="display:grid; gap:16px; margin-top:8px;">
+      {% for w in pool %}
+        <div class="feature-card" style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;">
+
+          <div>
+            {# Role + market headline #}
+            <div class="feature-kicker">{{ w.role | upper if w.role else "CREW" }}</div>
+            <p style="margin:4px 0 8px; font-size:.95rem;">
+              {% if w.market %}
+                <strong>{{ w.market }}</strong>
+              {% else %}
+                <em style="color:var(--text-muted,#888);">Market not specified</em>
+              {% endif %}
+            </p>
+
+            {# Readiness badge #}
+            <span style="
+              display:inline-block; padding:3px 10px; border-radius:12px; font-size:.8rem; font-weight:600;
+              {% if w.readiness == 'ready' %}
+                background:#e6f4ea; color:#1e7e34;
+              {% elif w.readiness == 'limited' %}
+                background:#fff3cd; color:#856404;
+              {% else %}
+                background:#f8d7da; color:#842029;
+              {% endif %}
+            ">
+              {% if w.readiness == 'ready' %}
+                Ready Now
+              {% elif w.readiness == 'limited' %}
+                Limited Availability
+              {% else %}
+                Availability Unknown
+              {% endif %}
+            </span>
+
+            {# Skill flags #}
+            {% if w.skill_flags %}
+              <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
+                {% for flag in w.skill_flags %}
+                  <span style="
+                    display:inline-block; padding:2px 8px; border-radius:10px;
+                    background:#e8f0fe; color:#1a56db; font-size:.78rem; font-weight:500;
+                  ">{{ flag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {# Cert count #}
+            {% if w.cert_count > 0 %}
+              <p style="margin-top:8px; font-size:.82rem; color:var(--text-muted,#888);">
+                {{ w.cert_count }} credential{{ "s" if w.cert_count != 1 else "" }} on file
+              </p>
+            {% endif %}
+
+            {# Fairness placeholder — rate engine not built yet #}
+            <p style="margin-top:6px; font-size:.82rem; color:var(--text-muted,#888);">
+              Rate: <em>{{ w.rate_band }}</em>
+            </p>
+          </div>
+
+          {# Score badge #}
+          <div style="text-align:center; min-width:64px;">
+            <div style="
+              width:56px; height:56px; border-radius:50%;
+              background:{% if w.score >= 70 %}#e6f4ea{% elif w.score >= 45 %}#fff3cd{% else %}#f8d7da{% endif %};
+              color:{% if w.score >= 70 %}#1e7e34{% elif w.score >= 45 %}#856404{% else %}#842029{% endif %};
+              display:flex; align-items:center; justify-content:center;
+              font-size:1.1rem; font-weight:700; margin:0 auto;
+            ">{{ w.score }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted,#888); margin-top:4px;">Score</div>
+            <div style="font-size:.72rem; color:var(--text-muted,#888);">{{ w.display_id }}</div>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="feature-card" style="margin-top:8px;">
+      <p style="color:var(--text-muted,#888);">
+        No workers in the dispatch pool match the current filters. Workers must have a role,
+        availability, and at least one credential or market area on file to appear here.
+      </p>
+      <a class="feature-link" href="/intake/labor">Open Labor Intake ↗</a>
+    </div>
+  {% endif %}
+
+  {# Dispatch request form #}
+  <div class="feature-card" style="margin-top:32px;">
+    <div class="feature-kicker">Production Company</div>
+    <h3>Submit Dispatch Request</h3>
+    <p style="font-size:.9rem; color:var(--text-muted,#888); margin-bottom:16px;">
+      Describe your crew need. Worker contact information is never revealed at this stage.
+    </p>
+    <form method="post" action="/labor/matches/request" style="display:grid; gap:14px;">
+      <div>
+        <label for="roles_needed" style="display:block; font-size:.85rem; margin-bottom:4px;">Roles Needed</label>
+        <input id="roles_needed" name="roles_needed" type="text"
+               placeholder="A2 x2, V1 x1, Stagehand x4" required />
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label for="event_date" style="display:block; font-size:.85rem; margin-bottom:4px;">Event Date</label>
+          <input id="event_date" name="event_date" type="text" placeholder="2026-06-15" />
+        </div>
+        <div>
+          <label for="shift_window" style="display:block; font-size:.85rem; margin-bottom:4px;">Shift Window</label>
+          <input id="shift_window" name="shift_window" type="text" placeholder="7AM–3PM" />
+        </div>
+      </div>
+      <div>
+        <label for="location" style="display:block; font-size:.85rem; margin-bottom:4px;">Location</label>
+        <input id="location" name="location" type="text" placeholder="Convention Center, DC" required />
+      </div>
+      <div>
+        <label for="notes" style="display:block; font-size:.85rem; margin-bottom:4px;">Notes</label>
+        <textarea id="notes" name="notes" rows="3"
+                  placeholder="Special requirements, access notes, etc."></textarea>
+      </div>
+      <div>
+        <button class="btn" type="submit">Submit Dispatch Request</button>
+      </div>
+    </form>
+  </div>
+
+  {# Navigation #}
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <a class="feature-link" href="/labor/employer-request/start">Legacy Employer Request ↗</a>
+    <a class="feature-link" href="/labor/match-review">Single Match Review ↗</a>
+    <a class="feature-link" href="/labor/dashboard">Worker Dashboard ↗</a>
+  </div>
+
+</section>
+{% endblock %}
