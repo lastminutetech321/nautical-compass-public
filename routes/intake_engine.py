@@ -25,6 +25,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from services.living_ledger import get_actor_id, log_page_view, log_intake_event
 
 router = APIRouter(prefix="/intake", tags=["intake-engine"])
 templates = Jinja2Templates(directory="templates")
@@ -154,6 +155,11 @@ def load_recent_intakes(limit: int = 10) -> list:
 
 @router.get("", response_class=HTMLResponse)
 def intake_get(request: Request, prefill_type: str = Query("")):
+    log_page_view(request, rail="system", event_type="intake_form_opened",
+                  title="Intake form opened",
+                  next_action="intake_submitted",
+                  residual_trigger="abandoned_intake_legal_or_labor",
+                  extra={"prefill_type": prefill_type} if prefill_type else {})
     return templates.TemplateResponse(request, "intake.html", context={
         "request": request,
         "v": int(time.time()),
@@ -320,6 +326,14 @@ async def intake_post(
         record["legal_rail"] = legal_rail
 
     store_intake(record)
+
+    log_intake_event(
+        request,
+        intake_type=intake_type.strip(),
+        intake_id=intake_id,
+        intake_score=intake_score,
+        full_name=full_name.strip(),
+    )
 
     return RedirectResponse(f"/intake/confirm?id={intake_id}", status_code=303)
 

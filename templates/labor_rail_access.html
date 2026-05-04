@@ -13,13 +13,15 @@
 
     <div class="module-grid">
 
+      <!-- ── Basic Tier ─────────────────────────────────────────── -->
       <div class="module-box">
-        <h3>Labor Rail Basic</h3>
-        <p>
-          Crew intake and readiness profile. Role, trade, availability, rate expectation,
-          union status, and evidence readiness. Includes instant readiness score and
-          next-step guidance for dispatch eligibility.
-        </p>
+        <h3>Labor Rail Basic — Production Access</h3>
+        <div class="module-price">$49 / month</div>
+        <ul class="module-feature-list">
+          <li>Dispatch request submission</li>
+          <li>Crew readiness visibility</li>
+          <li>Standard coordination routing</li>
+        </ul>
         <div class="module-actions">
           {% if labor_rail_basic %}
             <a class="action-btn action-btn-primary" href="{{ labor_rail_basic }}">Continue with Basic</a>
@@ -32,13 +34,16 @@
         </div>
       </div>
 
+      <!-- ── Pro Tier ───────────────────────────────────────────── -->
       <div class="module-box">
-        <h3>Labor Rail Pro</h3>
-        <p>
-          Everything in Basic, plus unpaid wage and work dispute capture,
-          evidence vault, timeline documentation, priority intake review,
-          and structured complaint packet preparation.
-        </p>
+        <h3>Labor Rail Pro — Dispatch &amp; Priority Access</h3>
+        <div class="module-price">$149 / month</div>
+        <ul class="module-feature-list">
+          <li>Priority dispatch routing</li>
+          <li>Faster crew placement</li>
+          <li>Priority coordination queue</li>
+          <li>Full visibility dashboard</li>
+        </ul>
         <div class="module-actions">
           {% if labor_rail_pro %}
             <a class="action-btn action-btn-primary" href="{{ labor_rail_pro }}">Continue with Pro</a>
@@ -51,6 +56,7 @@
         </div>
       </div>
 
+      <!-- ── What happens after access ─────────────────────────── -->
       <div class="module-box module-box-full">
         <h3>What happens after access</h3>
         <p>
@@ -60,13 +66,33 @@
         </p>
       </div>
 
+      <!-- ── Admin Stripe Status ────────────────────────────────── -->
       <div class="module-box module-box-full">
-        <h3>Stripe Setup</h3>
-        <p>
-          To activate Labor Rail access links, add these environment variables:
-          <br><strong>STRIPE_LINK_LABOR_RAIL_BASIC</strong>
-          <br><strong>STRIPE_LINK_LABOR_RAIL_PRO</strong>
-        </p>
+        <h3>Labor Rail Stripe Status</h3>
+        <table class="summary-table">
+          <tr>
+            <th>Labor Rail Basic</th>
+            <td>
+              {% if labor_rail_basic %}
+                <span style="color:#2ecc71;font-weight:700">&#x2705; Configured</span>
+              {% else %}
+                <span style="color:#e74c3c;font-weight:700">&#x274C; Missing</span>
+                &nbsp;<small style="color:#aaa">— set <code>STRIPE_LINK_LABOR_RAIL_BASIC</code></small>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>Labor Rail Pro</th>
+            <td>
+              {% if labor_rail_pro %}
+                <span style="color:#2ecc71;font-weight:700">&#x2705; Configured</span>
+              {% else %}
+                <span style="color:#e74c3c;font-weight:700">&#x274C; Missing</span>
+                &nbsp;<small style="color:#aaa">— set <code>STRIPE_LINK_LABOR_RAIL_PRO</code></small>
+              {% endif %}
+            </td>
+          </tr>
+        </table>
       </div>
 
     </div>

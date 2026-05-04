@@ -23,6 +23,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from services.living_ledger import get_actor_id, log_page_view, write_event
 
 router = APIRouter(tags=["company-directory"])
 templates = Jinja2Templates(directory="templates")
@@ -94,6 +95,10 @@ def _group_by_city(entries: list[dict]) -> dict[str, list[dict]]:
 
 @router.get("/admin/company-import")
 def admin_company_import(request: Request):
+    log_page_view(request, rail="company_directory",
+                  event_type="company_import_preview_opened",
+                  title="Company import preview opened",
+                  next_action="company_records_saved")
     raw = _load_raw()
     has_raw = bool(raw)
     # Attach a stable index so the template can use it as record ID
@@ -156,6 +161,18 @@ async def admin_company_import_save(
     all_entries = existing + new_entries
     _save_directory(all_entries)
 
+    write_event(
+        rail="company_directory",
+        event_type="company_records_saved",
+        title=f"Company records saved — {len(new_entries)} imported",
+        route="/admin/company-import/save",
+        actor_id=get_actor_id(request),
+        actor_type="admin",
+        status="saved",
+        next_action="admin_company_directory_review",
+        payload={"imported_count": len(new_entries), "total_after": len(all_entries)},
+    )
+
     return RedirectResponse(url="/admin/company-directory", status_code=303)
 
 
@@ -198,6 +215,11 @@ def public_company_directory(
     city: str = Query(default=""),
     status: str = Query(default=""),
 ):
+    log_page_view(request, rail="company_directory",
+                  event_type="company_directory_public_viewed",
+                  title="Public company directory viewed",
+                  next_action="company_profile_claim",
+                  extra={"city_filter": city, "status_filter": status} if (city or status) else {})
     all_entries = _load_directory()
 
     # Remove do_not_contact entries entirely
