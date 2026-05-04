@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Career DNA</div>
+    <h2>Readiness Score</h2>
+    <p class="hero-copy">
+      Six dimensions determine your dispatch readiness. Fill each one to maximize
+      your score and move up the match pool ranking.
+    </p>
+  </div>
+
+  {% if breakdown and breakdown.worker_id %}
+
+    {# Score header #}
+    <div class="feature-card" style="margin-top:24px; display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+      <div style="
+        width:88px; height:88px; border-radius:50%; flex-shrink:0;
+        background:{% if breakdown.total_score >= 76 %}#e6f4ea{% elif breakdown.total_score >= 46 %}#fff3cd{% else %}#f8d7da{% endif %};
+        color:{% if breakdown.total_score >= 76 %}#1e7e34{% elif breakdown.total_score >= 46 %}#856404{% else %}#842029{% endif %};
+        display:flex; align-items:center; justify-content:center;
+        font-size:1.8rem; font-weight:800;
+      ">{{ breakdown.total_score }}</div>
+      <div>
+        <div class="feature-kicker">{{ breakdown.display_id }}</div>
+        <p style="margin:4px 0; font-size:1rem;">
+          {% if breakdown.role %}<strong>{{ breakdown.role }}</strong>{% endif %}
+          {% if breakdown.market %}&mdash; {{ breakdown.market }}{% endif %}
+        </p>
+        <span style="
+          display:inline-block; padding:3px 12px; border-radius:12px; font-size:.8rem; font-weight:600;
+          {% if breakdown.readiness == 'ready' %}background:#e6f4ea; color:#1e7e34;
+          {% elif breakdown.readiness == 'limited' %}background:#fff3cd; color:#856404;
+          {% else %}background:#f8d7da; color:#842029;{% endif %}
+        ">
+          {% if breakdown.readiness == 'ready' %}Ready Now
+          {% elif breakdown.readiness == 'limited' %}Limited Availability
+          {% else %}Availability Not Set{% endif %}
+        </span>
+      </div>
+    </div>
+
+    {# 6-dimension breakdown #}
+    <div style="display:grid; gap:10px; margin-top:20px;">
+      {% for dim in breakdown.dimensions %}
+        <div style="
+          display:grid; grid-template-columns:160px 1fr auto;
+          align-items:center; gap:12px;
+          padding:12px 16px; border-radius:12px;
+          background:{% if dim.filled %}rgba(25,135,84,.07){% else %}rgba(220,53,69,.06){% endif %};
+          border:1px solid {% if dim.filled %}rgba(25,135,84,.18){% else %}rgba(220,53,69,.15){% endif %};
+        ">
+          <div style="font-size:.88rem; font-weight:600;">{{ dim.label }}</div>
+          <div style="height:8px; background:rgba(0,0,0,.08); border-radius:4px; overflow:hidden;">
+            <div style="
+              height:100%; border-radius:4px;
+              width:{{ ((dim.earned / dim.max) * 100)|int }}%;
+              background:{% if dim.filled %}#198754{% else %}#dc3545{% endif %};
+            "></div>
+          </div>
+          <div style="font-size:.88rem; font-weight:700; white-space:nowrap;
+            color:{% if dim.filled %}#198754{% else %}#dc3545{% endif %};">
+            {{ dim.earned }} / {{ dim.max }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Missing steps #}
+    {% if breakdown.missing_steps %}
+      <div class="feature-card" style="margin-top:20px;">
+        <div class="feature-kicker">To improve your score</div>
+        <ul style="margin:8px 0 0; padding-left:20px; line-height:1.9; font-size:.9rem;">
+          {% for step in breakdown.missing_steps %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ul>
+        <a class="feature-link" style="margin-top:12px; display:inline-block;" href="/intake/labor">Update Profile ↗</a>
+      </div>
+    {% else %}
+      <div class="feature-card" style="margin-top:20px; background:rgba(25,135,84,.07); border:1px solid rgba(25,135,84,.2);">
+        <p style="color:#0f5132; font-weight:600; margin:0;">All six dimensions are complete. Your profile is fully dispatch-ready.</p>
+      </div>
+    {% endif %}
+
+    {# Skill flags #}
+    {% if breakdown.skill_flags %}
+      <div class="feature-card" style="margin-top:16px;">
+        <div class="feature-kicker">Detected Skills</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+          {% for flag in breakdown.skill_flags %}
+            <span style="background:#e8f0fe; color:#1a56db; padding:4px 12px; border-radius:12px; font-size:.82rem; font-weight:600;">{{ flag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  {% else %}
+    {# No profile found #}
+    <div class="feature-card" style="margin-top:24px;">
+      <p style="color:var(--text-muted,#888);">
+        No worker profile found in the ledger.
+        Submit a labor intake to generate your readiness score.
+      </p>
+      <a class="feature-link" href="/intake/labor">Open Labor Intake ↗</a>
+    </div>
+  {% endif %}
+
+  {# Navigation #}
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Quick Links</div>
+    <a class="feature-link" href="/labor/growth-ladder">View Growth Ladder ↗</a>
+    <a class="feature-link" href="/intake/labor">Update Profile ↗</a>
+    <a class="feature-link" href="/labor/matches">Open Dispatch Pool ↗</a>
+    <a class="feature-link" href="/labor/dashboard">Worker Dashboard ↗</a>
+  </div>
+
+</section>
+{% endblock %}

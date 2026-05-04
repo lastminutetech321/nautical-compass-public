@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card">
+    <div class="eyebrow">Career DNA</div>
+    <h2>Worker Growth Ladder</h2>
+    <p class="hero-copy">
+      Five tiers from entry crew to production lead. Each tier shows the skills,
+      certifications, and experience that unlock the next level of dispatch opportunity.
+    </p>
+  </div>
+
+  <div style="display:grid; gap:16px; margin-top:24px;">
+
+    {# Tier 1 #}
+    <div class="feature-card" style="border-left:4px solid #6c757d;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="feature-kicker" style="color:#6c757d;">Tier 1 — Entry Crew</div>
+          <h3 style="margin:4px 0;">Stagehand &amp; General Labor</h3>
+        </div>
+        <span style="background:#f1f3f5; color:#495057; padding:4px 14px; border-radius:12px; font-size:.8rem; font-weight:600;">Score range: 30–45</span>
+      </div>
+      <p style="margin:10px 0 6px; font-size:.9rem;">
+        Physical labor, load-in/load-out, basic rigging assist, cable run.
+        No certifications required to start.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span class="feature-kicker" style="background:#f1f3f5; padding:3px 10px; border-radius:10px; font-size:.75rem;">General Labor</span>
+        <span class="feature-kicker" style="background:#f1f3f5; padding:3px 10px; border-radius:10px; font-size:.75rem;">Stagehand</span>
+      </div>
+      <p style="margin-top:10px; font-size:.82rem; color:var(--text-muted,#888);">
+        <strong>Unlock Tier 2:</strong> Complete OSHA 10 or obtain a CDL, forklift cert, or equivalent trade credential.
+      </p>
+    </div>
+
+    {# Tier 2 #}
+    <div class="feature-card" style="border-left:4px solid #0d6efd;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="feature-kicker" style="color:#0d6efd;">Tier 2 — Skilled Crew</div>
+          <h3 style="margin:4px 0;">Certified Stagehand</h3>
+        </div>
+        <span style="background:#e7f1ff; color:#0d6efd; padding:4px 14px; border-radius:12px; font-size:.8rem; font-weight:600;">Score range: 46–60</span>
+      </div>
+      <p style="margin:10px 0 6px; font-size:.9rem;">
+        OSHA-certified crew, forklift operators, CDL drivers, lift-cert holders.
+        Eligible for lead crew on smaller calls.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span style="background:#e7f1ff; color:#0d6efd; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">OSHA 10/30</span>
+        <span style="background:#e7f1ff; color:#0d6efd; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">CDL</span>
+        <span style="background:#e7f1ff; color:#0d6efd; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Forklift</span>
+        <span style="background:#e7f1ff; color:#0d6efd; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Lift Cert</span>
+      </div>
+      <p style="margin-top:10px; font-size:.82rem; color:var(--text-muted,#888);">
+        <strong>Unlock Tier 3:</strong> Develop a specialized AV trade skill — audio, video, or lighting tech.
+      </p>
+    </div>
+
+    {# Tier 3 #}
+    <div class="feature-card" style="border-left:4px solid #198754;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="feature-kicker" style="color:#198754;">Tier 3 — Specialized Tech</div>
+          <h3 style="margin:4px 0;">A2 / V2 / L2 / Rigger</h3>
+        </div>
+        <span style="background:#d1e7dd; color:#0f5132; padding:4px 14px; border-radius:12px; font-size:.8rem; font-weight:600;">Score range: 61–75</span>
+      </div>
+      <p style="margin:10px 0 6px; font-size:.9rem;">
+        Journeyman-level AV technicians, production riggers, and video operators.
+        Can run a system under a department head.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span style="background:#d1e7dd; color:#0f5132; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Audio A2</span>
+        <span style="background:#d1e7dd; color:#0f5132; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Video V2</span>
+        <span style="background:#d1e7dd; color:#0f5132; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Lighting L2</span>
+        <span style="background:#d1e7dd; color:#0f5132; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Rigging</span>
+      </div>
+      <p style="margin-top:10px; font-size:.82rem; color:var(--text-muted,#888);">
+        <strong>Unlock Tier 4:</strong> Achieve department-head certification (A1, V1, L1) or obtain ETCP.
+      </p>
+    </div>
+
+    {# Tier 4 #}
+    <div class="feature-card" style="border-left:4px solid #fd7e14;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="feature-kicker" style="color:#fd7e14;">Tier 4 — Lead Tech</div>
+          <h3 style="margin:4px 0;">A1 / V1 / L1 / ETCP</h3>
+        </div>
+        <span style="background:#fff3cd; color:#664d03; padding:4px 14px; border-radius:12px; font-size:.8rem; font-weight:600;">Score range: 76–90</span>
+      </div>
+      <p style="margin:10px 0 6px; font-size:.9rem;">
+        Department-head AV technicians and ETCP-certified riggers.
+        Capable of designing and running full systems independently.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span style="background:#fff3cd; color:#664d03; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Audio A1</span>
+        <span style="background:#fff3cd; color:#664d03; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Video V1</span>
+        <span style="background:#fff3cd; color:#664d03; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Lighting L1</span>
+        <span style="background:#fff3cd; color:#664d03; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">ETCP</span>
+      </div>
+      <p style="margin-top:10px; font-size:.82rem; color:var(--text-muted,#888);">
+        <strong>Unlock Tier 5:</strong> Build production coordination and crew management experience.
+      </p>
+    </div>
+
+    {# Tier 5 #}
+    <div class="feature-card" style="border-left:4px solid #c8a84b;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="feature-kicker" style="color:#c8a84b;">Tier 5 — Production Lead</div>
+          <h3 style="margin:4px 0;">Stage Manager / Crew Lead / Coordinator</h3>
+        </div>
+        <span style="background:#fdf6e3; color:#7a5c00; padding:4px 14px; border-radius:12px; font-size:.8rem; font-weight:600;">Score range: 91–100</span>
+      </div>
+      <p style="margin:10px 0 6px; font-size:.9rem;">
+        Full production leadership — crew management, show calling, multi-department coordination.
+        Top-tier dispatch priority across all markets.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+        <span style="background:#fdf6e3; color:#7a5c00; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Stage Manager</span>
+        <span style="background:#fdf6e3; color:#7a5c00; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Crew Lead</span>
+        <span style="background:#fdf6e3; color:#7a5c00; padding:3px 10px; border-radius:10px; font-size:.75rem; font-weight:500;">Production Coordinator</span>
+      </div>
+      <p style="margin-top:10px; font-size:.82rem; color:var(--text-muted,#888);">
+        <strong>Sustain:</strong> Maintain verified credentials, update market area, and keep availability current.
+      </p>
+    </div>
+
+  </div>
+
+  {# Actions #}
+  <div class="feature-card" style="margin-top:24px;">
+    <div class="feature-kicker">Your Next Step</div>
+    <a class="feature-link" href="/intake/labor">Submit / Update Your Profile ↗</a>
+    <a class="feature-link" href="/labor/readiness">View Your Readiness Score ↗</a>
+    <a class="feature-link" href="/labor/matches">Open Dispatch Pool ↗</a>
+  </div>
+
+</section>
+{% endblock %}

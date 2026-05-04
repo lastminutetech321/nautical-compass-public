@@ -307,3 +307,143 @@ def get_match_pool(
 
     pool.sort(key=lambda w: w["score"], reverse=True)
     return pool
+
+
+# ---------------------------------------------------------------------------
+# Readiness score breakdown — 6-dimension detail for a single worker
+# ---------------------------------------------------------------------------
+
+DIMENSIONS = [
+    ("role",         "Role",              30, "Primary role or trade is on file"),
+    ("market",       "Market",            20, "Service area or city is specified"),
+    ("availability", "Availability",      20, "Dispatch availability is set"),
+    ("certs",        "Certifications",    15, "At least one credential or skill flag"),
+    ("transport",    "Transport",         10, "Transport capability confirmed"),
+    ("source",       "Verified Source",    5, "Profile submitted through verified intake"),
+]
+
+
+def get_worker_readiness_breakdown(worker_id: str | None = None) -> dict:
+    """
+    Return a 6-dimension readiness breakdown for a single worker.
+    If worker_id is None, uses the latest labor_profile_submitted entry
+    from career_dna_ledger.jsonl.
+
+    Returns a dict with:
+      worker_id, display_id, total_score, dimensions (list of dim dicts),
+      missing_steps (list of improvement tips)
+    """
+    career = _load_from_career_dna()
+    intake = _load_from_intake_subs()
+    merged = {**intake, **career}
+
+    profile: dict | None = None
+    if worker_id and worker_id in merged:
+        profile = merged[worker_id]
+    elif merged:
+        # Latest by ts
+        profile = max(merged.values(), key=lambda p: p.get("ts", 0))
+
+    if not profile:
+        return {
+            "worker_id":    None,
+            "display_id":   None,
+            "total_score":  0,
+            "dimensions":   [],
+            "missing_steps": ["No worker profile found. Submit a labor intake to begin."],
+        }
+
+    cert_tags   = profile.get("cert_tags") or parse_cert_tags(profile.get("cert_raw", ""))
+    skill_flags = detect_skill_flags(cert_tags)
+    readiness   = normalize_readiness(profile.get("availability"))
+    transport   = (profile.get("transport") or "").strip().lower()
+
+    earned = {
+        "role":         30 if profile.get("role") else 0,
+        "market":       20 if profile.get("market") else 0,
+        "availability": 20 if readiness == "ready" else (10 if readiness == "limited" else 0),
+        "certs":        15 if (cert_tags or skill_flags) else 0,
+        "transport":    10 if (transport and transport not in ("no", "none", "false", "0")) else 0,
+        "source":        5 if profile.get("source") == "career_dna" else 0,
+    }
+
+    dims = []
+    missing_steps = []
+    for key, label, max_pts, tip in DIMENSIONS:
+        pts = earned[key]
+        dims.append({
+            "key":     key,
+            "label":   label,
+            "earned":  pts,
+            "max":     max_pts,
+            "filled":  pts > 0,
+        })
+        if pts == 0:
+            missing_steps.append(tip)
+
+    total = sum(earned.values())
+    return {
+        "worker_id":     profile.get("worker_id"),
+        "display_id":    _display_token(profile.get("worker_id", "unknown")),
+        "total_score":   min(total, 100),
+        "dimensions":    dims,
+        "missing_steps": missing_steps,
+        "role":          profile.get("role") or "",
+        "market":        profile.get("market") or "",
+        "readiness":     readiness,
+        "skill_flags":   skill_flags,
+        "cert_count":    len(cert_tags),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Company dispatch directory — sanitized, no contact PII
+# ---------------------------------------------------------------------------
+
+COMPANY_DIRECTORY_PATH = Path("runtime/company_directory.json")
+
+# Fields safe to expose in the worker-facing dispatch directory
+_SAFE_COMPANY_FIELDS = {"name", "city", "state", "company_type", "status",
+                        "market", "dispatch_active", "roles_dispatched", "notes_public"}
+
+
+def get_dispatch_companies(city_filter: str = "", status_filter: str = "") -> list[dict]:
+    """
+    Return a sanitized list of companies from company_directory.json.
+    Strips all contact fields (email, phone, address, contact_name, etc.).
+    Returns only fields in _SAFE_COMPANY_FIELDS.
+    """
+    if not COMPANY_DIRECTORY_PATH.exists():
+        return []
+
+    try:
+        raw = json.loads(COMPANY_DIRECTORY_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+    if not isinstance(raw, list):
+        raw = []
+
+    companies = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+
+        safe = {k: v for k, v in entry.items() if k in _SAFE_COMPANY_FIELDS}
+        # Ensure required display fields have defaults
+        safe.setdefault("name", "Unknown Company")
+        safe.setdefault("city", "")
+        safe.setdefault("state", "")
+        safe.setdefault("company_type", "")
+        safe.setdefault("status", "")
+        safe.setdefault("dispatch_active", False)
+        safe.setdefault("roles_dispatched", "")
+
+        if city_filter and safe["city"].lower() != city_filter.lower():
+            continue
+        if status_filter and safe["status"].lower() != status_filter.lower():
+            continue
+
+        companies.append(safe)
+
+    return companies

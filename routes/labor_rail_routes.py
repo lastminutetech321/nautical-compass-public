@@ -6,7 +6,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from uuid import uuid4
 from services.living_ledger import log_page_view, write_event, get_actor_id
-from services.labor_matching import get_match_pool
+from services.labor_matching import (
+    get_match_pool,
+    get_worker_readiness_breakdown,
+    get_dispatch_companies,
+)
 
 templates = Jinja2Templates(directory="templates")
 labor_rail_router = APIRouter()
@@ -93,6 +97,104 @@ async def labor_matches_request(
             "step_total":   2,
             "step_name":    "Dispatch Request",
             "why_next":     "Your request is now the employer-side target for worker matching.",
+        }),
+    )
+
+
+@labor_rail_router.get("/labor/growth-ladder", response_class=HTMLResponse)
+def labor_growth_ladder(request: Request):
+    log_page_view(request, rail="labor", event_type="growth_ladder_viewed",
+                  title="Worker Growth Ladder viewed",
+                  next_action="labor_intake_opened")
+    return templates.TemplateResponse(
+        request, "labor_growth_ladder.html", context=_ctx(request)
+    )
+
+
+@labor_rail_router.get("/labor/readiness", response_class=HTMLResponse)
+def labor_readiness(request: Request, worker_id: str = Query("")):
+    breakdown = get_worker_readiness_breakdown(worker_id or None)
+    log_page_view(request, rail="labor", event_type="readiness_dashboard_viewed",
+                  title="Readiness score dashboard viewed",
+                  next_action="labor_profile_edit_opened")
+    return templates.TemplateResponse(
+        request,
+        "labor_readiness.html",
+        context=_ctx(request, {"breakdown": breakdown}),
+    )
+
+
+@labor_rail_router.get("/labor/dispatch-directory", response_class=HTMLResponse)
+def labor_dispatch_directory(
+    request: Request,
+    city: str   = Query(""),
+    status: str = Query(""),
+):
+    companies = get_dispatch_companies(city_filter=city, status_filter=status)
+    log_page_view(request, rail="labor", event_type="dispatch_directory_viewed",
+                  title="Company Dispatch Directory viewed",
+                  next_action="dispatch_request_submitted")
+    return templates.TemplateResponse(
+        request,
+        "labor_dispatch_directory.html",
+        context=_ctx(request, {
+            "companies":     companies,
+            "total":         len(companies),
+            "city_filter":   city,
+            "status_filter": status,
+        }),
+    )
+
+
+@labor_rail_router.post("/labor/contact-request", response_class=HTMLResponse)
+async def labor_contact_request(
+    request: Request,
+    requester_role: str = Form(""),
+    target_display_id: str = Form(""),
+    request_context: str = Form(""),
+):
+    """
+    Anti-contact-exposure endpoint.
+    Logs the intent to connect but NEVER returns contact details of either party.
+    All contact is mediated through platform dispatch.
+    """
+    from uuid import uuid4 as _uuid4
+    contact_req_id = f"cr_{_uuid4().hex[:10]}"
+
+    write_event(
+        rail="labor",
+        event_type="contact_request_initiated",
+        title="Contact request initiated — mediated by platform",
+        route="/labor/contact-request",
+        status="pending_review",
+        actor_id=get_actor_id(request),
+        actor_type="visitor",
+        next_action="dispatch_coordinator_review",
+        payload={
+            "contact_req_id":   contact_req_id,
+            "requester_role":   requester_role,
+            "target_display_id": target_display_id,
+            # request_context omitted from ledger — may contain raw remarks
+        },
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "submission_success.html",
+        context=_ctx(request, {
+            "title":        "Connection Request Logged",
+            "summary":      "Your request has been recorded for dispatch coordinator review. "
+                            "Direct contact details are not shared through this interface. "
+                            "A coordinator will facilitate contact if the match is approved.",
+            "return_href":  "/labor/matches",
+            "return_label": "Back to Match Pool",
+            "next_href":    "/labor/dispatch-directory",
+            "next_label":   "View Dispatch Directory",
+            "record_id":    contact_req_id,
+            "step_number":  1,
+            "step_total":   2,
+            "step_name":    "Contact Request",
+            "why_next":     "Direct contact is mediated — no phone or email is shared at this stage.",
         }),
     )
 
