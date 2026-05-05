@@ -21,7 +21,8 @@ from typing import Optional
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 
-from services.operator_settings import get_all_settings, set_cert_strictness
+from services.operator_settings import get_all_settings, get_cert_strictness, set_cert_strictness
+from services.access_control import require_permission, audit_operator_action
 
 router = APIRouter(prefix="/api/command-deck", tags=["command-deck-api"])
 
@@ -250,14 +251,23 @@ def command_deck_status_with_intake():
 # ---------------------------------------------------------------------------
 
 @router.post("/operator-settings")
-async def update_operator_settings(request: Request):
+async def update_operator_settings(
+    request: Request,
+    _role: str = require_permission("write_operator_settings"),
+):
     body = await request.json()
     errors = {}
 
     cert_strictness = body.get("cert_strictness")
     if cert_strictness is not None:
+        old_value = get_cert_strictness()
         try:
             set_cert_strictness(cert_strictness)
+            audit_operator_action(
+                request,
+                "cert_strictness_changed",
+                {"from": old_value, "to": cert_strictness},
+            )
         except ValueError as exc:
             errors["cert_strictness"] = str(exc)
 

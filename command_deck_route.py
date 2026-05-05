@@ -10,8 +10,9 @@ Usage in main.py:
 import subprocess
 from datetime import datetime, timezone
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from services.access_control import get_operator_role, get_operator_perms, ROLE_PERMISSIONS
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -31,20 +32,17 @@ def _get_build_hash() -> str:
 
 @router.get("/command-deck", response_class=HTMLResponse)
 def command_deck(request: Request):
-    """
-    Render the Live Command Deck dashboard.
+    role = get_operator_role(request)
+    if "view_command_deck" not in ROLE_PERMISSIONS.get(role, set()):
+        return RedirectResponse("/operator/login?next=/command-deck", status_code=302)
 
-    Placeholder weather data is provided here so the template always
-    receives a valid context.  Replace with a real weather-API call
-    (e.g. OpenWeatherMap, WeatherAPI) when ready.
-    """
     weather_data = {
-        "condition": "clear",       # clear | cloudy | rain | fog | storm | snow
-        "temperature": 72,          # Fahrenheit
-        "wind_speed": 12,           # mph
+        "condition": "clear",
+        "temperature": 72,
+        "wind_speed": 12,
         "wind_direction": "NE",
-        "humidity": 45,             # percent
-        "visibility": 10            # miles
+        "humidity": 45,
+        "visibility": 10,
     }
     return templates.TemplateResponse(
         request,
@@ -53,5 +51,7 @@ def command_deck(request: Request):
             "weather": weather_data,
             "build_hash": _get_build_hash(),
             "build_time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        }
+            "operator_role": role,
+            "operator_perms": get_operator_perms(request),
+        },
     )

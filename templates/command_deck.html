@@ -35,58 +35,78 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       WATER LAYER — 4-depth wave system + vessel + wake + whitecaps
+       WATER LAYER — fixed outer frame; scene-inner moves
        ═══════════════════════════════════════════════════════════════ -->
   <div id="waterLayer" class="water-layer">
-    <div class="wave wave-deep"></div>
-    <div class="wave wave-back"></div>
-    <div class="wave wave-mid"></div>
+    <!-- scene-inner: the unified inner ocean scene that bobs/sways -->
+    <div class="scene-inner" id="sceneInner">
+      <div class="wave wave-deep"></div>
+      <div class="wave wave-back"></div>
+      <div class="wave wave-mid"></div>
 
-    <!-- WHITECAP / FOAM PARTICLES -->
-    <div id="whitecapContainer" class="whitecap-container"></div>
+      <!-- WHITECAP / FOAM PARTICLES -->
+      <div id="whitecapContainer" class="whitecap-container"></div>
 
-    <!-- WAKE / SPRAY -->
-    <div id="wakeContainer" class="wake-container">
-      <div class="wake-spray"></div>
-      <div class="wake-spray"></div>
-      <div class="wake-spray"></div>
-      <div class="wake-spray"></div>
-      <div class="wake-spray"></div>
-    </div>
+      <!-- WAKE / SPRAY -->
+      <div id="wakeContainer" class="wake-container">
+        <div class="wake-spray"></div>
+        <div class="wake-spray"></div>
+        <div class="wake-spray"></div>
+        <div class="wake-spray"></div>
+        <div class="wake-spray"></div>
+      </div>
 
-    <!-- VESSEL -->
-    <div id="vessel" class="vessel">
-      <svg viewBox="0 0 200 100" class="vessel-svg" xmlns="http://www.w3.org/2000/svg">
-        <!-- Hull -->
-        <path d="M20,70 Q30,90 100,90 Q170,90 180,70 L170,70 Q160,80 100,80 Q40,80 30,70 Z"
-              fill="#1a1a2e" stroke="#c9a84c" stroke-width="1.5"/>
-        <!-- Deck -->
-        <rect x="40" y="55" width="120" height="18" rx="3" fill="#16213e" stroke="#c9a84c" stroke-width="1"/>
-        <!-- Cabin -->
-        <rect x="70" y="30" width="60" height="28" rx="2" fill="#0f3460" stroke="#c9a84c" stroke-width="1"/>
-        <!-- Windows -->
-        <rect x="78" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
-        <rect x="95" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
-        <rect x="112" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
-        <!-- Mast -->
-        <line x1="100" y1="30" x2="100" y2="5" stroke="#c9a84c" stroke-width="2"/>
-        <!-- Flag -->
-        <polygon points="100,5 120,12 100,19" fill="#e74c3c" opacity="0.9"/>
-        <!-- Antenna -->
-        <line x1="85" y1="30" x2="82" y2="15" stroke="#888" stroke-width="1"/>
-        <circle cx="82" cy="14" r="2" fill="#e74c3c"/>
-        <!-- Railing -->
-        <line x1="40" y1="55" x2="40" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
-        <line x1="60" y1="55" x2="60" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
-        <line x1="140" y1="55" x2="140" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
-        <line x1="160" y1="55" x2="160" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
-        <line x1="38" y1="48" x2="162" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
-        <!-- Bow spray detail -->
-        <path d="M20,70 Q15,65 18,60" fill="none" stroke="rgba(200,220,240,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
-      </svg>
-    </div>
+      <!-- VESSEL -->
+      <div id="vessel" class="vessel">
+        <svg viewBox="0 0 200 100" class="vessel-svg" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hull -->
+          <path d="M20,70 Q30,90 100,90 Q170,90 180,70 L170,70 Q160,80 100,80 Q40,80 30,70 Z"
+                fill="#1a1a2e" stroke="#c9a84c" stroke-width="1.5"/>
+          <!-- Deck -->
+          <rect x="40" y="55" width="120" height="18" rx="3" fill="#16213e" stroke="#c9a84c" stroke-width="1"/>
+          <!-- Cabin -->
+          <rect x="70" y="30" width="60" height="28" rx="2" fill="#0f3460" stroke="#c9a84c" stroke-width="1"/>
+          <!-- Windows -->
+          <rect x="78" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+          <rect x="95" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+          <rect x="112" y="36" width="10" height="8" rx="1" fill="#e2c275" opacity="0.8"/>
+          <!-- Mast -->
+          <line x1="100" y1="30" x2="100" y2="5" stroke="#c9a84c" stroke-width="2"/>
+          <!-- Flag -->
+          <polygon points="100,5 120,12 100,19" fill="#e74c3c" opacity="0.9"/>
+          <!-- Antenna -->
+          <line x1="85" y1="30" x2="82" y2="15" stroke="#888" stroke-width="1"/>
+          <circle cx="82" cy="14" r="2" fill="#e74c3c"/>
+          <!-- Railing -->
+          <line x1="40" y1="55" x2="40" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+          <line x1="60" y1="55" x2="60" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+          <line x1="140" y1="55" x2="140" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+          <line x1="160" y1="55" x2="160" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+          <line x1="38" y1="48" x2="162" y2="48" stroke="#c9a84c" stroke-width="0.8"/>
+          <!-- Bow spray detail -->
+          <path d="M20,70 Q15,65 18,60" fill="none" stroke="rgba(200,220,240,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+        </svg>
+      </div>
 
-    <div class="wave wave-front"></div>
+      <div class="wave wave-front"></div>
+
+      <!-- STEERING WHEEL — counter-rotates to vessel sway -->
+      <div class="steering-wheel-wrap" id="steeringWheelWrap">
+        <svg class="steering-wheel" id="steeringWheel" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="36" fill="none" stroke="#c9a84c" stroke-width="2.5"/>
+          <circle cx="40" cy="40" r="10" fill="rgba(10,15,30,0.9)" stroke="#c9a84c" stroke-width="2"/>
+          <circle cx="40" cy="40" r="4" fill="#c9a84c"/>
+          <line x1="40" y1="30" x2="40" y2="4"  stroke="#c9a84c" stroke-width="2"/>
+          <line x1="40" y1="50" x2="40" y2="76" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="30" y1="40" x2="4"  y2="40" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="50" y1="40" x2="76" y2="40" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="32.9" y1="32.9" x2="11.7" y2="11.7" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="47.1" y1="47.1" x2="68.3" y2="68.3" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="47.1" y1="32.9" x2="68.3" y2="11.7" stroke="#c9a84c" stroke-width="2"/>
+          <line x1="32.9" y1="47.1" x2="11.7" y2="68.3" stroke="#c9a84c" stroke-width="2"/>
+        </svg>
+      </div>
+    </div><!-- /scene-inner -->
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
@@ -257,9 +277,8 @@
 
     </div>
 
- spine-1-intake-engine
     <!-- ═══════════════════════════════════════════════════════════════
-         INTAKE ENGINE PANEL — spine-1-intake-engine
+         INTAKE ENGINE PANEL
          ═══════════════════════════════════════════════════════════════ -->
     <div class="intake-deck-panel" id="intakeDeckPanel" style="
       background: rgba(10,15,30,0.82);
@@ -477,7 +496,6 @@
       </div>
     </div>
 
- main
     <!-- ENVIRONMENT PANEL -->
     <div class="environment-strip">
       <div class="env-item">
@@ -590,6 +608,7 @@
       </div>
     </div>
 
+    {% if "write_operator_settings" in operator_perms %}
     <!-- CERTIFICATION STRICTNESS PANEL -->
     <div id="certStrictnessPanel" class="ops-control-panel">
       <div class="ops-control-label">Cert Strictness</div>
@@ -616,6 +635,7 @@
       </div>
       <button id="weatherResetBtn" class="ops-ctrl-btn ops-ctrl-reset" style="margin-top:6px; width:100%;">&#8635; Reset to Auto</button>
     </div>
+    {% endif %}
 
     <!-- AMBIENT SOUND CONTROL PANEL -->
 <div id="cabinLightPanel" class="cabin-light-panel">
@@ -624,7 +644,6 @@
     <span id="cabinLightState">On</span>
   </button>
 </div>
-``
     <div id="audioPanel" class="audio-panel">
       <div class="audio-panel-header">
         <span class="audio-icon">&#9835;</span>

@@ -25,8 +25,16 @@ from routes.operator_rail_routes import operator_rail_router
 from routes.labor_rail_routes import labor_rail_router
 from routes.legal_rail_routes import legal_rail_router
 from routes.company_directory_routes import router as company_directory_router
+from routes.operator_auth_routes import router as operator_auth_router
+from starlette.middleware.sessions import SessionMiddleware
+from services.access_control import get_operator_role, get_operator_perms
 
 app = FastAPI(title="Nautical Compass")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY", "dev-secret-key-CHANGE-IN-PRODUCTION"),
+)
+app.include_router(operator_auth_router)
 app.include_router(core_routes)
 app.include_router(intake_router)
 app.include_router(intake_api_router)
@@ -137,6 +145,8 @@ def render(request: Request, template: str, data=None):
     ctx["v"] = int(time.time())
     ctx["labor_signal_flags"] = labor_signal_flags()
     ctx["labor_signal_enabled"] = labor_signal_flags()["ENABLE_LABOR_SIGNAL_ENGINE"]
+    ctx["operator_role"] = get_operator_role(request)
+    ctx["operator_perms"] = get_operator_perms(request)
     return templates.TemplateResponse(request, template, context=ctx)
 
 

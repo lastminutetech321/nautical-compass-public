@@ -935,13 +935,13 @@ function onNewIntakeDetected() {
     setTimeout(() => dial.classList.remove('gauge-updated'), 900);
   });
 
-  // Water surge
-  const waterLayer = document.getElementById('waterLayer');
-  if (waterLayer) {
-    waterLayer.classList.remove('water-surge');
-    void waterLayer.offsetWidth;
-    waterLayer.classList.add('water-surge');
-    setTimeout(() => waterLayer.classList.remove('water-surge'), 1800);
+  // Scene surge (scene-inner bobs dramatically on new intake)
+  const sceneInner = document.getElementById('sceneInner');
+  if (sceneInner) {
+    sceneInner.classList.remove('water-surge');
+    void sceneInner.offsetWidth;
+    sceneInner.classList.add('water-surge');
+    setTimeout(() => sceneInner.classList.remove('water-surge'), 1800);
   }
 
   // Vessel surge
@@ -1403,6 +1403,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateVesselMotion();
     updateNavIndicators();
     updateEnvironmentPanel(weatherData);
+    updateCompass(weatherData.wind_direction);
+    updateWindDial(weatherData.wind_speed, weatherData.wind_direction);
+    updateStatusDial();
+    updateComplianceDial(systemState.compliance);
     if (typeof syncAudioToWeather === "function") syncAudioToWeather(condition);
     if ($weatherBadge) $weatherBadge.textContent = condition.toUpperCase();
   }

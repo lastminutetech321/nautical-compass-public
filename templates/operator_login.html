@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Operator Login — Nautical Compass{% endblock %}
+
+{% block content %}
+<section class="page-section">
+
+  <div class="hero-card" style="max-width:420px; margin:48px auto 0;">
+    <div class="eyebrow">Command Deck</div>
+    <h2 style="margin-bottom:6px;">Operator Access</h2>
+    <p class="hero-copy" style="margin-bottom:24px;">
+      Enter your operator passphrase to access the Command Deck.
+    </p>
+
+    {% if error %}
+    <div style="
+      background:#f8d7da; color:#842029; border:1px solid rgba(220,53,69,.25);
+      border-radius:8px; padding:10px 14px; font-size:.88rem; font-weight:600;
+      margin-bottom:16px;
+    ">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/operator/login{% if next and next != '/command-deck' %}?next={{ next }}{% endif %}">
+      <div class="form-field" style="margin-bottom:16px;">
+        <label for="passphrase" style="display:block; font-size:.85rem; font-weight:600; margin-bottom:6px; color:var(--text-muted,#666);">
+          Passphrase
+        </label>
+        <input
+          id="passphrase"
+          name="passphrase"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter operator passphrase"
+          required
+          style="width:100%; box-sizing:border-box;"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="primary-nav-link"
+        style="display:block; width:100%; text-align:center; padding:10px; font-size:.95rem; cursor:pointer; border:none;"
+      >
+        Enter Command Deck
+      </button>
+    </form>
+
+  </div>
+
+</section>
+{% endblock %}
