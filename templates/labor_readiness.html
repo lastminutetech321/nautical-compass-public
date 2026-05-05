@@ -179,6 +179,43 @@
     </div>
   {% endif %}
 
+  {# Role Market Signals #}
+  {% if role_market %}
+    <div class="feature-card" style="margin-top:16px;">
+      <div class="feature-kicker">Role Market Signals <span style="font-size:.75rem; font-weight:400; color:var(--text-muted,#888);">— baseline, no live data</span></div>
+      <div style="font-size:.9rem; font-weight:600; margin:8px 0 12px;">{{ role_market.role_name }}</div>
+
+      <div style="display:grid; gap:8px;">
+        {% for label, value, color in [
+            ("Wage Competitiveness", role_market.wage_score, "#1a56db"),
+            ("Growth Outlook",       role_market.growth_score, "#0f766e"),
+            ("Transferability",      role_market.transferability_score, "#7c3aed"),
+            ("Entry Friction",       role_market.entry_friction_score, "#dc2626")
+          ] %}
+          <div style="display:grid; grid-template-columns:160px 1fr auto; align-items:center; gap:12px;">
+            <div style="font-size:.82rem; font-weight:600; color:var(--text-muted,#888);">{{ label }}</div>
+            <div style="height:7px; background:rgba(0,0,0,.08); border-radius:4px; overflow:hidden;">
+              <div style="height:100%; border-radius:4px; width:{{ value }}%; background:{{ color }};"></div>
+            </div>
+            <div style="font-size:.82rem; font-weight:700; color:{{ color }}; white-space:nowrap;">{{ value }}</div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+        {% if role_market.recommended_for_fast_entry %}
+          <span style="background:#e6f4ea; color:#1e7e34; padding:3px 12px; border-radius:10px; font-size:.8rem; font-weight:600;">Fast Entry</span>
+        {% endif %}
+        {% if role_market.recommended_for_pivot %}
+          <span style="background:#e8f0fe; color:#1a56db; padding:3px 12px; border-radius:10px; font-size:.8rem; font-weight:600;">Good Pivot Target</span>
+        {% endif %}
+        {% if not role_market.recommended_for_fast_entry and not role_market.recommended_for_pivot %}
+          <span style="background:#f3f4f6; color:#6b7280; padding:3px 12px; border-radius:10px; font-size:.8rem; font-weight:600;">Standard Entry Path</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
   {# Navigation #}
   <div class="feature-card" style="margin-top:24px;">
     <div class="feature-kicker">Quick Links</div>
