@@ -1564,6 +1564,102 @@ body.cabin-light-off::after {
   z-index: 8;
 }
 
+/* === OPERATOR CONTROL PANELS === */
+
+.ops-control-panel {
+  position: fixed;
+  z-index: 20;
+  background: var(--panel-bg);
+  border: 1px solid var(--brass-dim);
+  border-radius: 10px;
+  padding: 10px 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--glow-teal);
+  pointer-events: auto;
+  min-width: 200px;
+}
+
+#certStrictnessPanel {
+  bottom: 230px;
+  right: 16px;
+}
+
+#manualWeatherPanel {
+  bottom: 310px;
+  right: 16px;
+}
+
+.ops-control-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: var(--brass);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weather-mode-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(25,135,84,0.2);
+  color: #4ade80;
+  letter-spacing: 1px;
+}
+
+.weather-mode-badge.manual {
+  background: rgba(234,179,8,0.2);
+  color: #fbbf24;
+}
+
+.ops-control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ops-ctrl-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--brass-dim);
+  background: rgba(201,168,76,0.06);
+  color: var(--gold-dim, #b8975a);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.ops-ctrl-btn:hover {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--brass);
+  color: var(--gold);
+}
+
+.ops-ctrl-btn.active {
+  background: rgba(201,168,76,0.22);
+  border-color: var(--brass);
+  color: #f0d080;
+  font-weight: bold;
+}
+
+.ops-ctrl-reset {
+  border-color: rgba(100,180,255,0.3);
+  color: rgba(100,180,255,0.8);
+  background: rgba(100,180,255,0.06);
+  font-size: 10px;
+}
+
+.ops-ctrl-reset:hover {
+  background: rgba(100,180,255,0.14);
+  border-color: rgba(100,180,255,0.6);
+  color: #7dd3fc;
+}
+
 /* === VESSEL REACTION LAYER === */
 
 /* Vessel surge — brief sharp rock on new intake */

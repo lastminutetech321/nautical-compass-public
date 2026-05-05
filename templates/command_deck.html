@@ -590,6 +590,33 @@
       </div>
     </div>
 
+    <!-- CERTIFICATION STRICTNESS PANEL -->
+    <div id="certStrictnessPanel" class="ops-control-panel">
+      <div class="ops-control-label">Cert Strictness</div>
+      <div class="ops-control-buttons" id="certStrictnessButtons">
+        <button class="ops-ctrl-btn" data-level="low"    id="certBtn-low">Low</button>
+        <button class="ops-ctrl-btn active" data-level="normal" id="certBtn-normal">Normal</button>
+        <button class="ops-ctrl-btn" data-level="high"   id="certBtn-high">High</button>
+      </div>
+    </div>
+
+    <!-- MANUAL WEATHER PANEL -->
+    <div id="manualWeatherPanel" class="ops-control-panel">
+      <div class="ops-control-label">
+        Weather Override
+        <span id="weatherModeIndicator" class="weather-mode-badge">AUTO</span>
+      </div>
+      <div class="ops-control-buttons" id="weatherConditionButtons">
+        <button class="ops-ctrl-btn wx-btn" data-condition="clear">Clear</button>
+        <button class="ops-ctrl-btn wx-btn" data-condition="cloudy">Cloudy</button>
+        <button class="ops-ctrl-btn wx-btn" data-condition="rain">Rain</button>
+        <button class="ops-ctrl-btn wx-btn" data-condition="fog">Fog</button>
+        <button class="ops-ctrl-btn wx-btn" data-condition="storm">Storm</button>
+        <button class="ops-ctrl-btn wx-btn" data-condition="snow">Snow</button>
+      </div>
+      <button id="weatherResetBtn" class="ops-ctrl-btn ops-ctrl-reset" style="margin-top:6px; width:100%;">&#8635; Reset to Auto</button>
+    </div>
+
     <!-- AMBIENT SOUND CONTROL PANEL -->
 <div id="cabinLightPanel" class="cabin-light-panel">
   <span class="cabin-light-label">Cabin Light</span>

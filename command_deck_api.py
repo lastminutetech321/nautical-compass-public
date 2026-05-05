@@ -18,8 +18,10 @@ import os
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
+
+from services.operator_settings import get_all_settings, set_cert_strictness
 
 router = APIRouter(prefix="/api/command-deck", tags=["command-deck-api"])
 
@@ -242,3 +244,21 @@ def command_deck_status_with_intake():
 
     return JSONResponse(content=data)
 
+
+# ---------------------------------------------------------------------------
+# /api/command-deck/operator-settings
+# ---------------------------------------------------------------------------
+
+@router.post("/operator-settings")
+async def update_operator_settings(request: Request):
+    body = await request.json()
+    errors = {}
+
+    cert_strictness = body.get("cert_strictness")
+    if cert_strictness is not None:
+        try:
+            set_cert_strictness(cert_strictness)
+        except ValueError as exc:
+            errors["cert_strictness"] = str(exc)
+
+    return JSONResponse(content={"ok": not errors, "errors": errors, "settings": get_all_settings()})

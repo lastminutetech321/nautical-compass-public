@@ -900,6 +900,7 @@ function deriveWeatherFromIntake() {
 }
 
 function applyDerivedWeather() {
+  if (window._deckManualWeatherMode) return;
   const derived = deriveWeatherFromIntake();
   if (!derived || derived === weatherData.condition) return;
   const profile = WEATHER_PROFILES[derived] || WEATHER_PROFILES['clear'];
@@ -1349,4 +1350,75 @@ document.addEventListener("DOMContentLoaded", () => {
     const next = states[(states.indexOf(current) + 1) % states.length];
     apply(next);
   });
+})();
+
+/* === CERTIFICATION STRICTNESS CONTROL === */
+(function () {
+  const buttons = document.querySelectorAll("#certStrictnessButtons .ops-ctrl-btn");
+  if (!buttons.length) return;
+
+  function applyStrictness(level) {
+    buttons.forEach(b => b.classList.toggle("active", b.dataset.level === level));
+    localStorage.setItem("certStrictness", level);
+    fetch("/api/command-deck/operator-settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cert_strictness: level }),
+    }).catch(() => {});
+  }
+
+  const saved = localStorage.getItem("certStrictness") || "normal";
+  applyStrictness(saved);
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => applyStrictness(btn.dataset.level));
+  });
+})();
+
+/* === MANUAL WEATHER OVERRIDE === */
+(function () {
+  window._deckManualWeatherMode = false;
+
+  const wxButtons     = document.querySelectorAll("#weatherConditionButtons .wx-btn");
+  const resetBtn      = document.getElementById("weatherResetBtn");
+  const modeIndicator = document.getElementById("weatherModeIndicator");
+
+  if (!wxButtons.length) return;
+
+  function setManualWeather(condition) {
+    window._deckManualWeatherMode = true;
+    if (modeIndicator) {
+      modeIndicator.textContent = "MANUAL";
+      modeIndicator.classList.add("manual");
+    }
+    wxButtons.forEach(b => b.classList.toggle("active", b.dataset.condition === condition));
+    weatherData.condition      = condition;
+    const profile = WEATHER_PROFILES[condition] || WEATHER_PROFILES["clear"];
+    weatherData.wind_speed     = profile.wind_speed;
+    weatherData.wind_direction = profile.wind_direction;
+    weatherData.humidity       = profile.humidity;
+    weatherData.visibility     = profile.visibility;
+    weatherData.temperature    = profile.temperature;
+    updateWeatherVisuals(condition);
+    updateVesselMotion();
+    updateNavIndicators();
+    updateEnvironmentPanel(weatherData);
+    if (typeof syncAudioToWeather === "function") syncAudioToWeather(condition);
+    if ($weatherBadge) $weatherBadge.textContent = condition.toUpperCase();
+  }
+
+  function resetToAuto() {
+    window._deckManualWeatherMode = false;
+    if (modeIndicator) {
+      modeIndicator.textContent = "AUTO";
+      modeIndicator.classList.remove("manual");
+    }
+    wxButtons.forEach(b => b.classList.remove("active"));
+  }
+
+  wxButtons.forEach(btn => {
+    btn.addEventListener("click", () => setManualWeather(btn.dataset.condition));
+  });
+
+  if (resetBtn) resetBtn.addEventListener("click", resetToAuto);
 })();

@@ -331,7 +331,7 @@ DIMENSIONS = [
 ]
 
 
-def get_worker_readiness_breakdown(worker_id: str | None = None) -> dict:
+def get_worker_readiness_breakdown(worker_id: str | None = None, cert_strictness: str = "normal") -> dict:
     """
     Return a 6-dimension readiness breakdown for a single worker.
     If worker_id is None, uses the latest labor_profile_submitted entry
@@ -366,11 +366,14 @@ def get_worker_readiness_breakdown(worker_id: str | None = None) -> dict:
     readiness   = normalize_readiness(profile.get("availability"))
     transport   = (profile.get("transport") or "").strip().lower()
 
+    _cert_pts_map = {"low": 5, "normal": 15, "high": 20}
+    cert_pts = _cert_pts_map.get(cert_strictness, 15)
+
     earned = {
         "role":         30 if profile.get("role") else 0,
         "market":       20 if profile.get("market") else 0,
         "availability": 20 if readiness == "ready" else (10 if readiness == "limited" else 0),
-        "certs":        15 if (cert_tags or skill_flags) else 0,
+        "certs":        cert_pts if (cert_tags or skill_flags) else 0,
         "transport":    10 if (transport and transport not in ("no", "none", "false", "0")) else 0,
         "source":        5 if profile.get("source") == "career_dna" else 0,
     }
@@ -382,7 +385,7 @@ def get_worker_readiness_breakdown(worker_id: str | None = None) -> dict:
         dims.append({
             "key":     key,
             "label":   label,
-            "earned":  pts,
+            "earned":  min(pts, max_pts),
             "max":     max_pts,
             "filled":  pts > 0,
         })

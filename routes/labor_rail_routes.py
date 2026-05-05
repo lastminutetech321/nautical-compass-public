@@ -8,6 +8,8 @@ from fastapi.templating import Jinja2Templates
 from services.living_ledger import log_page_view, write_event, get_actor_id
 from labor_signal.services_skill_gap import generate_user_skill_gap
 from labor_signal.schemas import UserSkillGapRequest
+from labor_signal.services_scoring import ROLE_BASELINES
+from services.operator_settings import get_cert_strictness
 from services.labor_matching import (
     get_match_pool,
     get_worker_readiness_breakdown,
@@ -166,8 +168,10 @@ def labor_growth_ladder(request: Request):
 
 @labor_rail_router.get("/labor/readiness", response_class=HTMLResponse)
 def labor_readiness(request: Request, worker_id: str = Query("")):
-    breakdown = get_worker_readiness_breakdown(worker_id or None)
+    cert_strictness = get_cert_strictness()
+    breakdown = get_worker_readiness_breakdown(worker_id or None, cert_strictness=cert_strictness)
     skill_gap = None
+    role_market = None
     if breakdown.get("role"):
         try:
             gap_req = UserSkillGapRequest(
@@ -180,13 +184,24 @@ def labor_readiness(request: Request, worker_id: str = Query("")):
             skill_gap = generate_user_skill_gap(gap_req)
         except Exception:
             pass
+        baseline = ROLE_BASELINES.get(breakdown["role"])
+        if baseline:
+            role_market = {
+                "role_name": breakdown["role"],
+                "wage_score": baseline["wage"],
+                "growth_score": baseline["growth"],
+                "transferability_score": baseline["transferability"],
+                "entry_friction_score": baseline["friction"],
+                "recommended_for_fast_entry": baseline["friction"] <= 50,
+                "recommended_for_pivot": baseline["transferability"] >= 75,
+            }
     log_page_view(request, rail="labor", event_type="readiness_dashboard_viewed",
                   title="Readiness score dashboard viewed",
                   next_action="labor_profile_edit_opened")
     return templates.TemplateResponse(
         request,
         "labor_readiness.html",
-        context=_ctx(request, {"breakdown": breakdown, "skill_gap": skill_gap}),
+        context=_ctx(request, {"breakdown": breakdown, "skill_gap": skill_gap, "role_market": role_market, "cert_strictness": cert_strictness}),
     )
 
 
