@@ -19,7 +19,11 @@
           next-step guidance, and risk/impact indicators.
         </p>
         <div class="module-actions">
+          {% if nc_access_link %}
           <a class="action-btn action-btn-primary" href="{{ nc_access_link }}">Continue with NC Access</a>
+          {% else %}
+          <span class="action-btn" style="opacity:.45;cursor:default;pointer-events:none;">Coming Soon</span>
+          {% endif %}
         </div>
       </div>
 
@@ -30,7 +34,11 @@
           and more structured guidance for users who need more than initial direction.
         </p>
         <div class="module-actions">
+          {% if nc_protection_link %}
           <a class="action-btn action-btn-primary" href="{{ nc_protection_link }}">Continue with NC Protection</a>
+          {% else %}
+          <span class="action-btn" style="opacity:.45;cursor:default;pointer-events:none;">Coming Soon</span>
+          {% endif %}
         </div>
       </div>
 
@@ -41,7 +49,11 @@
           and advanced support for complex situations requiring maximum attention.
         </p>
         <div class="module-actions">
+          {% if nc_command_link %}
           <a class="action-btn action-btn-primary" href="{{ nc_command_link }}">Continue with NC Command</a>
+          {% else %}
+          <span class="action-btn" style="opacity:.45;cursor:default;pointer-events:none;">Coming Soon</span>
+          {% endif %}
         </div>
       </div>
 
