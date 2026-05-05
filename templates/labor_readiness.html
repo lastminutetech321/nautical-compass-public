@@ -38,6 +38,14 @@
           {% elif breakdown.readiness == 'limited' %}Limited Availability
           {% else %}Availability Not Set{% endif %}
         </span>
+        {% if cert_strictness %}
+        <span style="
+          display:inline-block; margin-top:6px; padding:3px 12px; border-radius:12px; font-size:.8rem; font-weight:600;
+          {% if cert_strictness == 'high' %}background:#e8f0fe; color:#1a56db;
+          {% elif cert_strictness == 'low' %}background:#fff3cd; color:#856404;
+          {% else %}background:#f3f4f6; color:#6b7280;{% endif %}
+        ">Cert Strictness: {{ cert_strictness | capitalize }}</span>
+        {% endif %}
       </div>
     </div>
 

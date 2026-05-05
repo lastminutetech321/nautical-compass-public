@@ -382,11 +382,12 @@ def get_worker_readiness_breakdown(worker_id: str | None = None, cert_strictness
     missing_steps = []
     for key, label, max_pts, tip in DIMENSIONS:
         pts = earned[key]
+        effective_max = cert_pts if key == "certs" else max_pts
         dims.append({
             "key":     key,
             "label":   label,
-            "earned":  min(pts, max_pts),
-            "max":     max_pts,
+            "earned":  min(pts, effective_max),
+            "max":     effective_max,
             "filled":  pts > 0,
         })
         if pts == 0:
