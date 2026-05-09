@@ -1,4 +1,4 @@
-from services.twilio_service import send_sms	
+			from services.twilio_service import send_sms	
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
@@ -35,7 +35,7 @@ class HelmStateRequest(BaseModel):
 @core_routes.get("/test-sms")
 def test_sms():
     return send_sms(
-        to_number="+18777804236",
+        
         message="NC SYSTEM LIVE: SMS engine active."
     )
 

@@ -39,4 +39,22 @@
     </div>
   </div>
 </div>
+<form method="post" action="/partner/intake" style="margin-top:20px; display:grid; gap:10px;">
+  <h2>Partner Intake</h2>
+
+  <input name="company_name" placeholder="Company Name" required>
+  <input name="contact_name" placeholder="Contact Name" required>
+  <input name="contact_email" placeholder="Email" required>
+
+  <input name="app_type" placeholder="App Type (logistics, finance, media, etc)">
+  <input name="integration_needs" placeholder="Integration Needs (API, automation, etc)">
+  <input name="venue_model" placeholder="Revenue Model (subscription, per job, etc)">
+
+  <select name="white_label">
+    <option value="yes">White Label</option>
+    <option value="no">NC Branded</option>
+  </select>
+
+  <button type="submit">Submit</button>
+</form>
 {% endblock %}

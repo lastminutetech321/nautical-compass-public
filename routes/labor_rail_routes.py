@@ -45,7 +45,9 @@ def labor_rail(request: Request):
     return templates.TemplateResponse(request, "labor_rail.html", context=_ctx(request))
 
 
-@labor_rail_router.get("/labor/matches", response_class=None)
+from fastapi.responses import HTMLResponse
+
+@labor_rail_router.get("/labor/matches", response_class=HTMLResponse)
 def labor_matches(
     request: Request,
     role: str = Query(""),
