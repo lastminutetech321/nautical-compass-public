@@ -1,0 +1,41 @@
+{
+  "registry_version": "1.0.0",
+  "agents": [
+    {
+      "agent_id": "captain_agent",
+      "agent_name": "Captain Agent",
+      "agent_layer": "control",
+      "agent_type": "orchestrator",
+      "agent_status": "OFFLINE",
+      "agent_permissions": ["read_registry"],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Top level orchestration agent"
+    },
+    {
+      "agent_id": "builder_agent",
+      "agent_name": "Builder Agent",
+      "agent_layer": "control",
+      "agent_type": "builder",
+      "agent_status": "OFFLINE",
+      "agent_permissions": ["read_registry"],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Creates approved system components"
+    },
+    {
+      "agent_id": "validator_agent",
+      "agent_name": "Validator Agent",
+      "agent_layer": "control",
+      "agent_type": "validator",
+      "agent_status": "OFFLINE",
+      "agent_permissions": ["read_registry"],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Validates builds and doctrine compliance"
+    }
+  ]
+}
