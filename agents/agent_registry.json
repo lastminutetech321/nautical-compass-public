@@ -1,5 +1,5 @@
 {
-  "registry_version": "1.0.0",
+  "registry_version": "1.1.0",
   "agents": [
     {
       "agent_id": "captain_agent",
@@ -7,11 +7,13 @@
       "agent_layer": "control",
       "agent_type": "orchestrator",
       "agent_status": "OFFLINE",
-      "agent_permissions": ["read_registry"],
+      "agent_permissions": [
+        "read_registry"
+      ],
       "agent_dependencies": [],
       "agent_owner": "NC",
       "agent_version": "1.0.0",
-      "description": "Top level orchestration agent"
+      "description": "Coordinates the NC agent system and assigns work."
     },
     {
       "agent_id": "builder_agent",
@@ -19,11 +21,13 @@
       "agent_layer": "control",
       "agent_type": "builder",
       "agent_status": "OFFLINE",
-      "agent_permissions": ["read_registry"],
+      "agent_permissions": [
+        "read_registry"
+      ],
       "agent_dependencies": [],
       "agent_owner": "NC",
       "agent_version": "1.0.0",
-      "description": "Creates approved system components"
+      "description": "Creates approved files, schemas, routes, and UI components."
     },
     {
       "agent_id": "validator_agent",
@@ -31,11 +35,181 @@
       "agent_layer": "control",
       "agent_type": "validator",
       "agent_status": "OFFLINE",
-      "agent_permissions": ["read_registry"],
+      "agent_permissions": [
+        "read_registry"
+      ],
       "agent_dependencies": [],
       "agent_owner": "NC",
       "agent_version": "1.0.0",
-      "description": "Validates builds and doctrine compliance"
+      "description": "Validates builds, schemas, tests, and doctrine compliance."
+    },
+    {
+      "agent_id": "deployment_agent",
+      "agent_name": "Deployment Agent",
+      "agent_layer": "control",
+      "agent_type": "deployment",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Handles git checkpoints, staging, deployment prep, and rollback discipline."
+    },
+    {
+      "agent_id": "monitor_agent",
+      "agent_name": "Monitor Agent",
+      "agent_layer": "autonomy",
+      "agent_type": "monitor",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Watches health, logs, routes, disk, memory, SSH, Tailscale, and app status."
+    },
+    {
+      "agent_id": "recovery_agent",
+      "agent_name": "Recovery Agent",
+      "agent_layer": "autonomy",
+      "agent_type": "recovery",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Restores checkpoints and performs safe recovery actions only when approved."
+    },
+    {
+      "agent_id": "intake_sentinel",
+      "agent_name": "Intake Sentinel",
+      "agent_layer": "legal_matter",
+      "agent_type": "intake",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Classifies intake facts and routes matters into the proper NC rail."
+    },
+    {
+      "agent_id": "timeline_architect",
+      "agent_name": "Timeline Architect",
+      "agent_layer": "legal_matter",
+      "agent_type": "timeline",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Builds incident timelines, event chains, and deadline anchors."
+    },
+    {
+      "agent_id": "evidence_marshal",
+      "agent_name": "Evidence Marshal",
+      "agent_layer": "legal_matter",
+      "agent_type": "evidence",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Identifies, ranks, and organizes evidence needed to support claims."
+    },
+    {
+      "agent_id": "accountability_strategist",
+      "agent_name": "Accountability Strategist",
+      "agent_layer": "legal_matter",
+      "agent_type": "accountability",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Maps actors, duties, liability paths, and accountability options."
+    },
+    {
+      "agent_id": "standing_analyzer",
+      "agent_name": "Standing Analyzer",
+      "agent_layer": "legal_matter",
+      "agent_type": "standing",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Applies injury, causation, redressability, and standing doctrine."
+    },
+    {
+      "agent_id": "capacity_analyzer",
+      "agent_name": "Capacity Analyzer",
+      "agent_layer": "legal_matter",
+      "agent_type": "capacity",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Analyzes individual capacity, official capacity, immunity, and proper defendants."
+    },
+    {
+      "agent_id": "sol_engine",
+      "agent_name": "SOL Engine",
+      "agent_layer": "legal_matter",
+      "agent_type": "deadline",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Tracks statutes of limitation, discovery rules, and filing-deadline warnings."
+    },
+    {
+      "agent_id": "output_packet_composer",
+      "agent_name": "Output Packet Composer",
+      "agent_layer": "legal_matter",
+      "agent_type": "output",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Composes structured reports, packets, summaries, and user-facing outputs."
+    },
+    {
+      "agent_id": "offer_architecture_agent",
+      "agent_name": "Offer Architecture Agent",
+      "agent_layer": "growth",
+      "agent_type": "offer",
+      "agent_status": "OFFLINE",
+      "agent_permissions": [
+        "read_registry"
+      ],
+      "agent_dependencies": [],
+      "agent_owner": "NC",
+      "agent_version": "1.0.0",
+      "description": "Packages NC modules into ethical offers without altering legal truth-layer analysis."
     }
   ]
 }
