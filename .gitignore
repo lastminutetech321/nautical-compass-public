@@ -1,6 +1,13 @@
 __pycache__/
 *.pyc
 .env
+.env.*
+!.env.example
+.env.save
 .venv/
 venv/
 runtime/*.jsonl
+nautical_compass.db
+*.db
+*.sqlite
+*.sqlite3
